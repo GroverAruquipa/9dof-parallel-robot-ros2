@@ -9,16 +9,49 @@ capacidad de agarre (Aruquipa, Lambert y Gosselin, Université Laval).
 |---|---|
 | `ninedof_description` | Mallas STL, `config/geometry.yaml` (medido del CAD) y URDF/xacro |
 | `ninedof_kinematics` | IK analítica, FK Gauss-Newton, matrices J y K, nodo `pose_to_joint_states` y tests |
-| `ninedof_bringup` | Launch y configuración de RViz |
+| `ninedof_controllers` | Controlador ros2_control `CartesianPoseController` (C++): recibe la pose de las plataformas, interpola en espacio cartesiano y resuelve la IK en cada ciclo |
+| `ninedof_bringup` | Launch, configuración de controladores y RViz |
 
 ```bash
+rosdep install --from-paths src --ignore-src -y
 colcon build --symlink-install --packages-up-to ninedof_bringup
 source install/setup.bash
-ros2 launch ninedof_bringup view_robot.launch.py            # demo animada de los 9 GDL
-ros2 launch ninedof_bringup view_robot.launch.py demo:=false
-ros2 topic pub --once /pose_cmd std_msgs/msg/Float64MultiArray \
+```
+
+**Con ros2_control** (hardware simulado `mock_components/GenericSystem`):
+
+```bash
+ros2 launch ninedof_bringup ninedof.launch.py              # demo de los 9 GDL
+ros2 launch ninedof_bringup ninedof.launch.py demo:=false  # esperar comandos
+ros2 topic pub --once /cartesian_pose_controller/pose_cmd std_msgs/msg/Float64MultiArray \
   "data: [0.0, 0.0, 0.1467, 0.1, 0.0, 0.0, 0.0, 0.0, 0.3]"   # [x y z a1 a2 a3 b1 b2 b3]
-colcon test --packages-select ninedof_kinematics && colcon test-result --verbose
+ros2 topic echo /platform_pose                             # pose medida por la FK
+ros2 control list_controllers
+```
+
+```
+pose_cmd ─► cartesian_pose_controller ─► 9 actuadores (position) ─► hardware
+                (interpolación + IK)                                    │
+RViz ◄─ robot_state_publisher ◄─ /joint_states ◄─ joint_state_broadcaster
+                                     ▲
+                        fk_joint_state_publisher (FK: articulaciones pasivas + /platform_pose)
+```
+
+El controlador interpola la **pose** (no los actuadores): así cada comando es
+una solución de la IK y respeta los lazos cerrados. Las poses fuera del
+espacio de trabajo o de la carrera (±25 mm) se rechazan.
+
+**Solo visualización** (sin ros2_control):
+
+```bash
+ros2 launch ninedof_bringup view_robot.launch.py
+```
+
+**Tests** (IK/FK contra el CAD, Jacobianos, controlador):
+
+```bash
+colcon test --packages-select ninedof_kinematics ninedof_controllers
+colcon test-result --verbose
 ```
 
 URDF no admite cadenas cerradas, así que el robot se describe como un árbol

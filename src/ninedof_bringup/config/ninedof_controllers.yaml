@@ -1,0 +1,26 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    cartesian_pose_controller:
+      type: ninedof_controllers/CartesianPoseController
+
+cartesian_pose_controller:
+  ros__parameters:
+    # Must follow the leg order of ninedof_description/config/geometry.yaml
+    joints:
+      - leg1_actuator_joint
+      - leg2_actuator_joint
+      - leg3_actuator_joint
+      - leg4_actuator_joint
+      - leg5_actuator_joint
+      - leg6_actuator_joint
+      - leg7_actuator_joint
+      - leg8_actuator_joint
+      - leg9_actuator_joint
+    geometry_file: package://ninedof_description/config/geometry.yaml
+    max_linear_velocity: 0.02   # m/s of the central spherical joint
+    max_angular_velocity: 0.5  # rad/s of each Euler angle

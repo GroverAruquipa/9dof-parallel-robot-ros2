@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!-- ros2_control interfaces of the 9 linear actuators (position commanded). -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="ninedof_ros2_control" params="legs stroke hardware_plugin">
+    <ros2_control name="NineDofSystem" type="system">
+      <hardware>
+        <plugin>${hardware_plugin}</plugin>
+      </hardware>
+      <xacro:ninedof_actuators legs="${legs}" stroke="${stroke}"/>
+    </ros2_control>
+  </xacro:macro>
+
+  <xacro:macro name="ninedof_actuators" params="legs stroke">
+    <xacro:if value="${legs}">
+      <joint name="${legs[0]['name']}_actuator_joint">
+        <command_interface name="position">
+          <param name="min">${-stroke}</param>
+          <param name="max">${stroke}</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <xacro:ninedof_actuators legs="${legs[1:]}" stroke="${stroke}"/>
+    </xacro:if>
+  </xacro:macro>
+
+</robot>

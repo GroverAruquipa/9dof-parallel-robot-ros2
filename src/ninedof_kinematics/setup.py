@@ -16,10 +16,12 @@ setup(
     maintainer_email='grover.adelante9@gmail.com',
     description='Kinematics of the 9-DoF 5PSS-S-4PSS parallel robot.',
     license='Apache-2.0',
-    tests_require=['pytest'],
+    extras_require={'test': ['pytest']},
     entry_points={
         'console_scripts': [
             'pose_to_joint_states = ninedof_kinematics.pose_to_joint_states:main',
+            'fk_joint_state_publisher = ninedof_kinematics.fk_joint_state_publisher:main',
+            'demo_pose_publisher = ninedof_kinematics.demo_pose_publisher:main',
         ],
     },
 )

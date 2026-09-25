@@ -8,7 +8,6 @@ and passive, so robot_state_publisher and RViz can draw the closed chains.
 With ``demo: true`` it animates the 9 DoF one after another instead.
 """
 
-import math
 import os
 
 from ament_index_python.packages import get_package_share_directory
@@ -18,11 +17,8 @@ from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 
+from ninedof_kinematics.demo import demo_pose
 from ninedof_kinematics.kinematics import NineDofKinematics, UnreachablePose
-
-# Amplitude of each DoF in the demo: x, y, z [m] then the six angles [rad]
-DEMO_AMPLITUDE = [0.01, 0.01, 0.01] + [math.radians(10.0)] * 6
-DEMO_PERIOD = 4.0  # seconds per DoF
 
 
 class PoseToJointStates(Node):
@@ -55,15 +51,9 @@ class PoseToJointStates(Node):
         self.demo = False
         self.pose = np.array(msg.data, dtype=float)
 
-    def demo_pose(self):
-        t = (self.get_clock().now() - self.t0).nanoseconds * 1e-9
-        k = int(t // DEMO_PERIOD) % 9
-        x = self.kin.home.copy()
-        x[k] += DEMO_AMPLITUDE[k] * math.sin(2.0 * math.pi * (t % DEMO_PERIOD) / DEMO_PERIOD)
-        return x
-
     def on_timer(self):
-        x = self.demo_pose() if self.demo else self.pose
+        t = (self.get_clock().now() - self.t0).nanoseconds * 1e-9
+        x = demo_pose(self.kin.home, t) if self.demo else self.pose
         try:
             q = self.kin.inverse(x, check_stroke=True)
         except UnreachablePose as e:

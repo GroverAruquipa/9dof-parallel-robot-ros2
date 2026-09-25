@@ -1,0 +1,9 @@
+<library path="ninedof_controllers">
+  <class name="ninedof_controllers/CartesianPoseController"
+         type="ninedof_controllers::CartesianPoseController"
+         base_class_type="controller_interface::ControllerInterface">
+    <description>
+      Commands the 9 linear actuators from a pose of the two moving platforms through the inverse kinematics.
+    </description>
+  </class>
+</library>

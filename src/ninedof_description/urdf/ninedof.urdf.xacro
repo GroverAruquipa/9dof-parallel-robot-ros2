@@ -13,6 +13,10 @@
 -->
 <robot name="ninedof" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <!-- Hardware used by ros2_control: mock_components/GenericSystem simulates
+       ideal actuators (the commanded position becomes the measured one). -->
+  <xacro:arg name="hardware_plugin" default="mock_components/GenericSystem"/>
+
   <xacro:property name="geometry_file" value="$(find ninedof_description)/config/geometry.yaml"/>
   <xacro:property name="g" value="${xacro.load_yaml(geometry_file)['ninedof']}"/>
   <xacro:property name="mesh_dir" value="package://ninedof_description/meshes"/>
@@ -121,5 +125,9 @@
   <xacro:mesh_link name="platform_2" mesh="platform_2.stl" material="platform_2_blue">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:mesh_link>
+
+  <xacro:include filename="$(find ninedof_description)/urdf/ninedof.ros2_control.xacro"/>
+  <xacro:ninedof_ros2_control legs="${g['legs']}" stroke="${stroke}"
+                              hardware_plugin="$(arg hardware_plugin)"/>
 
 </robot>
