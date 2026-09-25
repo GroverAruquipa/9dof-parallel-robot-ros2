@@ -15,7 +15,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ros-jazzy-xacro \
       ros-jazzy-joint-state-publisher-gui \
       ros-jazzy-rqt-controller-manager \
+      libosmesa6 ffmpeg fonts-dejavu-core python3-pil \
     && rm -rf /var/lib/apt/lists/*
+
+# Python bindings of MuJoCo: offline rendering of the pick-and-place video
+# (ros2 run ninedof_mujoco render_video). The simulation itself runs in
+# mujoco_ros2_control (installed by rosdep from the package dependencies).
+RUN pip3 install --no-cache-dir --break-system-packages mujoco
 
 # El usuario "ubuntu" (uid 1000) ya existe en la imagen base; le damos sudo sin contraseña
 RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu \

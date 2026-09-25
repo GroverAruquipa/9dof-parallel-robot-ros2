@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    mujoco_plugins:
+      sim_state_publisher:
+        type: "ninedof_mujoco/SimStatePublisher"

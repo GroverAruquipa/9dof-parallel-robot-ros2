@@ -1,42 +1,52 @@
 # Pick-and-place demo scene (world frame, metres, radians, unless stated).
 #
+# Object: a 12 x 12 x 24 mm block. The fingers of the CAD are small hooks that
+# pinch at the tips: a 40 mm block cannot be grasped (the hooks land on its top
+# face), while a ~12 mm block goes ~22 mm into the cage formed by the fingers.
+# Friction grasping with these fingers is not reliable in simulation (the
+# point-symmetric hooks touch the block on opposite edges and spin it), so the
+# grasp is a virtual one: once the jaw has closed around the block, a stiff
+# spring-damper (SimStatePublisher plugin, /mujoco/grasp) holds it relative to
+# platform 1 until release. The demo shows the geometry and the accuracy of the
+# robot, not contact mechanics.
+#
 # The CAD geometry is close to a singularity: the common yaw of the two
 # platforms is poorly held (docs/nota_diseno_torsion.md). The reorientation is
-# therefore limited to 30 deg, inside the range where the gripper holds its yaw
-# within ~4 deg (-5 -> +25 deg), and the heights sit inside the window where
-# every pose of the sequence stays within the actuator stroke
-# (ros2 run ninedof_mujoco pick_place_demo --check).
+# therefore limited to 30 deg (-10 -> +20 deg of the platforms) and every
+# height lies inside the window where the whole sequence stays within the
+# actuator stroke (ros2 run ninedof_mujoco pick_place_demo --check).
 #
 # The robot hangs upside down from a frame (base above, fingers pointing down):
 # robot frame = world frame rotated by pi about X and lifted by mount_height,
 # i.e. (x, y, z)_world = (x_r, -y_r, mount_height - z_r).
 pick_place:
-  mount_height: 0.25108
+  mount_height: 0.19168             # platform plane 22 mm above the block top at z_grasp
   table:
     top_z: 0.0
     size: [0.30, 0.22, 0.02]        # x, y, thickness
   block:
-    size: [0.04, 0.04, 0.08]        # x, y, z (standing on its 4x4 cm face)
-    mass: 0.05                      # kg (3D-printed, ~20 % infill; estimate)
+    size: [0.012, 0.012, 0.024]     # x, y, z (standing on its 12 x 12 mm face)
+    mass: 0.005                     # kg (solid PLA)
     friction: 1.0
-    pick_xy: [-0.010, 0.0]          # centre on the table
-    pick_yaw: 0.17174               # +9.84 deg: faces normal to the jaw at yaw_pick
+    pick_xy: [-0.015, 0.0]          # centre on the table
+    pick_yaw: 0.29164               # +16.71 deg: faces normal to the jaw at yaw_pick
   target:
-    xy: [0.010, 0.0]
-    yaw: -0.35186                   # -20.16 deg: the block turns 30 deg
-    tolerance_xy: 0.005             # success if the centre lands within 5 mm
+    xy: [0.015, 0.0]
+    yaw: -0.23196                   # -13.29 deg: the block turns 30 deg
+    tolerance_xy: 0.004             # success if the centre lands within 4 mm
     tolerance_yaw: 0.0873           # ... within 5 deg of the target yaw
     tolerance_tilt: 0.0873          # ... and stays upright within 5 deg
   gripper:
     # Centroid of the finger-1 tip in the platform-1 frame (from the meshes)
     tip_centroid: [-0.0017, 0.0008, 0.0381]
-    jaw_partial: 0.3491             # 20 deg: what the stroke allows at z_start
-    jaw_open: 0.6632                # 36 deg per platform -> ~43 mm between tips
-    jaw_closed: 0.5236              # 30 deg -> ~37 mm: squeezes the 40 mm block
+    jaw_open: 0.4887                # 28 deg per platform: fingers clear the block by >= 1 mm
+    jaw_closed: 0.4189              # 24 deg: the fingers touch the block (contact at ~23.5 deg)
     # Robot-frame height of the central sphere relative to home_z
-    z_start: -0.020                 # start / approach with the jaw closed
-    z_lift: -0.0135                 # lift: the block rises 9.5 mm
-    z_grasp: -0.0065                 # tips 4 mm below the top of the block
-    yaw_pick: -0.08727              # -5 deg (robot frame, about the robot z axis)
-    yaw_place: 0.43633              # +25 deg
+    z_start: -0.022                 # start / approach, jaw closed: tips 3.8 mm above the block
+    z_open: -0.018                  # jaw open above the block
+    z_lift: -0.014                  # lift: the block rises 13 mm
+    z_grasp: -0.001                 # block top 22 mm inside the finger cage
+    z_retreat: -0.016
+    yaw_pick: -0.17453              # -10 deg (robot frame, about the robot z axis)
+    yaw_place: 0.34907              # +20 deg
   finger_friction: 1.2              # rubber pads on the jaws

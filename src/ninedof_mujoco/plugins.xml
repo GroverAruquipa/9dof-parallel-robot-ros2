@@ -1,0 +1,9 @@
+<library path="ninedof_mujoco_plugins">
+  <class name="ninedof_mujoco/SimStatePublisher"
+         type="ninedof_mujoco::SimStatePublisher"
+         base_class_type="mujoco_ros2_control_plugins::MuJoCoROS2ControlPluginBase">
+    <description>
+      Publishes the MuJoCo qpos and the pose of the "block" body, and switches the "grasp" weld from /mujoco/grasp.
+    </description>
+  </class>
+</library>

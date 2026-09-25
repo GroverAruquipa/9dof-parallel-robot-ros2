@@ -46,3 +46,19 @@ Disponer las patas en **pares cruzados** (como en una plataforma de
 Gough-Stewart), sobre todo las 4 patas de la plataforma 2. El análisis se
 puede repetir con cualquier geometría modificando `config/geometry.yaml`
 y usando `ninedof_kinematics.kinematics.NineDofKinematics.jacobians`.
+
+## Hallazgos al preparar la demo de pick-and-place (sin cambiar el CAD)
+
+* **Montaje invertido.** Colgando (base arriba, pinza abajo) el modo casi libre
+  queda en equilibrio estable: el robot ya no colapsa en reposo. De pie es un
+  "péndulo invertido" y cambia de modo de ensamblaje en ~1 s.
+* **La guiñada común de la pinza apenas se sostiene.** Con actuadores de
+  5·10⁴ N/m, el error estático es ≤ 4° solo con ψ entre −10° y +25°; a
+  ψ = ±45° llega a 7–14° y a −70° a ~40°. Para sostener ψ = −70° los
+  actuadores saturan en 20 N aunque las plataformas pesan 25 g (la fuerza
+  necesaria crece como 1/σ_min). Un resorte en la esférica central no ayuda:
+  la deriva es una rotación común de ambas plataformas.
+* **Dedos.** Los dedos son ganchos cortos simétricos por punto (uno es el otro
+  girado 180°): agarran objetos de ~1 cm entre las puntas; un bloque de 40 mm
+  no cabe, y con bloques cuadrados tocan aristas opuestas y generan un par que
+  hace girar el objeto.

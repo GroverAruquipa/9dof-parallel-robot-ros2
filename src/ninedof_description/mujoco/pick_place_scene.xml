@@ -43,21 +43,21 @@
     <light name="fill" pos="-0.4 0.3 0.6" dir="0.4 -0.3 -0.6" diffuse="0.35 0.35 0.35" castshadow="false"/>
     <geom name="floor" type="plane" size="1 1 0.05" pos="0 0 -0.72" material="floor_mat" contype="1" conaffinity="1"/>
     <geom name="table" type="box" size="0.15 0.11 0.01" pos="0 0 -0.01" material="table_mat" contype="1" conaffinity="1" friction="0.6 0.005 0.0001"/>
-    <geom name="frame_top" type="box" size="0.09 0.09 0.006" pos="0 0 0.28708" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="frame_post_pp" type="box" size="0.006 0.006 0.1405" pos="0.12 0.09 0.1405" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="frame_post_pm" type="box" size="0.006 0.006 0.1405" pos="0.12 -0.09 0.1405" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="frame_post_mp" type="box" size="0.006 0.006 0.1405" pos="-0.12 0.09 0.1405" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="frame_post_mm" type="box" size="0.006 0.006 0.1405" pos="-0.12 -0.09 0.1405" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="frame_beam_p" type="box" size="0.126 0.006 0.006" pos="0 0.09 0.28108" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="frame_beam_m" type="box" size="0.126 0.006 0.006" pos="0 -0.09 0.28108" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="target_zone" type="box" size="0.025 0.025 0.0005" pos="0.01 0.0 0.0005" euler="0 0 -0.35186" material="target_mat" contype="0" conaffinity="0"/>
-    <body name="block" pos="-0.01 0.0 0.04" euler="0 0 0.17174">
+    <geom name="frame_top" type="box" size="0.146 0.106 0.006" pos="0 0 0.22768" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="frame_post_pp" type="box" size="0.006 0.006 0.1108" pos="0.14 0.1 0.1108" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="frame_post_pm" type="box" size="0.006 0.006 0.1108" pos="0.14 -0.1 0.1108" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="frame_post_mp" type="box" size="0.006 0.006 0.1108" pos="-0.14 0.1 0.1108" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="frame_post_mm" type="box" size="0.006 0.006 0.1108" pos="-0.14 -0.1 0.1108" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="frame_beam_p" type="box" size="0.146 0.006 0.006" pos="0 0.10 0.22168" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="frame_beam_m" type="box" size="0.146 0.006 0.006" pos="0 -0.10 0.22168" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="target_zone" type="box" size="0.01 0.01 0.0005" pos="0.015 0.0 0.0005" euler="0 0 -0.23196" material="target_mat" contype="0" conaffinity="0"/>
+    <body name="block" pos="-0.015 0.0 0.012" euler="0 0 0.29164">
       <freejoint name="block_free"/>
-      <geom name="block" type="box" size="0.02 0.02 0.04" mass="0.05" material="block_mat" friction="1.0 0.02 0.0001" condim="4" contype="1" conaffinity="3"/>
-      <geom name="block_marker" type="box" size="0.0005 0.012 0.024" pos="0.0205 0 0" material="marker_mat" contype="0" conaffinity="0" mass="0"/>
+      <geom name="block" type="box" size="0.006 0.006 0.012" mass="0.005" material="block_mat" friction="1.0 0.02 0.0001" condim="4" contype="1" conaffinity="3"/>
+      <geom name="block_marker" type="box" size="0.0005 0.0036 0.0072" pos="0.006500000000000001 0 0" material="marker_mat" contype="0" conaffinity="0" mass="0"/>
     </body>
-    <camera name="grasp_cam" mode="fixed" pos="0.17 -0.2 0.17" xyaxes="0.761939 0.647648 -0 -0.199524 0.234734 0.951362" fovy="45"/>
-    <body name="robot_mount" pos="0 0 0.25108" euler="3.14159 0 0">
+    <camera name="grasp_cam" mode="fixed" pos="0.125 -0.19 0.105" xyaxes="0.835417 0.549617 -0 -0.140201 0.213105 0.966918" fovy="45"/>
+    <body name="robot_mount" pos="0 0 0.19168" euler="3.14159 0 0">
       <body name="base_link">
         <geom class="visual" mesh="base" material="base_grey" pos="0 0 -0.03"/>
         <body name="leg1_slider" pos="-0 0.05 -0.02202">
@@ -161,7 +161,7 @@
         </body>
       </body>
     </body>
-      <body name="platform_1" pos="0 -1.79631e-17 0.1044" euler="3.14159 0 0">
+      <body name="platform_1" pos="0 -1.79631e-17 0.045" euler="3.14159 0 0">
         <freejoint name="platform_1_free"/>
         <inertial pos="0 0 0.005" mass="0.01275" diaginertia="4.01094e-06 4.01094e-06 7.80938e-06"/>
         <geom class="visual" mesh="platform_1" material="platform_1_red"/>
@@ -191,6 +191,8 @@
 
   <contact>
     <exclude body1="platform_1" body2="platform_2"/>
+    <exclude body1="platform_1" body2="block"/>
+    <exclude body1="platform_2" body2="block"/>
   </contact>
 
   <actuator>

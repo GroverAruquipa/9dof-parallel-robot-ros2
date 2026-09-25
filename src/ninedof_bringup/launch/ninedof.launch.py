@@ -25,6 +25,8 @@ def launch_setup(context):
     hardware_plugin = ('mujoco_ros2_control/MujocoSystemInterface' if mujoco
                        else 'mock_components/GenericSystem')
     use_sim_time = {'use_sim_time': mujoco}
+    plugins_file = LaunchConfiguration('mujoco_plugins').perform(context)
+    plugin_params = [plugins_file] if (mujoco and plugins_file) else []
     demo = LaunchConfiguration('demo')
     gui = LaunchConfiguration('gui')
 
@@ -33,7 +35,8 @@ def launch_setup(context):
                  PathJoinSubstitution([FindPackageShare('ninedof_description'),
                                        'urdf', 'ninedof.urdf.xacro']),
                  ' hardware_plugin:=', hardware_plugin,
-                 ' headless:=', LaunchConfiguration('headless')]),
+                 ' headless:=', LaunchConfiguration('headless'),
+                 ' mujoco_scene:=', LaunchConfiguration('mujoco_scene')]),
         value_type=str)
     controllers = PathJoinSubstitution(
         [FindPackageShare('ninedof_bringup'), 'config', 'ninedof_controllers.yaml'])
@@ -46,7 +49,7 @@ def launch_setup(context):
         # mujoco_ros2_control ships its own ros2_control_node that also steps MuJoCo
         Node(package='mujoco_ros2_control' if mujoco else 'controller_manager',
              executable='ros2_control_node',
-             parameters=[controllers, use_sim_time],
+             parameters=[controllers, use_sim_time] + plugin_params,
              remappings=[('~/robot_description', '/robot_description')],
              output='screen'),
         Node(package='controller_manager', executable='spawner',
@@ -69,6 +72,10 @@ def generate_launch_description():
                               description="'mock' (ideal actuators) or 'mujoco' (physics)"),
         DeclareLaunchArgument('headless', default_value='false',
                               description='MuJoCo without its viewer window'),
+        DeclareLaunchArgument('mujoco_scene', default_value='scene.xml',
+                              description='MJCF in ninedof_description/mujoco'),
+        DeclareLaunchArgument('mujoco_plugins', default_value='',
+                              description='Parameter file with mujoco_ros2_control plugins'),
         DeclareLaunchArgument('demo', default_value='true',
                               description='Send the demo motion to the controller'),
         DeclareLaunchArgument('gui', default_value='true', description='Start RViz'),

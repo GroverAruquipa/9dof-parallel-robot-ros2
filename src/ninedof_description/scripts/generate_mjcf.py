@@ -159,7 +159,8 @@ def robot_parts(geometry, dynamics, finger_friction=None, indent='    ', mount=N
 
 
 def compose(geometry, dynamics, model_name, mount=None, finger_friction=None,
-            extra_assets=(), extra_world=(), extra_after_world=()):
+            extra_assets=(), extra_world=(), extra_after_world=(), extra_equality=(),
+            extra_contact=()):
     """Complete MJCF file. With mount = (pos, euler) the robot is attached to a
     fixed body at that pose (e.g. hanging upside down)."""
     d = dynamics['ninedof_dynamics']
@@ -214,10 +215,12 @@ def compose(geometry, dynamics, model_name, mount=None, finger_friction=None,
     w('')
     w('  <equality>')
     out.extend(eq)
+    out.extend(extra_equality)
     w('  </equality>')
     w('')
     w('  <contact>')
     w('    <exclude body1="platform_1" body2="platform_2"/>')
+    out.extend(extra_contact)
     w('  </contact>')
     w('')
     w('  <actuator>')
@@ -256,8 +259,8 @@ def generate_pick_place(geometry, dynamics, pick_place):
     tz = table['top_z']
     tx, ty, tt = table['size']
     frame_z = pp['mount_height'] + 0.03   # top of the base ring
-    cam_pos = [0.17, -0.20, 0.17]
-    cam_target = [0.0, 0.0, 0.085]
+    cam_pos = [0.125, -0.19, 0.105]
+    cam_target = [0.0, 0.0, 0.045]
 
     assets = [
         '    <texture type="skybox" builtin="gradient" rgb1="0.35 0.45 0.55" rgb2="0.05 0.05 0.08"'
@@ -282,19 +285,19 @@ def generate_pick_place(geometry, dynamics, pick_place):
         f' pos="0 0 {tz - tt / 2}" material="table_mat" contype="1" conaffinity="1"'
         ' friction="0.6 0.005 0.0001"/>',
         # Frame holding the robot upside down (visual only).
-        f'    <geom name="frame_top" type="box" size="0.09 0.09 0.006" pos="0 0 {frame_z + 0.006}"'
+        f'    <geom name="frame_top" type="box" size="0.146 0.106 0.006" pos="0 0 {frame_z + 0.006}"'
         ' material="frame_mat" contype="0" conaffinity="0"/>',
     ]
     for sx, sy in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
         h = (frame_z - tz) / 2
         world.append(f'    <geom name="frame_post_{"p" if sx > 0 else "m"}{"p" if sy > 0 else "m"}"'
                      f' type="box" size="0.006 0.006 {h:.4f}"'
-                     f' pos="{0.12 * sx} {0.09 * sy} {tz + h:.4f}" material="frame_mat"'
+                     f' pos="{0.14 * sx} {0.10 * sy} {tz + h:.4f}" material="frame_mat"'
                      ' contype="0" conaffinity="0"/>')
-    world.append(f'    <geom name="frame_beam_p" type="box" size="0.126 0.006 0.006"'
-                 f' pos="0 0.09 {frame_z}" material="frame_mat" contype="0" conaffinity="0"/>')
-    world.append(f'    <geom name="frame_beam_m" type="box" size="0.126 0.006 0.006"'
-                 f' pos="0 -0.09 {frame_z}" material="frame_mat" contype="0" conaffinity="0"/>')
+    world.append(f'    <geom name="frame_beam_p" type="box" size="0.146 0.006 0.006"'
+                 f' pos="0 0.10 {frame_z}" material="frame_mat" contype="0" conaffinity="0"/>')
+    world.append(f'    <geom name="frame_beam_m" type="box" size="0.146 0.006 0.006"'
+                 f' pos="0 -0.10 {frame_z}" material="frame_mat" contype="0" conaffinity="0"/>')
     # Target zone: tolerance square + outline of the block at the target yaw.
     tol = target['tolerance_xy']
     world.append(f'    <geom name="target_zone" type="box" size="{bx + tol} {by + tol} 0.0005"'
@@ -324,9 +327,18 @@ def generate_pick_place(geometry, dynamics, pick_place):
         '  <statistic center="0 0 0.12" extent="0.35"/>',
     ]
     mount = ([0.0, 0.0, pp['mount_height']], [math.pi, 0.0, 0.0])
+    # The grasp is a virtual spring-damper applied by the SimStatePublisher plugin
+    # (ninedof_mujoco): friction grasping with these small hook-shaped fingers is
+    # not reliable, so the demo focuses on geometry and control accuracy. The
+    # finger/block contacts are disabled; the descent around the block is
+    # collision free by design.
+    equality = []
+    contact = ['    <exclude body1="platform_1" body2="block"/>',
+               '    <exclude body1="platform_2" body2="block"/>']
     return compose(geometry, dynamics, 'ninedof_pick_place', mount=mount,
                    finger_friction=pp['finger_friction'], extra_assets=assets,
-                   extra_world=world, extra_after_world=after)
+                   extra_world=world, extra_after_world=after, extra_equality=equality,
+                   extra_contact=contact)
 
 
 SCENE = """<!-- MuJoCo scene of the 9-DoF parallel robot. -->

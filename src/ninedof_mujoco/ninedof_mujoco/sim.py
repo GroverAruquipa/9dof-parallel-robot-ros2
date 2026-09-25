@@ -86,8 +86,9 @@ class ControllerReplica:
     """Offline twin of CartesianPoseController: interpolates the pose at
     v_lin / v_ang and sends the IK solution to the position servos every dt."""
 
-    def __init__(self, model, data, kin, v_lin=0.02, v_ang=0.5, dt=0.01):
+    def __init__(self, model, data, kin, v_lin=0.02, v_ang=0.5, dt=0.01, pre_step=None):
         self.m, self.d, self.kin = model, data, kin
+        self.pre_step = pre_step
         self.v_lin, self.v_ang, self.dt = v_lin, v_ang, dt
         self.ids = [model.actuator(f'{n}_actuator_joint').id for n in kin.names]
 
@@ -100,7 +101,81 @@ class ControllerReplica:
         self.d.ctrl[self.ids] = self.kin.inverse(x)
         n = max(1, int(round(duration / self.m.opt.timestep)))
         for _ in range(n):
+            if self.pre_step is not None:
+                self.pre_step(self.d)
             mujoco.mj_step(self.m, self.d)
             if on_step is not None:
                 on_step()
 
+
+
+class VirtualGrasp:
+    """Grasp as a stiff spring-damper holding the object at its pose relative to
+    the holder when switched on (plus gravity compensation; reaction on the
+    holder). Same law and gains as the SimStatePublisher plugin."""
+
+    K_LIN, D_LIN, K_ROT, D_ROT = 4.5, 0.3, 2.7e-4, 1.8e-5
+    PERIOD = 0.01   # the plugin runs at the ros2_control rate; wrench held in between
+
+    def __init__(self, model, obj='block', holder='platform_1'):
+        self.m = model
+        self.o, self.h = model.body(obj).id, model.body(holder).id
+        self.on = False
+        self.last = -np.inf
+        self.rel_pos, self.rel_quat = np.zeros(3), np.array([1.0, 0, 0, 0])
+
+    def set(self, data, on):
+        self.on = on
+        if on:
+            q_inv = np.zeros(4)
+            mujoco.mju_negQuat(q_inv, data.xquat[self.h])
+            mujoco.mju_rotVecQuat(self.rel_pos, data.xpos[self.o] - data.xpos[self.h], q_inv)
+            mujoco.mju_mulQuat(self.rel_quat, q_inv, data.xquat[self.o])
+
+    def apply(self, data):
+        if data.time - self.last < self.PERIOD - 1e-9:
+            return   # zero-order hold, like the plugin
+        self.last = data.time
+        data.xfrc_applied[[self.o, self.h]] = 0.0
+        if not self.on:
+            return
+        m, o, h = self.m, self.o, self.h
+        p_t = np.zeros(3)
+        mujoco.mju_rotVecQuat(p_t, self.rel_pos, data.xquat[h])
+        p_t += data.xpos[h]
+        q_t = np.zeros(4)
+        mujoco.mju_mulQuat(q_t, data.xquat[h], self.rel_quat)
+        vo, vh = np.zeros(6), np.zeros(6)
+        mujoco.mj_objectVelocity(m, data, mujoco.mjtObj.mjOBJ_BODY, o, vo, 0)
+        mujoco.mj_objectVelocity(m, data, mujoco.mjtObj.mjOBJ_BODY, h, vh, 0)
+        v_t = vh[3:] + np.cross(vh[:3], p_t - data.xpos[h])
+        force = self.K_LIN * (p_t - data.xpos[o]) + self.D_LIN * (v_t - vo[3:])
+        force[2] -= m.body_subtreemass[o] * m.opt.gravity[2]
+        q_inv, q_err, err = np.zeros(4), np.zeros(4), np.zeros(3)
+        mujoco.mju_negQuat(q_inv, data.xquat[o])
+        mujoco.mju_mulQuat(q_err, q_t, q_inv)
+        mujoco.mju_quat2Vel(err, q_err, 1.0)
+        torque = self.K_ROT * err + self.D_ROT * (vh[:3] - vo[:3])
+        data.xfrc_applied[o, :3] = force
+        data.xfrc_applied[o, 3:] = torque + np.cross(data.xpos[o] - data.xipos[o], force)
+        data.xfrc_applied[h, :3] = -force
+        data.xfrc_applied[h, 3:] = -(torque + np.cross(data.xpos[o] - data.xipos[h], force))
+
+
+def run_pick_place(model, data, kin, waypoints, v_lin=0.02, v_ang=0.5, on_step=None):
+    """Offline pick and place (no ROS): same sequence, interpolation and grasp
+    switching as pick_place_demo + CartesianPoseController + SimStatePublisher."""
+    set_robot_pose(model, data, kin, waypoints[0].pose)
+    grasp = VirtualGrasp(model)
+    ctrl = ControllerReplica(model, data, kin, v_lin, v_ang, pre_step=grasp.apply)
+    prev = waypoints[0].pose
+    ctrl.hold(prev, waypoints[0].hold, on_step)
+    for wp in waypoints[1:]:
+        if wp.name == 'release':
+            grasp.set(data, False)
+        ctrl.move(prev, wp.pose, on_step)
+        ctrl.hold(wp.pose, wp.hold, on_step)
+        if wp.name == 'close':
+            grasp.set(data, True)
+        prev = wp.pose
+    return block_pose(model, data)
