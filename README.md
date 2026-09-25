@@ -22,8 +22,11 @@ ros2 run demo_nodes_cpp listener
 ## Ver interfaces gráficas (RViz, Gazebo, rqt)
 
 1. Abre la pestaña **Ports** (junto a la terminal).
+   Si no la ves: `Ctrl + Shift + P` → **Ports: Focus on Ports View**.
 2. Busca el puerto **6080** ("Escritorio (noVNC)") y pulsa el icono del globo 🌐.
-3. Pulsa **Connect**; la contraseña es `ros`.
+   Si no aparece, pulsa **Add Port** y escribe `6080`.
+3. **Agrega `/vnc.html` al final de la dirección** que se abre
+   (ej. `https://...-6080.app.github.dev/vnc.html`), pulsa **Connect** y usa la contraseña `ros`.
 4. Todo lo que abras desde la terminal (por ejemplo `rviz2` o `gz sim`) aparece ahí.
 
 ## Compilar tus paquetes
