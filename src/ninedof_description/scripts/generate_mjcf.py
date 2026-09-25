@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Generate the MuJoCo model (MJCF) of the 9-DoF parallel robot.
 
-Reads config/geometry.yaml and config/dynamics.yaml and writes
-mujoco/ninedof.xml (robot) and mujoco/scene.xml (robot + floor + light).
+Reads config/geometry.yaml, config/dynamics.yaml and config/pick_place.yaml
+and writes mujoco/ninedof.xml (robot), mujoco/scene.xml (robot + floor) and
+mujoco/pick_place_scene.xml (robot hanging above a table with a block).
 
 Unlike URDF, MJCF can close the kinematic loops: each distal link hangs from
 its actuator with a ball joint and its upper ball A_i is tied to the platform
@@ -52,6 +53,11 @@ def quat_z_to(u):
     return np.r_[math.cos(angle / 2), axis * math.sin(angle / 2)]
 
 
+def rot_x_matrix(t):
+    c, s = math.cos(t), math.sin(t)
+    return np.array([[1.0, 0.0, 0.0], [0.0, c, -s], [0.0, s, c]])
+
+
 def disk_inertia(mass, radius, height):
     ixx = mass * (3 * radius ** 2 + height ** 2) / 12
     return [ixx, ixx, mass * radius ** 2 / 2]
@@ -63,7 +69,11 @@ def rod_inertia(mass, length):
     return [ixx, ixx, 1e-9]
 
 
-def generate(geometry, dynamics):
+def robot_parts(geometry, dynamics, finger_friction=None, indent='    ', mount=None):
+    """MJCF fragments of the robot: base bodies (base at the local origin),
+    platform bodies (top level, since they carry a free joint), equality
+    constraints, actuators and sensors. mount = (pos, euler) places the platforms
+    in the world when the base is attached to a mount body."""
     g = geometry['ninedof']
     d = dynamics['ninedof_dynamics']
     l = g['distal_length']
@@ -72,12 +82,92 @@ def generate(geometry, dynamics):
     home = np.array([0.0, 0.0, g['home_z']])
     act = d['actuator']
     m = d['mass']
+    legs = g['legs']
 
+    b = []
+
+    def w(line):
+        b.append(indent + line)
+
+    w('<body name="base_link">')
+    w(f'  <geom class="visual" mesh="base" material="base_grey" '
+      f'pos="0 0 {g["base_mesh_offset_z"]}"/>')
+    # Legs: slider on a slide joint, distal link on a ball joint at B_i.
+    for leg in legs:
+        n = leg['name']
+        A = home + np.array(leg['a'])
+        B = np.array([leg['base_x'], leg['base_y'], leg['base_z0']])
+        u = (A - B) / np.linalg.norm(A - B)
+        w(f'  <body name="{n}_slider" pos="{fmt([B[0], B[1], B[2] - ball_h])}">')
+        w(f'    <joint name="{n}_actuator_joint" type="slide" axis="0 0 1" '
+          f'range="{-stroke} {stroke}" armature="{act["armature"]}" '
+          f'actuatorfrcrange="{-act["max_force"]} {act["max_force"]}"/>')
+        w(f'    <inertial pos="0 0 {ball_h / 2:.6g}" mass="{m["slider"]}" '
+          f'diaginertia="{fmt(rod_inertia(m["slider"], ball_h))}"/>')
+        w('    <geom class="visual" mesh="slider" material="rod_white"/>')
+        w(f'    <body name="{n}_distal" pos="0 0 {ball_h}" quat="{fmt(quat_z_to(u))}">')
+        w(f'      <joint name="{n}_lower_joint" type="ball" '
+          f'damping="{d["passive_joint_damping"]}"/>')
+        w(f'      <inertial pos="0 0 {l / 2}" mass="{m["distal_link"]}" '
+          f'diaginertia="{fmt(rod_inertia(m["distal_link"], l))}"/>')
+        w('      <geom class="visual" mesh="distal_link" material="rod_white"/>')
+        w(f'      <site name="{n}_A" pos="0 0 {l}" size="0.002"/>')
+        w('    </body>')
+        w('  </body>')
+    w('</body>')
+    base = b
+    b = []
+    indent = '    '
+    # Platforms: platform 1 floats (its pose is imposed by legs 1-5), platform 2
+    # hangs from it through the central spherical joint.
+    if mount:
+        R = rot_x_matrix(mount[1][0])
+        platform_pose = f'pos="{fmt(np.asarray(mount[0]) + R @ home)}" euler="{fmt(mount[1])}"'
+    else:
+        platform_pose = f'pos="{fmt(home)}"'
+    friction = ('' if finger_friction is None
+                else f' friction="{finger_friction} 0.02 0.0001"')
+    w(f'  <body name="platform_1" {platform_pose}>')
+    w('    <freejoint name="platform_1_free"/>')
+    w(f'    <inertial pos="0 0 0.005" mass="{m["platform_1"]}" '
+      f'diaginertia="{fmt(disk_inertia(m["platform_1"], 0.035, 0.01))}"/>')
+    w('    <geom class="visual" mesh="platform_1" material="platform_1_red"/>')
+    w(f'    <geom class="finger" name="finger_1_lower" mesh="finger_1_lower"{friction}/>')
+    w(f'    <geom class="finger" name="finger_1_upper" mesh="finger_1_upper"{friction}/>')
+    w('    <body name="platform_2">')
+    w(f'      <joint name="central_sphere_joint" type="ball" '
+      f'damping="{d["passive_joint_damping"]}"/>')
+    w(f'      <inertial pos="0 0 0.005" mass="{m["platform_2"]}" '
+      f'diaginertia="{fmt(disk_inertia(m["platform_2"], 0.035, 0.01))}"/>')
+    w('      <geom class="visual" mesh="platform_2" material="platform_2_blue"/>')
+    w(f'      <geom class="finger" name="finger_2_lower" mesh="finger_2_lower"{friction}/>')
+    w(f'      <geom class="finger" name="finger_2_upper" mesh="finger_2_upper"{friction}/>')
+    w('    </body>')
+    w('  </body>')
+
+    # Close the loops: upper ball A_i of each distal link on its platform.
+    eq = [f'    <connect name="{leg["name"]}_upper_joint" body1="{leg["name"]}_distal" '
+          f'body2="platform_{leg["platform"]}" anchor="0 0 {l}"/>' for leg in legs]
+    # Position servos named like the ros2_control joints (mujoco_ros2_control).
+    actuators = [f'    <position name="{leg["name"]}_actuator_joint" '
+                 f'joint="{leg["name"]}_actuator_joint" kp="{act["kp"]}" '
+                 f'dampratio="{act["damping_ratio"]}" ctrlrange="{-stroke} {stroke}" '
+                 f'forcerange="{-act["max_force"]} {act["max_force"]}"/>' for leg in legs]
+    sensors = [f'    <actuatorfrc name="{leg["name"]}_force" '
+               f'actuator="{leg["name"]}_actuator_joint"/>' for leg in legs]
+    return base, b, eq, actuators, sensors
+
+
+def compose(geometry, dynamics, model_name, mount=None, finger_friction=None,
+            extra_assets=(), extra_world=(), extra_after_world=()):
+    """Complete MJCF file. With mount = (pos, euler) the robot is attached to a
+    fixed body at that pose (e.g. hanging upside down)."""
+    d = dynamics['ninedof_dynamics']
     out = []
     w = out.append
-    w('<!-- Generated by scripts/generate_mjcf.py from config/geometry.yaml and')
-    w('     config/dynamics.yaml. Do not edit by hand. -->')
-    w('<mujoco model="ninedof">')
+    w('<!-- Generated by scripts/generate_mjcf.py from the files in config/.')
+    w('     Do not edit by hand. -->')
+    w(f'<mujoco model="{model_name}">')
     w('  <compiler angle="radian" meshdir="../meshes" autolimits="true"/>')
     # Stiff loop closures (ideal joints) need a small time step.
     w('  <option timestep="0.0005" integrator="implicitfast"/>')
@@ -87,8 +177,9 @@ def generate(geometry, dynamics):
     w('      <geom type="mesh" contype="0" conaffinity="0" group="2" mass="0"/>')
     w('    </default>')
     w('    <default class="finger">')
-    w(f'      <geom type="mesh" contype="2" conaffinity="1" group="3" mass="0" '
-      f'friction="{d["finger_friction"]} 0.005 0.0001" rgba="0.9 0.6 0.1 0.4"/>')
+    # Fingers only touch objects whose conaffinity has bit 2 (not the table).
+    w(f'      <geom type="mesh" contype="2" conaffinity="0" condim="4" group="3" mass="0" '
+      f'friction="{d["finger_friction"]} 0.02 0.0001" rgba="0.9 0.6 0.1 0.4"/>')
     w('    </default>')
     w('    <equality solref="0.001 1" solimp="0.99 0.999 0.0001"/>')
     w('  </default>')
@@ -105,92 +196,137 @@ def generate(geometry, dynamics):
     w('    <material name="rod_white" rgba="0.92 0.92 0.92 1"/>')
     w('    <material name="platform_1_red" rgba="0.80 0.25 0.20 1"/>')
     w('    <material name="platform_2_blue" rgba="0.20 0.40 0.80 1"/>')
+    out.extend(extra_assets)
     w('  </asset>')
     w('')
+    base, platforms, eq, actuators, sensors = robot_parts(
+        geometry, dynamics, finger_friction, indent='      ' if mount else '    ', mount=mount)
     w('  <worldbody>')
-    w(f'    <body name="base_link">')
-    w(f'      <geom class="visual" mesh="base" material="base_grey" '
-      f'pos="0 0 {g["base_mesh_offset_z"]}"/>')
-
-    # Legs: slider on a slide joint, distal link on a ball joint at B_i.
-    legs = g['legs']
-    a_world = []
-    for leg in legs:
-        a = np.array(leg['a'])
-        a_world.append(home + a)
-    for leg, A in zip(legs, a_world):
-        n = leg['name']
-        B = np.array([leg['base_x'], leg['base_y'], leg['base_z0']])
-        u = (A - B) / np.linalg.norm(A - B)
-        w(f'      <body name="{n}_slider" pos="{fmt([B[0], B[1], B[2] - ball_h])}">')
-        w(f'        <joint name="{n}_actuator_joint" type="slide" axis="0 0 1" '
-          f'range="{-stroke} {stroke}" armature="{act["armature"]}" '
-          f'actuatorfrcrange="{-act["max_force"]} {act["max_force"]}"/>')
-        w(f'        <inertial pos="0 0 {ball_h / 2:.6g}" mass="{m["slider"]}" '
-          f'diaginertia="{fmt(rod_inertia(m["slider"], ball_h))}"/>')
-        w(f'        <geom class="visual" mesh="slider" material="rod_white"/>')
-        w(f'        <body name="{n}_distal" pos="0 0 {ball_h}" quat="{fmt(quat_z_to(u))}">')
-        w(f'          <joint name="{n}_lower_joint" type="ball" '
-          f'damping="{d["passive_joint_damping"]}"/>')
-        w(f'          <inertial pos="0 0 {l / 2}" mass="{m["distal_link"]}" '
-          f'diaginertia="{fmt(rod_inertia(m["distal_link"], l))}"/>')
-        w(f'          <geom class="visual" mesh="distal_link" material="rod_white"/>')
-        w(f'          <site name="{n}_A" pos="0 0 {l}" size="0.002"/>')
-        w('        </body>')
-        w('      </body>')
-    w('    </body>')
-    w('')
-
-    # Platforms: platform 1 floats (its pose is imposed by legs 1-5), platform 2
-    # hangs from it through the central spherical joint.
-    w(f'    <body name="platform_1" pos="{fmt(home)}">')
-    w('      <freejoint name="platform_1_free"/>')
-    w(f'      <inertial pos="0 0 0.005" mass="{m["platform_1"]}" '
-      f'diaginertia="{fmt(disk_inertia(m["platform_1"], 0.035, 0.01))}"/>')
-    w('      <geom class="visual" mesh="platform_1" material="platform_1_red"/>')
-    w('      <geom class="finger" mesh="finger_1_lower"/>')
-    w('      <geom class="finger" mesh="finger_1_upper"/>')
-    w('      <body name="platform_2">')
-    w(f'        <joint name="central_sphere_joint" type="ball" '
-      f'damping="{d["passive_joint_damping"]}"/>')
-    w(f'        <inertial pos="0 0 0.005" mass="{m["platform_2"]}" '
-      f'diaginertia="{fmt(disk_inertia(m["platform_2"], 0.035, 0.01))}"/>')
-    w('        <geom class="visual" mesh="platform_2" material="platform_2_blue"/>')
-    w('        <geom class="finger" mesh="finger_2_lower"/>')
-    w('        <geom class="finger" mesh="finger_2_upper"/>')
-    w('      </body>')
-    w('    </body>')
+    out.extend(extra_world)
+    if mount:
+        w(f'    <body name="robot_mount" pos="{fmt(mount[0])}" euler="{fmt(mount[1])}">')
+        out.extend(base)
+        w('    </body>')
+    else:
+        out.extend(base)
+    out.extend(platforms)
     w('  </worldbody>')
     w('')
-
-    # Close the loops: upper ball A_i of each distal link on its platform.
     w('  <equality>')
-    for leg in legs:
-        n = leg['name']
-        w(f'    <connect name="{n}_upper_joint" body1="{n}_distal" '
-          f'body2="platform_{leg["platform"]}" anchor="0 0 {l}"/>')
+    out.extend(eq)
     w('  </equality>')
     w('')
     w('  <contact>')
     w('    <exclude body1="platform_1" body2="platform_2"/>')
     w('  </contact>')
     w('')
-    # Position servos named like the ros2_control joints (mujoco_ros2_control).
     w('  <actuator>')
-    for leg in legs:
-        n = leg['name']
-        w(f'    <position name="{n}_actuator_joint" joint="{n}_actuator_joint" '
-          f'kp="{act["kp"]}" dampratio="{act["damping_ratio"]}" '
-          f'ctrlrange="{-stroke} {stroke}" forcerange="{-act["max_force"]} {act["max_force"]}"/>')
+    out.extend(actuators)
     w('  </actuator>')
     w('')
     w('  <sensor>')
-    for leg in legs:
-        n = leg['name']
-        w(f'    <actuatorfrc name="{n}_force" actuator="{n}_actuator_joint"/>')
+    out.extend(sensors)
     w('  </sensor>')
+    out.extend(extra_after_world)
     w('</mujoco>')
     return '\n'.join(out) + '\n'
+
+
+def generate(geometry, dynamics):
+    """Robot alone, base at the origin (included by scene.xml)."""
+    return compose(geometry, dynamics, 'ninedof')
+
+
+def look_at_xyaxes(pos, target, up=(0.0, 0.0, 1.0)):
+    """MJCF camera xyaxes for a camera at pos looking at target."""
+    fwd = np.asarray(target, float) - np.asarray(pos, float)
+    fwd /= np.linalg.norm(fwd)
+    x = np.cross(fwd, up)
+    x /= np.linalg.norm(x)
+    y = np.cross(x, fwd)
+    return np.r_[x, y]
+
+
+def generate_pick_place(geometry, dynamics, pick_place):
+    """Pick-and-place scene: robot hanging upside down above a table, a free
+    block, the target zone and a fixed camera on the grasp."""
+    pp = pick_place['pick_place']
+    table, block, target = pp['table'], pp['block'], pp['target']
+    bx, by, bz = (s / 2 for s in block['size'])
+    tz = table['top_z']
+    tx, ty, tt = table['size']
+    frame_z = pp['mount_height'] + 0.03   # top of the base ring
+    cam_pos = [0.17, -0.20, 0.17]
+    cam_target = [0.0, 0.0, 0.085]
+
+    assets = [
+        '    <texture type="skybox" builtin="gradient" rgb1="0.35 0.45 0.55" rgb2="0.05 0.05 0.08"'
+        ' width="512" height="3072"/>',
+        '    <texture type="2d" name="floor_tex" builtin="checker" mark="edge" rgb1="0.25 0.27 0.3"'
+        ' rgb2="0.2 0.22 0.25" markrgb="0.5 0.5 0.5" width="300" height="300"/>',
+        '    <material name="floor_mat" texture="floor_tex" texuniform="true" texrepeat="8 8"/>',
+        '    <material name="table_mat" rgba="0.55 0.42 0.30 1"/>',
+        '    <material name="frame_mat" rgba="0.25 0.25 0.28 1"/>',
+        '    <material name="block_mat" rgba="0.95 0.80 0.15 1"/>',
+        '    <material name="marker_mat" rgba="0.10 0.10 0.10 1"/>',
+        '    <material name="target_mat" rgba="0.15 0.75 0.30 0.45"/>',
+    ]
+    world = [
+        '    <light name="key" pos="0.3 -0.4 0.8" dir="-0.3 0.4 -0.8" diffuse="0.8 0.8 0.8"'
+        ' castshadow="true"/>',
+        '    <light name="fill" pos="-0.4 0.3 0.6" dir="0.4 -0.3 -0.6" diffuse="0.35 0.35 0.35"'
+        ' castshadow="false"/>',
+        f'    <geom name="floor" type="plane" size="1 1 0.05" pos="0 0 {tz - tt - 0.7}"'
+        ' material="floor_mat" contype="1" conaffinity="1"/>',
+        f'    <geom name="table" type="box" size="{tx / 2} {ty / 2} {tt / 2}"'
+        f' pos="0 0 {tz - tt / 2}" material="table_mat" contype="1" conaffinity="1"'
+        ' friction="0.6 0.005 0.0001"/>',
+        # Frame holding the robot upside down (visual only).
+        f'    <geom name="frame_top" type="box" size="0.09 0.09 0.006" pos="0 0 {frame_z + 0.006}"'
+        ' material="frame_mat" contype="0" conaffinity="0"/>',
+    ]
+    for sx, sy in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
+        h = (frame_z - tz) / 2
+        world.append(f'    <geom name="frame_post_{"p" if sx > 0 else "m"}{"p" if sy > 0 else "m"}"'
+                     f' type="box" size="0.006 0.006 {h:.4f}"'
+                     f' pos="{0.12 * sx} {0.09 * sy} {tz + h:.4f}" material="frame_mat"'
+                     ' contype="0" conaffinity="0"/>')
+    world.append(f'    <geom name="frame_beam_p" type="box" size="0.126 0.006 0.006"'
+                 f' pos="0 0.09 {frame_z}" material="frame_mat" contype="0" conaffinity="0"/>')
+    world.append(f'    <geom name="frame_beam_m" type="box" size="0.126 0.006 0.006"'
+                 f' pos="0 -0.09 {frame_z}" material="frame_mat" contype="0" conaffinity="0"/>')
+    # Target zone: tolerance square + outline of the block at the target yaw.
+    tol = target['tolerance_xy']
+    world.append(f'    <geom name="target_zone" type="box" size="{bx + tol} {by + tol} 0.0005"'
+                 f' pos="{target["xy"][0]} {target["xy"][1]} {tz + 0.0005}"'
+                 f' euler="0 0 {target["yaw"]}" material="target_mat" contype="0" conaffinity="0"/>')
+    # Free block with a dark marker on its +x face (makes the 90 deg turn visible).
+    world += [
+        f'    <body name="block" pos="{block["pick_xy"][0]} {block["pick_xy"][1]} {tz + bz}"'
+        f' euler="0 0 {block["pick_yaw"]}">',
+        '      <freejoint name="block_free"/>',
+        f'      <geom name="block" type="box" size="{bx} {by} {bz}" mass="{block["mass"]}"'
+        f' material="block_mat" friction="{block["friction"]} 0.02 0.0001" condim="4"'
+        ' contype="1" conaffinity="3"/>',
+        f'      <geom name="block_marker" type="box" size="0.0005 {by * 0.6} {bz * 0.6}"'
+        f' pos="{bx + 0.0005} 0 0" material="marker_mat" contype="0" conaffinity="0" mass="0"/>',
+        '    </body>',
+        f'    <camera name="grasp_cam" mode="fixed" pos="{fmt(cam_pos)}"'
+        f' xyaxes="{fmt(look_at_xyaxes(cam_pos, cam_target))}" fovy="45"/>',
+    ]
+    after = [
+        '',
+        '  <visual>',
+        '    <global offwidth="1920" offheight="1080"/>',
+        '    <quality shadowsize="4096"/>',
+        '    <headlight ambient="0.25 0.25 0.25" diffuse="0.3 0.3 0.3" specular="0 0 0"/>',
+        '  </visual>',
+        '  <statistic center="0 0 0.12" extent="0.35"/>',
+    ]
+    mount = ([0.0, 0.0, pp['mount_height']], [math.pi, 0.0, 0.0])
+    return compose(geometry, dynamics, 'ninedof_pick_place', mount=mount,
+                   finger_friction=pp['finger_friction'], extra_assets=assets,
+                   extra_world=world, extra_after_world=after)
 
 
 SCENE = """<!-- MuJoCo scene of the 9-DoF parallel robot. -->
@@ -220,17 +356,23 @@ SCENE = """<!-- MuJoCo scene of the 9-DoF parallel robot. -->
 """
 
 
+def load(name):
+    with open(os.path.join(PKG, 'config', name)) as f:
+        return yaml.safe_load(f)
+
+
 def main():
-    with open(os.path.join(PKG, 'config', 'geometry.yaml')) as f:
-        geometry = yaml.safe_load(f)
-    with open(os.path.join(PKG, 'config', 'dynamics.yaml')) as f:
-        dynamics = yaml.safe_load(f)
+    geometry, dynamics = load('geometry.yaml'), load('dynamics.yaml')
     os.makedirs(os.path.join(PKG, 'mujoco'), exist_ok=True)
-    with open(os.path.join(PKG, 'mujoco', 'ninedof.xml'), 'w') as f:
-        f.write(generate(geometry, dynamics))
-    with open(os.path.join(PKG, 'mujoco', 'scene.xml'), 'w') as f:
-        f.write(SCENE)
-    print('Wrote mujoco/ninedof.xml and mujoco/scene.xml')
+    files = {
+        'ninedof.xml': generate(geometry, dynamics),
+        'scene.xml': SCENE,
+        'pick_place_scene.xml': generate_pick_place(geometry, dynamics, load('pick_place.yaml')),
+    }
+    for name, text in files.items():
+        with open(os.path.join(PKG, 'mujoco', name), 'w') as f:
+            f.write(text)
+    print('Wrote ' + ', '.join('mujoco/' + n for n in files))
 
 
 if __name__ == '__main__':
