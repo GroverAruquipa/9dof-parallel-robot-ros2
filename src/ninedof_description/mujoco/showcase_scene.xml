@@ -1,0 +1,25 @@
+<!-- Clean scene for the showcase video (ninedof_mujoco showcase_video). -->
+<mujoco model="ninedof_showcase">
+  <include file="ninedof.xml"/>
+
+  <visual>
+    <global offwidth="1920" offheight="1080"/>
+    <quality shadowsize="4096"/>
+    <headlight ambient="0.45 0.45 0.45" diffuse="0.45 0.45 0.45" specular="0 0 0"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="flat" rgb1="1 1 1" rgb2="1 1 1"
+             width="32" height="32"/>
+    <material name="showcase_floor" rgba="0.96 0.96 0.97 1" emission="0.75"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0.4 -0.5 0.9" dir="-0.4 0.5 -0.9" diffuse="0.6 0.6 0.6" castshadow="true"/>
+    <light pos="-0.5 0.3 0.7" dir="0.5 -0.3 -0.7" diffuse="0.25 0.25 0.25" castshadow="false"/>
+    <geom name="floor" type="plane" size="2 2 0.05" pos="0 0 -0.03" material="showcase_floor"
+          contype="0" conaffinity="0"/>
+    <camera name="showcase_cam" mode="fixed" pos="0.290 -0.319 0.262"
+            xyaxes="0.604 0.797 -0.000 -0.313 0.237 0.920" fovy="38"/>
+  </worldbody>
+</mujoco>

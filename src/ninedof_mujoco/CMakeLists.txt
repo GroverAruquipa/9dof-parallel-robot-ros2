@@ -35,7 +35,8 @@ install(TARGETS ninedof_mujoco_plugins
 )
 
 ament_python_install_package(${PROJECT_NAME})
-install(PROGRAMS scripts/pick_place_demo scripts/render_video DESTINATION lib/${PROJECT_NAME})
+install(PROGRAMS scripts/pick_place_demo scripts/render_video scripts/showcase_video
+  DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY config launch DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)

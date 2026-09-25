@@ -11,7 +11,7 @@ capacidad de agarre (Aruquipa, Lambert y Gosselin, Université Laval).
 | `ninedof_kinematics` | IK analítica, FK Gauss-Newton, matrices J y K, nodo `pose_to_joint_states` y tests |
 | `ninedof_controllers` | Controlador ros2_control `CartesianPoseController` (C++): recibe la pose de las plataformas, interpola en espacio cartesiano y resuelve la IK en cada ciclo |
 | `ninedof_bringup` | Launch, configuración de controladores y RViz |
-| `ninedof_mujoco` | Plugin de estado para `mujoco_ros2_control`, demo de pick-and-place y render del video |
+| `ninedof_mujoco` | Video de capacidades, plugin de estado para `mujoco_ros2_control` y demo experimental de pick-and-place |
 
 ```bash
 rosdep install --from-paths src --ignore-src -y
@@ -61,39 +61,33 @@ cd src/ninedof_description && python3 scripts/generate_mjcf.py
 libre y en simulación cambia de modo de ensamblaje: ver
 [docs/nota_diseno_torsion.md](docs/nota_diseno_torsion.md).
 
-### Demo de pick-and-place con reorientación (MuJoCo)
+### Capacidades del robot (video)
 
-![Pick and place](docs/pick_place_keyframes.png)
+![Grados de libertad](docs/showcase_frames.png)
 
-El robot cuelga invertido sobre una mesa, toma un bloque de 12 × 12 × 24 mm,
-lo levanta 13 mm, lo gira 30° y lo deja en la zona destino (verde). El video
-completo está en [docs/pick_place.mp4](docs/pick_place.mp4).
+[docs/showcase.mp4](docs/showcase.mp4) (50 s, 1080p): traslaciones X, Y, Z;
+rotaciones de las dos plataformas juntas; rotación relativa entre plataformas
+(la pinza); una trayectoria circular y un cono. Es una animación cinemática:
+cada cuadro es la pose exacta de la trayectoria, con los actuadores dados por
+la IK. Las patas se colorean según la plataforma que mueven (rojo: 5, azul: 4).
 
 ```bash
-ros2 run ninedof_mujoco pick_place_demo --check          # verifica la secuencia contra el espacio de trabajo
-ros2 launch ninedof_mujoco pick_place.launch.py          # simulación + demo (visor de MuJoCo y RViz)
-ros2 launch ninedof_mujoco pick_place.launch.py headless:=true gui:=false
-# -> pick_place_output/pick_place_result.json (SUCCESS/FAIL) y pick_place_qpos.npz
-MUJOCO_GL=osmesa ros2 run ninedof_mujoco render_video pick_place_output/pick_place_qpos.npz -o pick_place.mp4
+ros2 run ninedof_mujoco showcase_video --check                 # verifica la trayectoria
+MUJOCO_GL=osmesa ros2 run ninedof_mujoco showcase_video -o showcase.mp4
+ros2 launch ninedof_bringup view_robot.launch.py               # la misma secuencia en RViz
 ```
 
-Resultado en simulación: error de posición **1,9 mm**, error de orientación
-**3,7°**, bloque vertical y apoyado (tolerancias: 4 mm, 5°, 5°).
+| Movimiento | Amplitud | Límite al 80 % de la carrera |
+|---|---|---|
+| Traslación X / Y / Z | ±30 / ±30 / ±15 mm | ±53 / ±48 / ±19 mm |
+| Rotación roll / pitch / yaw | ±20° / ±20° / ±45° | ±33° / ±30° / ±80° |
+| Rotación relativa (pinza) | 0–30° por plataforma | 33° |
 
-Limitaciones de la geometría actual del CAD, medidas al preparar la demo:
+La trayectoria usa como máximo 18 de los 25 mm de carrera de los actuadores.
 
-* **Objeto pequeño**: los dedos son ganchos cortos que pinzan en la punta; un
-  bloque de 40 mm no se puede agarrar (los ganchos quedan sobre su cara
-  superior). Con 12 mm el bloque entra ~22 mm en la "jaula" de los dedos.
-* **Reorientación de 30°** (no 90°): la guiñada común de las dos plataformas
-  está mal condicionada ([nota](docs/nota_diseno_torsion.md)); el robot la
-  mantiene con error ≤ 4° solo entre −10° y +20°. El robot se monta
-  **invertido**: colgando, el modo casi libre queda estable.
-* **Agarre virtual**: con estos dedos el agarre por fricción no es fiable en
-  simulación (tocan el bloque en aristas opuestas y lo hacen girar). Al cerrar
-  la pinza se activa un resorte-amortiguador que sostiene el bloque respecto a
-  la plataforma 1 hasta soltarlo (`/mujoco/grasp`). La demo muestra la
-  geometría y la precisión del robot, no la mecánica del contacto.
+> `ninedof_mujoco` también incluye una demo experimental de pick-and-place
+> (`pick_place.launch.py`) con agarre virtual; los dedos del CAD son pequeños
+> para agarrar por fricción (ver [nota de diseño](docs/nota_diseno_torsion.md)).
 
 **Solo visualización** (sin ros2_control):
 
