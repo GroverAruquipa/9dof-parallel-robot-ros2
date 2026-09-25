@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the paper below."
+title: "ROS 2 description, kinematics and control of a 9-DoF parallel robot with grasping capabilities"
+authors:
+  - family-names: Aruquipa
+    given-names: Grover
+    affiliation: "Université Laval"
+repository-code: "https://github.com/GroverAruquipa/ros2_control"
+license: Apache-2.0
+preferred-citation:
+  type: conference-paper
+  title: "Kinematic Analysis and Design of a Novel 9-DoF Parallel Robot with Grasping Capabilities"
+  authors:
+    - family-names: Aruquipa
+      given-names: Grover
+      affiliation: "Université Laval"
+    - family-names: Lambert
+      given-names: Patrice
+      affiliation: "Université Laval"
+    - family-names: Gosselin
+      given-names: Clément
+      affiliation: "Université Laval"
+  publisher:
+    name: Springer
+  # TODO: add the proceedings title (collection-title), year and doi
+  #       once available, e.g.
+  # collection-title: "..."
+  # year: 20XX
+  # doi: "10.1007/..."
+  url: "https://youtu.be/BzgWWMVSFvs"

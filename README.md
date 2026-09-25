@@ -1,9 +1,14 @@
 # Robot paralelo de 9 GDL (5P̲SS-S-4P̲SS) en ROS 2
 
-Descripción, cinemática y visualización del robot paralelo de 9 GDL con
-capacidad de agarre (Aruquipa, Lambert y Gosselin, Université Laval).
+Descripción, cinemática, control (ros2_control) y simulación (MuJoCo) del robot
+paralelo de 9 GDL con capacidad de agarre (Aruquipa, Lambert y Gosselin,
+Université Laval).
 
-![URDF frente al CAD](docs/urdf_vs_cad.png)
+![Grados de libertad del robot](docs/showcase.gif)
+
+Video completo en 1080p: [docs/showcase.mp4](docs/showcase.mp4) ·
+Video del artículo: <https://youtu.be/BzgWWMVSFvs> ·
+[Cómo citar](#cómo-citar)
 
 | Paquete | Contenido |
 |---|---|
@@ -65,6 +70,8 @@ libre y en simulación cambia de modo de ensamblaje: ver
 
 ![Grados de libertad](docs/showcase_frames.png)
 
+![URDF frente al CAD](docs/urdf_vs_cad.png)
+
 [docs/showcase.mp4](docs/showcase.mp4) (50 s, 1080p): traslaciones X, Y, Z;
 rotaciones de las dos plataformas juntas; rotación relativa entre plataformas
 (la pinza); una trayectoria circular y un cono. Es una animación cinemática:
@@ -106,6 +113,23 @@ URDF no admite cadenas cerradas, así que el robot se describe como un árbol
 (actuadores + barras distales, y una cadena virtual de 6 GDL hasta la
 plataforma 1 más la esférica central hasta la plataforma 2). El nodo
 `pose_to_joint_states` cierra los lazos numéricamente con la cinemática inversa.
+
+## Cómo citar
+
+Si usas este trabajo, cita el artículo (GitHub también ofrece el botón
+**"Cite this repository"** a partir de [`CITATION.cff`](CITATION.cff)):
+
+```bibtex
+@inproceedings{aruquipa_9dof_parallel,
+  author    = {Aruquipa, Grover and Lambert, Patrice and Gosselin, Cl{\'e}ment},
+  title     = {Kinematic Analysis and Design of a Novel 9-{DoF} Parallel Robot
+               with Grasping Capabilities},
+  publisher = {Springer},
+  note      = {Video: \url{https://youtu.be/BzgWWMVSFvs}}
+}
+```
+
+<!-- TODO: completar booktitle, year y doi cuando estén disponibles. -->
 
 # ROS 2 en la nube (GitHub Codespaces)
 
