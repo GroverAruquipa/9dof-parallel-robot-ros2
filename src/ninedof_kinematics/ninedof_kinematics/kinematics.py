@@ -136,6 +136,7 @@ class NineDofKinematics:
         for _ in range(max_iter):
             f = self.constraints(x, q)
             if np.max(np.abs(f)) < tol:
+                x[3:] = np.arctan2(np.sin(x[3:]), np.cos(x[3:]))  # angles in (-pi, pi]
                 return x
             D = np.empty((len(f), 9))
             for k in range(9):

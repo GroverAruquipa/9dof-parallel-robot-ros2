@@ -3,6 +3,6 @@ project(ninedof_description)
 
 find_package(ament_cmake REQUIRED)
 
-install(DIRECTORY config meshes urdf DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config meshes mujoco urdf DESTINATION share/${PROJECT_NAME})
 
 ament_package()

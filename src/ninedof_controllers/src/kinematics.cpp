@@ -104,6 +104,9 @@ bool Kinematics::forward(const Eigen::VectorXd & q, Pose & x, int max_iter, doub
   for (int it = 0; it < max_iter; ++it) {
     const Eigen::VectorXd f = constraints(x, q);
     if (f.cwiseAbs().maxCoeff() < tol) {
+      for (int k = 3; k < 9; ++k) {
+        x[k] = std::atan2(std::sin(x[k]), std::cos(x[k]));  // angles in (-pi, pi]
+      }
       return true;
     }
     Eigen::MatrixXd D(f.size(), 9);

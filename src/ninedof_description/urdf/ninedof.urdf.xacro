@@ -16,6 +16,8 @@
   <!-- Hardware used by ros2_control: mock_components/GenericSystem simulates
        ideal actuators (the commanded position becomes the measured one). -->
   <xacro:arg name="hardware_plugin" default="mock_components/GenericSystem"/>
+  <!-- Only used with mujoco_ros2_control/MujocoSystemInterface -->
+  <xacro:arg name="headless" default="false"/>
 
   <xacro:property name="geometry_file" value="$(find ninedof_description)/config/geometry.yaml"/>
   <xacro:property name="g" value="${xacro.load_yaml(geometry_file)['ninedof']}"/>
@@ -128,6 +130,7 @@
 
   <xacro:include filename="$(find ninedof_description)/urdf/ninedof.ros2_control.xacro"/>
   <xacro:ninedof_ros2_control legs="${g['legs']}" stroke="${stroke}"
-                              hardware_plugin="$(arg hardware_plugin)"/>
+                              hardware_plugin="$(arg hardware_plugin)"
+                              headless="$(arg headless)"/>
 
 </robot>

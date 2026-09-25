@@ -41,6 +41,25 @@ El controlador interpola la **pose** (no los actuadores): así cada comando es
 una solución de la IK y respeta los lazos cerrados. Las poses fuera del
 espacio de trabajo o de la carrera (±25 mm) se rechazan.
 
+**Con física en MuJoCo** (cadenas cerradas con restricciones `connect`, plugin
+[`mujoco_ros2_control`](https://github.com/ros-controls/mujoco_ros2_control)):
+
+```bash
+ros2 launch ninedof_bringup ninedof.launch.py sim:=mujoco            # visor de MuJoCo + RViz
+ros2 launch ninedof_bringup ninedof.launch.py sim:=mujoco headless:=true
+```
+
+El modelo MJCF se genera desde `geometry.yaml` y `dynamics.yaml` (masas
+**estimadas**, a reemplazar por las de SolidWorks):
+
+```bash
+cd src/ninedof_description && python3 scripts/generate_mjcf.py
+```
+
+⚠️ Con la geometría actual del CAD la plataforma 2 tiene una torsión casi
+libre y en simulación cambia de modo de ensamblaje: ver
+[docs/nota_diseno_torsion.md](docs/nota_diseno_torsion.md).
+
 **Solo visualización** (sin ros2_control):
 
 ```bash
