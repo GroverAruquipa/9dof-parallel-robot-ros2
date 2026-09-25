@@ -1,0 +1,35 @@
+{
+  "name": "ROS 2 Jazzy + ros2_control",
+  "build": { "dockerfile": "Dockerfile" },
+  "remoteUser": "ubuntu",
+  "hostRequirements": { "cpus": 4, "memory": "16gb" },
+  "features": {
+    // Escritorio Linux accesible desde el navegador (para RViz / Gazebo)
+    "ghcr.io/devcontainers/features/desktop-lite:1": {
+      "password": "ros",
+      "webPort": "6080",
+      "vncPort": "5901"
+    }
+  },
+  "forwardPorts": [6080],
+  "portsAttributes": {
+    "6080": { "label": "Escritorio (noVNC)", "onAutoForward": "notify" }
+  },
+  "containerEnv": {
+    "DISPLAY": ":1",
+    "ROS_DOMAIN_ID": "0",
+    "CONTAINER_WORKSPACE_FOLDER": "${containerWorkspaceFolder}"
+  },
+  "postCreateCommand": "rosdep update && rosdep install --from-paths src --ignore-src -y || true",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-python.python",
+        "ms-iot.vscode-ros",
+        "redhat.vscode-xml",
+        "twxs.cmake"
+      ]
+    }
+  }
+}
