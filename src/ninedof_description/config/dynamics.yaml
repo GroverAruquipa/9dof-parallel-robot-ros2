@@ -10,7 +10,7 @@ ninedof_dynamics:
     platform_2: 0.01240
   actuator:
     max_force: 20.0      # N
-    kp: 5000.0           # N/m, position servo stiffness
+    kp: 50000.0          # N/m, position servo stiffness (lead-screw actuator, estimate)
     damping_ratio: 1.0
     armature: 0.01       # kg, reflected inertia of the drive
   passive_joint_damping: 0.0005  # N m s/rad, ball joints

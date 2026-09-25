@@ -1,13 +1,17 @@
 # Pick-and-place demo scene (world frame, metres, radians, unless stated).
-# The workspace with the jaw open and turned is small: pick and place are
-# 10 mm apart and the grasp/lift window is 12 mm, the largest found for this
-# geometry with a 90 deg turn (-70 -> +20 deg of the platforms). The block yaws
-# follow from the finger geometry (pick_place_plan.block_yaw_for).
+#
+# The CAD geometry is close to a singularity: the common yaw of the two
+# platforms is poorly held (docs/nota_diseno_torsion.md). The reorientation is
+# therefore limited to 30 deg, inside the range where the gripper holds its yaw
+# within ~4 deg (-5 -> +25 deg), and the heights sit inside the window where
+# every pose of the sequence stays within the actuator stroke
+# (ros2 run ninedof_mujoco pick_place_demo --check).
+#
 # The robot hangs upside down from a frame (base above, fingers pointing down):
 # robot frame = world frame rotated by pi about X and lifted by mount_height,
 # i.e. (x, y, z)_world = (x_r, -y_r, mount_height - z_r).
 pick_place:
-  mount_height: 0.2506
+  mount_height: 0.25108
   table:
     top_z: 0.0
     size: [0.30, 0.22, 0.02]        # x, y, thickness
@@ -15,25 +19,24 @@ pick_place:
     size: [0.04, 0.04, 0.08]        # x, y, z (standing on its 4x4 cm face)
     mass: 0.05                      # kg (3D-printed, ~20 % infill; estimate)
     friction: 1.0
-    pick_xy: [-0.005, 0.0]          # centre on the table
-    pick_yaw: 1.3062             # +74.84 deg (world): faces normal to the jaw at yaw_pick
+    pick_xy: [-0.010, 0.0]          # centre on the table
+    pick_yaw: 0.17174               # +9.84 deg: faces normal to the jaw at yaw_pick
   target:
-    xy: [0.005, 0.0]
-    yaw: -0.2646                    # -15.16 deg (world): the block turns 90 deg
-    tolerance_xy: 0.008             # success if the centre lands within 8 mm
-    tolerance_yaw: 0.0873           # ... and within 5 deg of the target yaw
+    xy: [0.010, 0.0]
+    yaw: -0.35186                   # -20.16 deg: the block turns 30 deg
+    tolerance_xy: 0.005             # success if the centre lands within 5 mm
+    tolerance_yaw: 0.0873           # ... within 5 deg of the target yaw
     tolerance_tilt: 0.0873          # ... and stays upright within 5 deg
   gripper:
     # Centroid of the finger-1 tip in the platform-1 frame (from the meshes)
     tip_centroid: [-0.0017, 0.0008, 0.0381]
-    jaw_open: 0.6283                # 36 deg per platform -> ~43 mm between tips
+    jaw_partial: 0.3491             # 20 deg: what the stroke allows at z_start
+    jaw_open: 0.6632                # 36 deg per platform -> ~43 mm between tips
     jaw_closed: 0.5236              # 30 deg -> ~37 mm: squeezes the 40 mm block
-    # Robot-frame heights of the central sphere relative to home_z, chosen inside
-    # the window where every pose of the sequence stays within the actuator
-    # stroke (see pick_place_demo.py --check).
-    z_grasp: -0.0015
-    z_lift: -0.0135
+    # Robot-frame height of the central sphere relative to home_z
     z_start: -0.020                 # start / approach with the jaw closed
-    yaw_pick: -1.2217304764         # -70 deg (robot frame, about the robot z axis)
-    yaw_place: 0.3490658504         # +20 deg
+    z_lift: -0.0135                 # lift: the block rises 9.5 mm
+    z_grasp: -0.0065                 # tips 4 mm below the top of the block
+    yaw_pick: -0.08727              # -5 deg (robot frame, about the robot z axis)
+    yaw_place: 0.43633              # +25 deg
   finger_friction: 1.2              # rubber pads on the jaws

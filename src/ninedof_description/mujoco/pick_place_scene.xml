@@ -43,21 +43,21 @@
     <light name="fill" pos="-0.4 0.3 0.6" dir="0.4 -0.3 -0.6" diffuse="0.35 0.35 0.35" castshadow="false"/>
     <geom name="floor" type="plane" size="1 1 0.05" pos="0 0 -0.72" material="floor_mat" contype="1" conaffinity="1"/>
     <geom name="table" type="box" size="0.15 0.11 0.01" pos="0 0 -0.01" material="table_mat" contype="1" conaffinity="1" friction="0.6 0.005 0.0001"/>
-    <geom name="frame_top" type="box" size="0.09 0.09 0.006" pos="0 0 0.28659999999999997" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="frame_post_pp" type="box" size="0.006 0.006 0.1403" pos="0.12 0.09 0.1403" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="frame_post_pm" type="box" size="0.006 0.006 0.1403" pos="0.12 -0.09 0.1403" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="frame_post_mp" type="box" size="0.006 0.006 0.1403" pos="-0.12 0.09 0.1403" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="frame_post_mm" type="box" size="0.006 0.006 0.1403" pos="-0.12 -0.09 0.1403" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="frame_beam_p" type="box" size="0.126 0.006 0.006" pos="0 0.09 0.28059999999999996" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="frame_beam_m" type="box" size="0.126 0.006 0.006" pos="0 -0.09 0.28059999999999996" material="frame_mat" contype="0" conaffinity="0"/>
-    <geom name="target_zone" type="box" size="0.028 0.028 0.0005" pos="0.005 0.0 0.0005" euler="0 0 -0.2646" material="target_mat" contype="0" conaffinity="0"/>
-    <body name="block" pos="-0.005 0.0 0.04" euler="0 0 1.3062">
+    <geom name="frame_top" type="box" size="0.09 0.09 0.006" pos="0 0 0.28708" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="frame_post_pp" type="box" size="0.006 0.006 0.1405" pos="0.12 0.09 0.1405" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="frame_post_pm" type="box" size="0.006 0.006 0.1405" pos="0.12 -0.09 0.1405" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="frame_post_mp" type="box" size="0.006 0.006 0.1405" pos="-0.12 0.09 0.1405" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="frame_post_mm" type="box" size="0.006 0.006 0.1405" pos="-0.12 -0.09 0.1405" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="frame_beam_p" type="box" size="0.126 0.006 0.006" pos="0 0.09 0.28108" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="frame_beam_m" type="box" size="0.126 0.006 0.006" pos="0 -0.09 0.28108" material="frame_mat" contype="0" conaffinity="0"/>
+    <geom name="target_zone" type="box" size="0.025 0.025 0.0005" pos="0.01 0.0 0.0005" euler="0 0 -0.35186" material="target_mat" contype="0" conaffinity="0"/>
+    <body name="block" pos="-0.01 0.0 0.04" euler="0 0 0.17174">
       <freejoint name="block_free"/>
       <geom name="block" type="box" size="0.02 0.02 0.04" mass="0.05" material="block_mat" friction="1.0 0.02 0.0001" condim="4" contype="1" conaffinity="3"/>
       <geom name="block_marker" type="box" size="0.0005 0.012 0.024" pos="0.0205 0 0" material="marker_mat" contype="0" conaffinity="0" mass="0"/>
     </body>
     <camera name="grasp_cam" mode="fixed" pos="0.17 -0.2 0.17" xyaxes="0.761939 0.647648 -0 -0.199524 0.234734 0.951362" fovy="45"/>
-    <body name="robot_mount" pos="0 0 0.2506" euler="3.14159 0 0">
+    <body name="robot_mount" pos="0 0 0.25108" euler="3.14159 0 0">
       <body name="base_link">
         <geom class="visual" mesh="base" material="base_grey" pos="0 0 -0.03"/>
         <body name="leg1_slider" pos="-0 0.05 -0.02202">
@@ -161,7 +161,7 @@
         </body>
       </body>
     </body>
-      <body name="platform_1" pos="0 -1.79631e-17 0.10392" euler="3.14159 0 0">
+      <body name="platform_1" pos="0 -1.79631e-17 0.1044" euler="3.14159 0 0">
         <freejoint name="platform_1_free"/>
         <inertial pos="0 0 0.005" mass="0.01275" diaginertia="4.01094e-06 4.01094e-06 7.80938e-06"/>
         <geom class="visual" mesh="platform_1" material="platform_1_red"/>
@@ -194,15 +194,15 @@
   </contact>
 
   <actuator>
-    <position name="leg1_actuator_joint" joint="leg1_actuator_joint" kp="5000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
-    <position name="leg2_actuator_joint" joint="leg2_actuator_joint" kp="5000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
-    <position name="leg3_actuator_joint" joint="leg3_actuator_joint" kp="5000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
-    <position name="leg4_actuator_joint" joint="leg4_actuator_joint" kp="5000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
-    <position name="leg5_actuator_joint" joint="leg5_actuator_joint" kp="5000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
-    <position name="leg6_actuator_joint" joint="leg6_actuator_joint" kp="5000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
-    <position name="leg7_actuator_joint" joint="leg7_actuator_joint" kp="5000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
-    <position name="leg8_actuator_joint" joint="leg8_actuator_joint" kp="5000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
-    <position name="leg9_actuator_joint" joint="leg9_actuator_joint" kp="5000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
+    <position name="leg1_actuator_joint" joint="leg1_actuator_joint" kp="50000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
+    <position name="leg2_actuator_joint" joint="leg2_actuator_joint" kp="50000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
+    <position name="leg3_actuator_joint" joint="leg3_actuator_joint" kp="50000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
+    <position name="leg4_actuator_joint" joint="leg4_actuator_joint" kp="50000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
+    <position name="leg5_actuator_joint" joint="leg5_actuator_joint" kp="50000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
+    <position name="leg6_actuator_joint" joint="leg6_actuator_joint" kp="50000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
+    <position name="leg7_actuator_joint" joint="leg7_actuator_joint" kp="50000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
+    <position name="leg8_actuator_joint" joint="leg8_actuator_joint" kp="50000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
+    <position name="leg9_actuator_joint" joint="leg9_actuator_joint" kp="50000.0" dampratio="1.0" ctrlrange="-0.025 0.025" forcerange="-20.0 20.0"/>
   </actuator>
 
   <sensor>

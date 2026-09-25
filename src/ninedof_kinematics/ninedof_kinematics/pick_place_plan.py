@@ -65,7 +65,7 @@ def block_yaw_for(psi, tip_centroid, theta):
 
 
 def plan(kin, pp):
-    """Waypoints: approach, open, descend, close, lift, rotate 90 deg, place, open."""
+    """Waypoints: approach, open, descend, close, lift, rotate, place, open."""
     g = pp['gripper']
     pick = world_to_robot_xy(pp['block']['pick_xy'])
     place = world_to_robot_xy(pp['target']['xy'])
@@ -75,11 +75,15 @@ def plan(kin, pp):
     return [
         Waypoint('start', gripper_pose(kin, (0.0, 0.0), zs, 0.0, 0.0), 0.5),
         Waypoint('approach', gripper_pose(kin, pick, zs, yp, 0.0)),
-        Waypoint('open', gripper_pose(kin, pick, zs, yp, op)),
+        # Opening fully at the approach height would exceed the stroke: the jaw
+        # opens partly there, then completes while the gripper comes down to the
+        # lift height (the tips stay above the block).
+        Waypoint('open', gripper_pose(kin, pick, zs, yp, g['jaw_partial']), 0.3),
+        Waypoint('open_lower', gripper_pose(kin, pick, zl, yp, op)),
         Waypoint('descend', gripper_pose(kin, pick, zg, yp, op)),
         Waypoint('close', gripper_pose(kin, pick, zg, yp, cl), 1.0),
         Waypoint('lift', gripper_pose(kin, pick, zl, yp, cl)),
-        Waypoint('rotate_90', gripper_pose(kin, pick, zl, yl, cl)),
+        Waypoint('rotate', gripper_pose(kin, pick, zl, yl, cl)),
         Waypoint('place', gripper_pose(kin, place, zg, yl, cl), 1.0),
         Waypoint('release', gripper_pose(kin, place, zg, yl, op), 1.0),
         Waypoint('retreat', gripper_pose(kin, place, zl, yl, op), 1.0),
