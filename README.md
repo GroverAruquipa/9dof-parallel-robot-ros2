@@ -1,3 +1,31 @@
+# Robot paralelo de 9 GDL (5P̲SS-S-4P̲SS) en ROS 2
+
+Descripción, cinemática y visualización del robot paralelo de 9 GDL con
+capacidad de agarre (Aruquipa, Lambert y Gosselin, Université Laval).
+
+![URDF frente al CAD](docs/urdf_vs_cad.png)
+
+| Paquete | Contenido |
+|---|---|
+| `ninedof_description` | Mallas STL, `config/geometry.yaml` (medido del CAD) y URDF/xacro |
+| `ninedof_kinematics` | IK analítica, FK Gauss-Newton, matrices J y K, nodo `pose_to_joint_states` y tests |
+| `ninedof_bringup` | Launch y configuración de RViz |
+
+```bash
+colcon build --symlink-install --packages-up-to ninedof_bringup
+source install/setup.bash
+ros2 launch ninedof_bringup view_robot.launch.py            # demo animada de los 9 GDL
+ros2 launch ninedof_bringup view_robot.launch.py demo:=false
+ros2 topic pub --once /pose_cmd std_msgs/msg/Float64MultiArray \
+  "data: [0.0, 0.0, 0.1467, 0.1, 0.0, 0.0, 0.0, 0.0, 0.3]"   # [x y z a1 a2 a3 b1 b2 b3]
+colcon test --packages-select ninedof_kinematics && colcon test-result --verbose
+```
+
+URDF no admite cadenas cerradas, así que el robot se describe como un árbol
+(actuadores + barras distales, y una cadena virtual de 6 GDL hasta la
+plataforma 1 más la esférica central hasta la plataforma 2). El nodo
+`pose_to_joint_states` cierra los lazos numéricamente con la cinemática inversa.
+
 # ROS 2 en la nube (GitHub Codespaces)
 
 Este repositorio trae un entorno de ROS 2 **Jazzy** ya configurado, con

@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<!--
+  9-DoF 5PSS-S-4PSS parallel robot with grasping capabilities.
+
+  URDF cannot describe closed kinematic chains, so the robot is written as a tree:
+    * base_link -> 9 prismatic actuators (legN_actuator_joint), each carrying a
+      distal link on a 2-DoF passive joint at the ball B_i;
+    * base_link -> virtual 6-DoF chain (x, y, z, roll, pitch, yaw) -> platform_1
+      -> central spherical joint (3 revolute joints) -> platform_2.
+  The loops are closed numerically: ninedof_kinematics publishes consistent
+  values for every joint from the platform pose (see kinematics.py).
+  Geometry comes from config/geometry.yaml (measured on the SolidWorks model).
+-->
+<robot name="ninedof" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="geometry_file" value="$(find ninedof_description)/config/geometry.yaml"/>
+  <xacro:property name="g" value="${xacro.load_yaml(geometry_file)['ninedof']}"/>
+  <xacro:property name="mesh_dir" value="package://ninedof_description/meshes"/>
+  <xacro:property name="stroke" value="${g['actuator_stroke']}"/>
+  <xacro:property name="ball_h" value="${g['slider_ball_height']}"/>
+
+  <material name="base_grey"><color rgba="0.75 0.75 0.75 1.0"/></material>
+  <material name="rod_white"><color rgba="0.92 0.92 0.92 1.0"/></material>
+  <material name="platform_1_red"><color rgba="0.80 0.25 0.20 1.0"/></material>
+  <material name="platform_2_blue"><color rgba="0.20 0.40 0.80 1.0"/></material>
+
+  <xacro:macro name="mesh_link" params="name mesh material *origin">
+    <link name="${name}">
+      <visual>
+        <xacro:insert_block name="origin"/>
+        <geometry><mesh filename="${mesh_dir}/${mesh}"/></geometry>
+        <material name="${material}"/>
+      </visual>
+    </link>
+  </xacro:macro>
+
+  <!-- Base: frame at the centre of the top face of the ring, Z up -->
+  <xacro:mesh_link name="base_link" mesh="base.stl" material="base_grey">
+    <origin xyz="0 0 ${g['base_mesh_offset_z']}" rpy="0 0 0"/>
+  </xacro:mesh_link>
+
+  <!-- One PSS leg: actuated slider + distal link (2 passive DoF are enough to
+       orient it; the spin about its own axis is the internal DoF of the paper) -->
+  <xacro:macro name="leg" params="leg">
+    <xacro:property name="n" value="${leg['name']}"/>
+
+    <joint name="${n}_actuator_joint" type="prismatic">
+      <parent link="base_link"/>
+      <child link="${n}_slider"/>
+      <origin xyz="${leg['base_x']} ${leg['base_y']} ${leg['base_z0'] - ball_h}" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="${-stroke}" upper="${stroke}" effort="100" velocity="0.1"/>
+    </joint>
+    <xacro:mesh_link name="${n}_slider" mesh="slider.stl" material="rod_white">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:mesh_link>
+
+    <joint name="${n}_lower_x_joint" type="continuous">
+      <parent link="${n}_slider"/>
+      <child link="${n}_lower_cross"/>
+      <origin xyz="0 0 ${ball_h}" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+    </joint>
+    <link name="${n}_lower_cross"/>
+    <joint name="${n}_lower_y_joint" type="continuous">
+      <parent link="${n}_lower_cross"/>
+      <child link="${n}_distal"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+    </joint>
+    <xacro:mesh_link name="${n}_distal" mesh="distal_link.stl" material="rod_white">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:mesh_link>
+  </xacro:macro>
+
+  <xacro:macro name="legs" params="legs">
+    <xacro:if value="${legs}">
+      <xacro:leg leg="${legs[0]}"/>
+      <xacro:legs legs="${legs[1:]}"/>
+    </xacro:if>
+  </xacro:macro>
+  <xacro:legs legs="${g['legs']}"/>
+
+  <!-- Virtual chain giving the pose (p, Q1) of platform 1, Q1 = Qx Qy Qz -->
+  <xacro:macro name="virtual_joint" params="name type parent child axis">
+    <joint name="${name}" type="${type}">
+      <parent link="${parent}"/>
+      <child link="${child}"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="${axis}"/>
+      <xacro:if value="${type == 'prismatic'}">
+        <limit lower="-0.3" upper="0.3" effort="0" velocity="1"/>
+      </xacro:if>
+    </joint>
+  </xacro:macro>
+
+  <xacro:virtual_joint name="platform_base_x_joint" type="prismatic" parent="base_link" child="platform_px" axis="1 0 0"/>
+  <link name="platform_px"/>
+  <xacro:virtual_joint name="platform_base_y_joint" type="prismatic" parent="platform_px" child="platform_py" axis="0 1 0"/>
+  <link name="platform_py"/>
+  <xacro:virtual_joint name="platform_base_z_joint" type="prismatic" parent="platform_py" child="platform_pz" axis="0 0 1"/>
+  <link name="platform_pz"/>
+  <xacro:virtual_joint name="platform_1_roll_joint" type="continuous" parent="platform_pz" child="platform_rx" axis="1 0 0"/>
+  <link name="platform_rx"/>
+  <xacro:virtual_joint name="platform_1_pitch_joint" type="continuous" parent="platform_rx" child="platform_ry" axis="0 1 0"/>
+  <link name="platform_ry"/>
+  <xacro:virtual_joint name="platform_1_yaw_joint" type="continuous" parent="platform_ry" child="platform_1" axis="0 0 1"/>
+
+  <!-- Moving platforms: frame at the centre of the central spherical joint -->
+  <xacro:mesh_link name="platform_1" mesh="platform_1.stl" material="platform_1_red">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:mesh_link>
+
+  <!-- Central passive spherical joint: Q2 = Q1 Rx Ry Rz -->
+  <xacro:virtual_joint name="central_sphere_x_joint" type="continuous" parent="platform_1" child="central_sphere_x" axis="1 0 0"/>
+  <link name="central_sphere_x"/>
+  <xacro:virtual_joint name="central_sphere_y_joint" type="continuous" parent="central_sphere_x" child="central_sphere_y" axis="0 1 0"/>
+  <link name="central_sphere_y"/>
+  <xacro:virtual_joint name="central_sphere_z_joint" type="continuous" parent="central_sphere_y" child="platform_2" axis="0 0 1"/>
+
+  <xacro:mesh_link name="platform_2" mesh="platform_2.stl" material="platform_2_blue">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:mesh_link>
+
+</robot>

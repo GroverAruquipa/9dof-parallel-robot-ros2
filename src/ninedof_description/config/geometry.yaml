@@ -1,0 +1,22 @@
+# Geometry of the 9-DoF 5PSS-S-4PSS parallel robot, measured from the SolidWorks
+# assembly model_6v3 (all values in metres). Base frame: centre of the top face
+# of the base ring, Z up. Platform frames: centre of the central spherical joint.
+# Home pose: p = [0, 0, home_z], Q1 = Q2 = I, all actuators at q = 0.
+# Leg i: B_i = [base_x, base_y, base_z0 + q_i] (actuator along +Z), A_i = p + Q a_i,
+# |A_i - B_i| = distal_length.
+ninedof:
+  home_z: 0.14668
+  distal_length: 0.12
+  actuator_stroke: 0.025   # +/- around the home position
+  slider_ball_height: 0.0505  # rod bottom -> ball centre (slider.stl)
+  base_mesh_offset_z: -0.030 # base.stl origin is its bottom face
+  legs:
+    - {name: leg1, platform: 1, base_x: -0.0, base_y: 0.05, base_z0: 0.02848, a: [-0.01383, 0.03455, 0.0]}
+    - {name: leg2, platform: 1, base_x: -0.03543, base_y: 0.03543, base_z0: 0.0273, a: [-0.02682, 0.02675, 0.0]}
+    - {name: leg3, platform: 1, base_x: -0.0483, base_y: 0.01294, base_z0: 0.02739, a: [-0.03529, 0.01419, 0.0]}
+    - {name: leg4, platform: 1, base_x: -0.0483, base_y: -0.01294, base_z0: 0.02777, a: [-0.03766, -0.00077, -0.0]}
+    - {name: leg5, platform: 1, base_x: -0.03536, base_y: -0.03536, base_z0: 0.02837, a: [-0.03349, -0.01534, 0.0]}
+    - {name: leg6, platform: 2, base_x: 0.0483, base_y: 0.01294, base_z0: 0.02841, a: [0.03761, -0.00431, -0.0]}
+    - {name: leg7, platform: 2, base_x: 0.03536, base_y: 0.03536, base_z0: 0.02837, a: [0.03349, 0.01534, 0.0]}
+    - {name: leg8, platform: 2, base_x: -0.0, base_y: -0.05, base_z0: 0.02848, a: [0.01383, -0.03455, 0.0]}
+    - {name: leg9, platform: 2, base_x: 0.03536, base_y: -0.03536, base_z0: 0.02742, a: [0.03025, -0.02299, 0.0]}
