@@ -34,7 +34,7 @@ ros2 run demo_nodes_cpp listener
 Pon tus paquetes dentro de la carpeta `src/` y compila desde la raíz:
 
 ```bash
-rosdep install --from-paths src --ignore-src -y
+sudo apt-get update && rosdep install --from-paths src --ignore-src -y
 colcon build --symlink-install
 source install/setup.bash
 ```
@@ -44,7 +44,7 @@ Si quieres el código fuente de ros2_control para estudiarlo o modificarlo:
 ```bash
 git clone -b jazzy https://github.com/ros-controls/ros2_control.git src/ros2_control
 git clone -b jazzy https://github.com/ros-controls/ros2_control_demos.git src/ros2_control_demos
-rosdep install --from-paths src --ignore-src -y
+sudo apt-get update && rosdep install --from-paths src --ignore-src -y
 colcon build --symlink-install
 ```
 

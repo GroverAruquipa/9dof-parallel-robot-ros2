@@ -20,7 +20,7 @@
     "ROS_DOMAIN_ID": "0",
     "CONTAINER_WORKSPACE_FOLDER": "${containerWorkspaceFolder}"
   },
-  "postCreateCommand": "rosdep update && rosdep install --from-paths src --ignore-src -y || true",
+  "postCreateCommand": "sudo apt-get update && rosdep update && rosdep install --from-paths src --ignore-src -y || true",
   "customizations": {
     "vscode": {
       "extensions": [
