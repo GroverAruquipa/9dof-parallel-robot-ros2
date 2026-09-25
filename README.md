@@ -125,8 +125,9 @@ Si usas este trabajo, cita el artículo (GitHub también ofrece el botón
   author    = {Aruquipa, Grover and Lambert, Patrice and Gosselin, Cl{\'e}ment},
   title     = {Kinematic Analysis and Design of a Novel 9-{DOF} Parallel Robot
                with Grasping Capabilities},
+  editor    = {Lanteigne, E. and Nokleby, S.},
   booktitle = {Proceedings of the 2025 {CCToMM} Symposium on Mechanisms,
-               Machines, and Mechatronics},
+               Machines, and Mechatronics ({CCToMM} {M3} 2025)},
   series    = {Mechanisms and Machine Science},
   volume    = {184},
   publisher = {Springer},
@@ -135,6 +136,12 @@ Si usas este trabajo, cita el artículo (GitHub también ofrece el botón
   doi       = {10.1007/978-3-031-95489-4_10}
 }
 ```
+
+> Aruquipa, G., Lambert, P., Gosselin, C. (2025). Kinematic Analysis and Design of a
+> Novel 9-DOF Parallel Robot with Grasping Capabilities. In: Lanteigne, E., Nokleby, S.
+> (eds) *Proceedings of the 2025 CCToMM Symposium on Mechanisms, Machines, and
+> Mechatronics*. CCToMM M3 2025. Mechanisms and Machine Science, vol 184. Springer, Cham.
+> <https://doi.org/10.1007/978-3-031-95489-4_10>
 
 Artículo: <https://doi.org/10.1007/978-3-031-95489-4_10> ·
 Video: <https://youtu.be/BzgWWMVSFvs>

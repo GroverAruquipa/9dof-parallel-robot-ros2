@@ -20,6 +20,11 @@ preferred-citation:
     - family-names: Gosselin
       given-names: Clément
       affiliation: "Université Laval"
+  editors:
+    - family-names: Lanteigne
+      given-names: E.
+    - family-names: Nokleby
+      given-names: S.
   collection-title: "Proceedings of the 2025 CCToMM Symposium on Mechanisms, Machines, and Mechatronics"
   collection-type: proceedings
   conference:
@@ -31,6 +36,7 @@ preferred-citation:
     city: Cham
   volume: 184
   year: 2025
+  date-published: 2025-06-25
   doi: "10.1007/978-3-031-95489-4_10"
   isbn: "978-3-031-95489-4"
   url: "https://link.springer.com/chapter/10.1007/978-3-031-95489-4_10"
