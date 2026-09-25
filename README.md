@@ -7,7 +7,8 @@ Université Laval).
 ![Grados de libertad del robot](docs/showcase.gif)
 
 Video completo en 1080p: [docs/showcase.mp4](docs/showcase.mp4) ·
-Video del artículo: <https://youtu.be/BzgWWMVSFvs> ·
+[Artículo (Springer, CCToMM M3 2025)](https://doi.org/10.1007/978-3-031-95489-4_10) ·
+[Video del artículo](https://youtu.be/BzgWWMVSFvs) ·
 [Cómo citar](#cómo-citar)
 
 | Paquete | Contenido |
@@ -120,16 +121,23 @@ Si usas este trabajo, cita el artículo (GitHub también ofrece el botón
 **"Cite this repository"** a partir de [`CITATION.cff`](CITATION.cff)):
 
 ```bibtex
-@inproceedings{aruquipa_9dof_parallel,
+@inproceedings{aruquipa2025ninedof,
   author    = {Aruquipa, Grover and Lambert, Patrice and Gosselin, Cl{\'e}ment},
-  title     = {Kinematic Analysis and Design of a Novel 9-{DoF} Parallel Robot
+  title     = {Kinematic Analysis and Design of a Novel 9-{DOF} Parallel Robot
                with Grasping Capabilities},
+  booktitle = {Proceedings of the 2025 {CCToMM} Symposium on Mechanisms,
+               Machines, and Mechatronics},
+  series    = {Mechanisms and Machine Science},
+  volume    = {184},
   publisher = {Springer},
-  note      = {Video: \url{https://youtu.be/BzgWWMVSFvs}}
+  address   = {Cham},
+  year      = {2025},
+  doi       = {10.1007/978-3-031-95489-4_10}
 }
 ```
 
-<!-- TODO: completar booktitle, year y doi cuando estén disponibles. -->
+Artículo: <https://doi.org/10.1007/978-3-031-95489-4_10> ·
+Video: <https://youtu.be/BzgWWMVSFvs>
 
 # ROS 2 en la nube (GitHub Codespaces)
 

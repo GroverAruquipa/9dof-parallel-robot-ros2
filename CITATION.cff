@@ -9,7 +9,7 @@ repository-code: "https://github.com/GroverAruquipa/ros2_control"
 license: Apache-2.0
 preferred-citation:
   type: conference-paper
-  title: "Kinematic Analysis and Design of a Novel 9-DoF Parallel Robot with Grasping Capabilities"
+  title: "Kinematic Analysis and Design of a Novel 9-DOF Parallel Robot with Grasping Capabilities"
   authors:
     - family-names: Aruquipa
       given-names: Grover
@@ -20,11 +20,17 @@ preferred-citation:
     - family-names: Gosselin
       given-names: Clément
       affiliation: "Université Laval"
+  collection-title: "Proceedings of the 2025 CCToMM Symposium on Mechanisms, Machines, and Mechatronics"
+  collection-type: proceedings
+  conference:
+    name: "13th CCToMM Symposium on Mechanisms, Machines, and Mechatronics (CCToMM M3 2025)"
+    city: Ottawa
+    country: CA
   publisher:
     name: Springer
-  # TODO: add the proceedings title (collection-title), year and doi
-  #       once available, e.g.
-  # collection-title: "..."
-  # year: 20XX
-  # doi: "10.1007/..."
-  url: "https://youtu.be/BzgWWMVSFvs"
+    city: Cham
+  volume: 184
+  year: 2025
+  doi: "10.1007/978-3-031-95489-4_10"
+  isbn: "978-3-031-95489-4"
+  url: "https://link.springer.com/chapter/10.1007/978-3-031-95489-4_10"
