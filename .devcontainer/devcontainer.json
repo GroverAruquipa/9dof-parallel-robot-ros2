@@ -4,7 +4,7 @@
   "remoteUser": "ubuntu",
   "hostRequirements": { "cpus": 4, "memory": "16gb" },
   "features": {
-    // Escritorio Linux accesible desde el navegador (para RViz / Gazebo)
+    // Linux desktop in the browser (RViz, MuJoCo viewer, Gazebo)
     "ghcr.io/devcontainers/features/desktop-lite:1": {
       "password": "ros",
       "webPort": "6080",
@@ -13,7 +13,7 @@
   },
   "forwardPorts": [6080],
   "portsAttributes": {
-    "6080": { "label": "Escritorio (noVNC)", "onAutoForward": "notify" }
+    "6080": { "label": "Desktop (noVNC)", "onAutoForward": "notify" }
   },
   "containerEnv": {
     "DISPLAY": ":1",

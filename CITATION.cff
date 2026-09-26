@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite the paper below."
-title: "ROS 2 description, kinematics and control of a 9-DoF parallel robot with grasping capabilities"
+title: "9-DOF parallel robot with grasping capabilities: ROS 2 description, kinematics, control and simulation"
 authors:
   - family-names: Aruquipa
     given-names: Grover

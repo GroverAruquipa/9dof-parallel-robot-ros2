@@ -10,9 +10,7 @@
 # platform 1 until release. The demo shows the geometry and the accuracy of the
 # robot, not contact mechanics.
 #
-# The CAD geometry is close to a singularity: the common yaw of the two
-# platforms is poorly held (docs/nota_diseno_torsion.md). The reorientation is
-# therefore limited to 30 deg (-10 -> +20 deg of the platforms) and every
+# The reorientation is 30 deg (-10 -> +20 deg of the platforms) and every
 # height lies inside the window where the whole sequence stays within the
 # actuator stroke (ros2 run ninedof_mujoco pick_place_demo --check).
 #

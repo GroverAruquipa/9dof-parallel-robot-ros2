@@ -1,205 +1,168 @@
-# Robot paralelo de 9 GDL (5P̲SS-S-4P̲SS) en ROS 2
+# 9-DOF Parallel Robot with Grasping Capabilities — ROS 2
 
-Descripción, cinemática, control (ros2_control) y simulación (MuJoCo) del robot
-paralelo de 9 GDL con capacidad de agarre (Aruquipa, Lambert y Gosselin,
-Université Laval).
+ROS 2 description, kinematics, control and simulation of the 9-DOF
+5<u>P</u>SS-S-4<u>P</u>SS parallel robot with grasping capabilities
+(Aruquipa, Lambert and Gosselin, Université Laval).
 
-![Grados de libertad del robot](docs/showcase.gif)
+![Degrees of freedom of the robot](docs/showcase.gif)
 
-Video completo en 1080p: [docs/showcase.mp4](docs/showcase.mp4) ·
-[Artículo (Springer, CCToMM M3 2025)](https://doi.org/10.1007/978-3-031-95489-4_10) ·
-[Video del artículo](https://youtu.be/BzgWWMVSFvs) ·
-[Cómo citar](#cómo-citar)
+[Full video (1080p)](docs/showcase.mp4) ·
+[Paper](https://doi.org/10.1007/978-3-031-95489-4_10) ·
+[Paper video](https://youtu.be/BzgWWMVSFvs) ·
+[How to cite](#how-to-cite)
 
-| Paquete | Contenido |
+The robot has two moving platforms joined by a passive spherical joint and
+driven by nine linear actuators: five legs move platform 1 (red) and four legs
+move platform 2 (blue). It provides 3 translations and 6 rotations — the two
+platforms can rotate together or relative to each other, which opens and
+closes the gripper.
+
+## Packages
+
+| Package | Contents |
 |---|---|
-| `ninedof_description` | Mallas STL, `config/geometry.yaml` (medido del CAD) y URDF/xacro |
-| `ninedof_kinematics` | IK analítica, FK Gauss-Newton, matrices J y K, nodo `pose_to_joint_states` y tests |
-| `ninedof_controllers` | Controlador ros2_control `CartesianPoseController` (C++): recibe la pose de las plataformas, interpola en espacio cartesiano y resuelve la IK en cada ciclo |
-| `ninedof_bringup` | Launch, configuración de controladores y RViz |
-| `ninedof_mujoco` | Video de capacidades, plugin de estado para `mujoco_ros2_control` y demo experimental de pick-and-place |
+| `ninedof_description` | STL meshes, geometry measured on the CAD model (`config/geometry.yaml`), URDF/xacro, MuJoCo models |
+| `ninedof_kinematics` | Analytic inverse kinematics, Gauss–Newton forward kinematics, Jacobian matrices **J** and **K**, showcase trajectory, tests |
+| `ninedof_controllers` | `CartesianPoseController` (C++, ros2_control): takes the pose of both platforms, interpolates it and solves the inverse kinematics at every cycle |
+| `ninedof_bringup` | Launch files, controller configuration, RViz |
+| `ninedof_mujoco` | Showcase video renderer and MuJoCo tools |
+
+## Quick start
+
+Requires ROS 2 Jazzy. A ready-to-use [GitHub Codespaces](#run-it-in-the-browser-github-codespaces)
+environment is included.
 
 ```bash
 rosdep install --from-paths src --ignore-src -y
-colcon build --symlink-install --packages-up-to ninedof_bringup
+colcon build --symlink-install
 source install/setup.bash
 ```
 
-**Con ros2_control** (hardware simulado `mock_components/GenericSystem`):
-
-```bash
-ros2 launch ninedof_bringup ninedof.launch.py              # demo de los 9 GDL
-ros2 launch ninedof_bringup ninedof.launch.py demo:=false  # esperar comandos
-ros2 topic pub --once /cartesian_pose_controller/pose_cmd std_msgs/msg/Float64MultiArray \
-  "data: [0.0, 0.0, 0.1467, 0.1, 0.0, 0.0, 0.0, 0.0, 0.3]"   # [x y z a1 a2 a3 b1 b2 b3]
-ros2 topic echo /platform_pose                             # pose medida por la FK
-ros2 control list_controllers
-```
-
-```
-pose_cmd ─► cartesian_pose_controller ─► 9 actuadores (position) ─► hardware
-                (interpolación + IK)                                    │
-RViz ◄─ robot_state_publisher ◄─ /joint_states ◄─ joint_state_broadcaster
-                                     ▲
-                        fk_joint_state_publisher (FK: articulaciones pasivas + /platform_pose)
-```
-
-El controlador interpola la **pose** (no los actuadores): así cada comando es
-una solución de la IK y respeta los lazos cerrados. Las poses fuera del
-espacio de trabajo o de la carrera (±25 mm) se rechazan.
-
-**Con física en MuJoCo** (cadenas cerradas con restricciones `connect`, plugin
-[`mujoco_ros2_control`](https://github.com/ros-controls/mujoco_ros2_control)):
-
-```bash
-ros2 launch ninedof_bringup ninedof.launch.py sim:=mujoco            # visor de MuJoCo + RViz
-ros2 launch ninedof_bringup ninedof.launch.py sim:=mujoco headless:=true
-```
-
-El modelo MJCF se genera desde `geometry.yaml` y `dynamics.yaml` (masas
-**estimadas**, a reemplazar por las de SolidWorks):
-
-```bash
-cd src/ninedof_description && python3 scripts/generate_mjcf.py
-```
-
-⚠️ Con la geometría actual del CAD la plataforma 2 tiene una torsión casi
-libre y en simulación cambia de modo de ensamblaje: ver
-[docs/nota_diseno_torsion.md](docs/nota_diseno_torsion.md).
-
-### Capacidades del robot (video)
-
-![Grados de libertad](docs/showcase_frames.png)
-
-![URDF frente al CAD](docs/urdf_vs_cad.png)
-
-[docs/showcase.mp4](docs/showcase.mp4) (50 s, 1080p): traslaciones X, Y, Z;
-rotaciones de las dos plataformas juntas; rotación relativa entre plataformas
-(la pinza); una trayectoria circular y un cono. Es una animación cinemática:
-cada cuadro es la pose exacta de la trayectoria, con los actuadores dados por
-la IK. Las patas se colorean según la plataforma que mueven (rojo: 5, azul: 4).
-
-```bash
-ros2 run ninedof_mujoco showcase_video --check                 # verifica la trayectoria
-MUJOCO_GL=osmesa ros2 run ninedof_mujoco showcase_video -o showcase.mp4
-ros2 launch ninedof_bringup view_robot.launch.py               # la misma secuencia en RViz
-```
-
-| Movimiento | Amplitud | Límite al 80 % de la carrera |
-|---|---|---|
-| Traslación X / Y / Z | ±30 / ±30 / ±15 mm | ±53 / ±48 / ±19 mm |
-| Rotación roll / pitch / yaw | ±20° / ±20° / ±45° | ±33° / ±30° / ±80° |
-| Rotación relativa (pinza) | 0–30° por plataforma | 33° |
-
-La trayectoria usa como máximo 18 de los 25 mm de carrera de los actuadores.
-
-> `ninedof_mujoco` también incluye una demo experimental de pick-and-place
-> (`pick_place.launch.py`) con agarre virtual; los dedos del CAD son pequeños
-> para agarrar por fricción (ver [nota de diseño](docs/nota_diseno_torsion.md)).
-
-**Solo visualización** (sin ros2_control):
+**Visualization** (RViz, plays the showcase trajectory):
 
 ```bash
 ros2 launch ninedof_bringup view_robot.launch.py
 ```
 
-**Tests** (IK/FK contra el CAD, Jacobianos, controlador):
+**ros2_control** with simulated actuators:
 
 ```bash
-colcon test --packages-select ninedof_kinematics ninedof_controllers
-colcon test-result --verbose
+ros2 launch ninedof_bringup ninedof.launch.py demo:=false
+ros2 topic pub --once /cartesian_pose_controller/pose_cmd std_msgs/msg/Float64MultiArray \
+  "data: [0.0, 0.0, 0.1467, 0.1, 0.0, 0.0, 0.0, 0.0, 0.3]"   # [x y z α1 α2 α3 β1 β2 β3]
+ros2 topic echo /platform_pose                                # pose from forward kinematics
 ```
 
-URDF no admite cadenas cerradas, así que el robot se describe como un árbol
-(actuadores + barras distales, y una cadena virtual de 6 GDL hasta la
-plataforma 1 más la esférica central hasta la plataforma 2). El nodo
-`pose_to_joint_states` cierra los lazos numéricamente con la cinemática inversa.
+```
+pose_cmd ─► cartesian_pose_controller ─► 9 actuators (position) ─► hardware
+             (interpolation + IK)                                      │
+RViz ◄─ robot_state_publisher ◄─ /joint_states ◄─ joint_state_broadcaster
+                                     ▲
+                    fk_joint_state_publisher (passive joints + /platform_pose)
+```
 
-## Cómo citar
+Poses are given as `[x, y, z]` (m) of the central spherical joint and the
+Euler angles `Q = Qx Qy Qz` (rad) of platform 1 (α) and platform 2 (β).
+The controller interpolates the pose, not the actuators, so every command is
+an inverse-kinematics solution; poses outside the workspace or the actuator
+stroke (±25 mm) are rejected.
 
-Si usas este trabajo, cita el artículo (GitHub también ofrece el botón
-**"Cite this repository"** a partir de [`CITATION.cff`](CITATION.cff)):
+**MuJoCo physics** (closed kinematic chains, [`mujoco_ros2_control`](https://github.com/ros-controls/mujoco_ros2_control)):
+
+```bash
+ros2 launch ninedof_bringup ninedof.launch.py sim:=mujoco
+```
+
+URDF cannot describe closed chains, so the robot is written as a tree
+(actuators and distal links, plus a virtual 6-DOF chain to platform 1 and the
+central spherical joint to platform 2); the forward kinematics closes the loops.
+The MuJoCo models close them with `connect` constraints and are generated from
+the geometry: `python3 src/ninedof_description/scripts/generate_mjcf.py`.
+
+## Showcase
+
+![Showcase frames](docs/showcase_frames.png)
+
+Translations, rotations of both platforms together, relative rotation (gripper),
+a circle and a cone. Every frame is the exact pose of the trajectory with the
+actuators given by the inverse kinematics; the whole sequence uses at most
+18 mm of the 25 mm actuator stroke.
+
+| Motion | Amplitude |
+|---|---|
+| Translation X / Y / Z | ±30 / ±30 / ±15 mm |
+| Rotation about X / Y / Z | ±20° / ±20° / ±45° |
+| Relative rotation (gripper) | 0–30° per platform |
+| Circle / cone | radius 25 mm / tilt 20° |
+
+```bash
+ros2 run ninedof_mujoco showcase_video --check                       # check the trajectory
+MUJOCO_GL=osmesa ros2 run ninedof_mujoco showcase_video -o showcase.mp4
+```
+
+## Geometry
+
+![URDF vs CAD](docs/urdf_vs_cad.png)
+
+The geometry in `config/geometry.yaml` was measured on the SolidWorks
+assembly: the URDF matches the CAD model within 0.6 mm, and the inverse
+kinematics reproduces the actuator positions of the CAD within 0.02 mm.
+
+## Tests
+
+```bash
+colcon test && colcon test-result --verbose
+```
+
+Inverse and forward kinematics against the CAD model, Jacobians against finite
+differences, the Cartesian controller and the showcase trajectory.
+
+## How to cite
+
+If you use this work, please cite:
+
+> G. Aruquipa, P. Lambert and C. Gosselin, "Kinematic Analysis and Design of a
+> Novel 9-DOF Parallel Robot with Grasping Capabilities," in *Proceedings of the
+> 2025 CCToMM Symposium on Mechanisms, Machines, and Mechatronics (CCToMM M3 2025)*,
+> E. Lanteigne and S. Nokleby, Eds., Mechanisms and Machine Science, vol. 184.
+> Cham: Springer, 2025. doi: [10.1007/978-3-031-95489-4_10](https://doi.org/10.1007/978-3-031-95489-4_10)
 
 ```bibtex
 @inproceedings{aruquipa2025ninedof,
   author    = {Aruquipa, Grover and Lambert, Patrice and Gosselin, Cl{\'e}ment},
   title     = {Kinematic Analysis and Design of a Novel 9-{DOF} Parallel Robot
                with Grasping Capabilities},
-  editor    = {Lanteigne, E. and Nokleby, S.},
   booktitle = {Proceedings of the 2025 {CCToMM} Symposium on Mechanisms,
                Machines, and Mechatronics ({CCToMM} {M3} 2025)},
+  editor    = {Lanteigne, E. and Nokleby, S.},
   series    = {Mechanisms and Machine Science},
   volume    = {184},
   publisher = {Springer},
   address   = {Cham},
   year      = {2025},
-  doi       = {10.1007/978-3-031-95489-4_10}
+  doi       = {10.1007/978-3-031-95489-4_10},
+  url       = {https://doi.org/10.1007/978-3-031-95489-4_10}
 }
 ```
 
-> Aruquipa, G., Lambert, P., Gosselin, C. (2025). Kinematic Analysis and Design of a
-> Novel 9-DOF Parallel Robot with Grasping Capabilities. In: Lanteigne, E., Nokleby, S.
-> (eds) *Proceedings of the 2025 CCToMM Symposium on Mechanisms, Machines, and
-> Mechatronics*. CCToMM M3 2025. Mechanisms and Machine Science, vol 184. Springer, Cham.
-> <https://doi.org/10.1007/978-3-031-95489-4_10>
+The same entry is in [`CITATION.bib`](CITATION.bib); GitHub's
+**"Cite this repository"** button uses [`CITATION.cff`](CITATION.cff).
 
-Artículo: <https://doi.org/10.1007/978-3-031-95489-4_10> ·
-Video: <https://youtu.be/BzgWWMVSFvs>
+## Run it in the browser (GitHub Codespaces)
 
-# ROS 2 en la nube (GitHub Codespaces)
+The repository includes a development container with ROS 2 Jazzy,
+ros2_control, MuJoCo and a desktop reachable from the browser.
 
-Este repositorio trae un entorno de ROS 2 **Jazzy** ya configurado, con
-`ros2_control`, `ros2_controllers` y Gazebo. No necesitas instalar nada en tu
-computadora: todo corre en un servidor de GitHub y lo usas desde el navegador.
+1. On GitHub, click **Code → Codespaces → Create codespace**
+   (the first build takes 5–10 minutes).
+2. Build and run as in [Quick start](#quick-start).
+3. To see RViz or the MuJoCo viewer: open the **Ports** tab, open port
+   **6080** in the browser, add `/vnc.html` to the address, click **Connect**
+   and use the password `ros`.
 
-## Cómo abrirlo
+Stop the codespace when you are not using it
+(github.com/codespaces → `…` → *Stop codespace*) to save your free hours.
 
-1. En la página del repositorio en GitHub, pulsa el botón verde **Code**.
-2. Abre la pestaña **Codespaces** y pulsa **Create codespace on main**.
-3. Espera a que se construya (la primera vez tarda ~5–10 minutos; después es rápido).
-4. Se abre VS Code en el navegador, con una terminal en la que ROS 2 ya está cargado.
+## License
 
-Pruébalo:
-
-```bash
-ros2 run demo_nodes_cpp talker
-# en otra terminal:
-ros2 run demo_nodes_cpp listener
-```
-
-## Ver interfaces gráficas (RViz, Gazebo, rqt)
-
-1. Abre la pestaña **Ports** (junto a la terminal).
-   Si no la ves: `Ctrl + Shift + P` → **Ports: Focus on Ports View**.
-2. Busca el puerto **6080** ("Escritorio (noVNC)") y pulsa el icono del globo 🌐.
-   Si no aparece, pulsa **Add Port** y escribe `6080`.
-3. **Agrega `/vnc.html` al final de la dirección** que se abre
-   (ej. `https://...-6080.app.github.dev/vnc.html`), pulsa **Connect** y usa la contraseña `ros`.
-4. Todo lo que abras desde la terminal (por ejemplo `rviz2` o `gz sim`) aparece ahí.
-
-## Compilar tus paquetes
-
-Pon tus paquetes dentro de la carpeta `src/` y compila desde la raíz:
-
-```bash
-sudo apt-get update && rosdep install --from-paths src --ignore-src -y
-colcon build --symlink-install
-source install/setup.bash
-```
-
-Si quieres el código fuente de ros2_control para estudiarlo o modificarlo:
-
-```bash
-git clone -b jazzy https://github.com/ros-controls/ros2_control.git src/ros2_control
-git clone -b jazzy https://github.com/ros-controls/ros2_control_demos.git src/ros2_control_demos
-sudo apt-get update && rosdep install --from-paths src --ignore-src -y
-colcon build --symlink-install
-```
-
-## Notas sobre el uso gratuito
-
-- Las cuentas personales de GitHub tienen horas gratis de Codespaces cada mes.
-  Una máquina de 4 núcleos gasta esas horas el doble de rápido que una de 2.
-- **Detén el codespace cuando no lo uses** (github.com/codespaces → `...` → *Stop codespace*).
-  Se detiene solo tras 30 minutos sin actividad, y tus archivos se conservan.
-- Haz `git commit` y `git push` de tu trabajo con frecuencia.
+Apache License 2.0.

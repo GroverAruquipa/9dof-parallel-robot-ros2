@@ -1,9 +1,9 @@
-# ROS 2 Jazzy (LTS) con escritorio (RViz, rqt, etc.)
+# ROS 2 Jazzy (LTS) desktop image (RViz, rqt, ...)
 FROM osrf/ros:jazzy-desktop
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-# ros2_control, controladores y simulación con Gazebo
+# ros2_control, controllers, Gazebo, and tools to render the videos
 RUN apt-get update && apt-get install -y --no-install-recommends \
       sudo git nano less bash-completion \
       python3-colcon-common-extensions python3-rosdep python3-vcstool python3-pip \
@@ -23,11 +23,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # mujoco_ros2_control (installed by rosdep from the package dependencies).
 RUN pip3 install --no-cache-dir --break-system-packages mujoco
 
-# El usuario "ubuntu" (uid 1000) ya existe en la imagen base; le damos sudo sin contraseña
+# The "ubuntu" user (uid 1000) already exists in the base image: passwordless sudo
 RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu \
     && chmod 0440 /etc/sudoers.d/ubuntu
 
-# Cargar ROS 2 automáticamente en cada terminal
+# Source ROS 2 (and the workspace, once built) in every terminal
 RUN echo 'source /opt/ros/jazzy/setup.bash' >> /home/ubuntu/.bashrc \
     && echo '[ -f "${CONTAINER_WORKSPACE_FOLDER:-/workspaces}/install/setup.bash" ] && source "${CONTAINER_WORKSPACE_FOLDER}/install/setup.bash"' >> /home/ubuntu/.bashrc \
     && echo 'source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash 2>/dev/null' >> /home/ubuntu/.bashrc
