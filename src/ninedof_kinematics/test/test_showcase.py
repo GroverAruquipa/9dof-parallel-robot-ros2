@@ -1,10 +1,11 @@
+import math
 import os
 
 import numpy as np
 import pytest
 
 from ninedof_kinematics.kinematics import NineDofKinematics
-from ninedof_kinematics.showcase import Showcase
+from ninedof_kinematics.showcase import Showcase, params, pose_from_params
 
 GEOMETRY = os.path.join(os.path.dirname(__file__), '..', '..', 'ninedof_description',
                         'config', 'geometry.yaml')
@@ -39,6 +40,23 @@ def test_covers_every_family_of_motion(setup):
     _, show = setup
     labels = {p[3] for p in show.pieces}
     for name in ('Translation X', 'Translation Y', 'Translation Z', 'Rotation about X',
-                 'Rotation about Y', 'Rotation about Z', 'Relative rotation (jaw)',
+                 'Rotation about Y', 'Rotation about Z', 'Relative rotation about X',
+                 'Relative rotation about Y', 'Relative rotation about Z',
                  'Circle trajectory', 'Cone trajectory'):
         assert name in labels
+
+
+@pytest.mark.parametrize('axis', [0, 1, 2])
+def test_relative_rotations_turn_the_platforms_against_each_other(setup, axis):
+    kin, _ = setup
+    a = 0.2
+    v = params(**{('rel_x', 'rel_y', 'rel_z')[axis]: a})
+    _, Q1, Q2 = kin.split(pose_from_params(kin.home, v))
+    rel = Q1.T @ Q2          # rotation of platform 2 seen from platform 1
+    angle = math.acos((np.trace(rel) - 1) / 2)
+    assert angle == pytest.approx(2 * a)
+    assert abs(Q1 @ Q2.T - np.eye(3)).max() > 0.1   # not a common rotation
+    e = np.zeros(3)
+    e[axis] = 1.0
+    np.testing.assert_allclose(Q1 @ e, e, atol=1e-12)   # both turn about the same axis
+    np.testing.assert_allclose(Q2 @ e, e, atol=1e-12)

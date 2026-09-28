@@ -13,9 +13,9 @@ ROS 2 description, kinematics, control and simulation of the 9-DOF
 
 The robot has two moving platforms joined by a passive spherical joint and
 driven by nine linear actuators: five legs move platform 1 (red) and four legs
-move platform 2 (blue). It provides 3 translations and 6 rotations — the two
-platforms can rotate together or relative to each other, which opens and
-closes the gripper.
+move platform 2 (blue). It provides 3 translations and 6 rotations: 3 rotations
+of both platforms together and 3 relative rotations of one platform against the
+other (the relative rotation about X opens and closes the gripper).
 
 ## Packages
 
@@ -83,7 +83,8 @@ the geometry: `python3 src/ninedof_description/scripts/generate_mjcf.py`.
 
 ![Showcase frames](docs/showcase_frames.png)
 
-Translations, rotations of both platforms together, relative rotation (gripper),
+Translations, rotations of both platforms together, relative rotations of the
+platforms against each other about X, Y and Z (X opens and closes the gripper),
 a circle and a cone. Every frame is the exact pose of the trajectory with the
 actuators given by the inverse kinematics; the whole sequence uses at most
 18 mm of the 25 mm actuator stroke.
@@ -92,7 +93,7 @@ actuators given by the inverse kinematics; the whole sequence uses at most
 |---|---|
 | Translation X / Y / Z | ±30 / ±30 / ±15 mm |
 | Rotation about X / Y / Z | ±20° / ±20° / ±45° |
-| Relative rotation (gripper) | 0–30° per platform |
+| Relative rotation about X / Y / Z | 0–60° / ±30° / ±60° between platforms |
 | Circle / cone | radius 25 mm / tilt 20° |
 
 ```bash

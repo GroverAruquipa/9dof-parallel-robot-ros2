@@ -4,11 +4,14 @@ Shows the degrees of freedom one family at a time, then two smooth
 trajectories, always starting and ending at home:
 
     translations X, Y, Z -> rotations roll, pitch, yaw (both platforms together)
-    -> relative rotation (jaw) -> circle -> cone
+    -> relative rotations about X, Y, Z (platforms against each other)
+    -> circle -> cone
 
-A pose is built from v = (x, y, z, roll, pitch, yaw, jaw):
+A pose is built from v = (x, y, z, roll, pitch, yaw, rel_x, rel_y, rel_z):
     p  = home + [x, y, z]
-    Q1 = R Rx(+jaw),  Q2 = R Rx(-jaw),  R = Rz(yaw) Ry(pitch) Rx(roll)
+    Q1 = R S,  Q2 = R S^T,  R = Rz(yaw) Ry(pitch) Rx(roll),
+    S = Rz(rel_z) Ry(rel_y) Rx(rel_x)
+so the platforms turn by rel in opposite directions (2 rel between them).
 Every piece is eased with smootherstep: zero velocity and acceleration at the
 start and end of each piece.
 """
@@ -20,7 +23,7 @@ import numpy as np
 from ninedof_kinematics.kinematics import rot_x, rot_y, rot_z, xyz_from_rot
 
 MM, DEG = 1e-3, math.pi / 180.0
-KEYS = ('x', 'y', 'z', 'roll', 'pitch', 'yaw', 'jaw')
+KEYS = ('x', 'y', 'z', 'roll', 'pitch', 'yaw', 'rel_x', 'rel_y', 'rel_z')
 
 
 def params(**kw):
@@ -28,10 +31,11 @@ def params(**kw):
 
 
 def pose_from_params(home, v):
-    x, y, z, roll, pitch, yaw, jaw = v
+    x, y, z, roll, pitch, yaw, rel_x, rel_y, rel_z = v
     R = rot_z(yaw) @ rot_y(pitch) @ rot_x(roll)
-    return np.r_[np.asarray(home[:3]) + [x, y, z], xyz_from_rot(R @ rot_x(jaw)),
-                 xyz_from_rot(R @ rot_x(-jaw))]
+    S = rot_z(rel_z) @ rot_y(rel_y) @ rot_x(rel_x)
+    return np.r_[np.asarray(home[:3]) + [x, y, z], xyz_from_rot(R @ S),
+                 xyz_from_rot(R @ S.T)]
 
 
 def smootherstep(s):
@@ -71,9 +75,13 @@ def segments():
          _swing('pitch', 20 * DEG, 4.5)),
         ('Rotation about Z', lambda v: f'yaw = {v[5] / DEG:+5.1f} deg',
          _swing('yaw', 45 * DEG, 5.0)),
-        ('Relative rotation (jaw)', lambda v: f'{2 * v[6] / DEG:4.1f} deg between platforms',
-         [(_line(params(), params(jaw=30 * DEG)), 1.5),
-          (_line(params(jaw=30 * DEG), params()), 1.5)] * 2),
+        ('Relative rotation about X', lambda v: f'{2 * v[6] / DEG:+5.1f} deg between platforms',
+         [(_line(params(), params(rel_x=30 * DEG)), 1.5),
+          (_line(params(rel_x=30 * DEG), params()), 1.5)]),
+        ('Relative rotation about Y', lambda v: f'{2 * v[7] / DEG:+5.1f} deg between platforms',
+         _swing('rel_y', 15 * DEG, 4.5)),
+        ('Relative rotation about Z', lambda v: f'{2 * v[8] / DEG:+5.1f} deg between platforms',
+         _swing('rel_z', 30 * DEG, 4.5)),
         ('Circle trajectory',
          lambda v: f'r = 25 mm    x = {v[0] / MM:+5.1f}   y = {v[1] / MM:+5.1f} mm',
          _loop(lambda a: params(x=r * math.cos(a), y=r * math.sin(a)), 5.0)),
