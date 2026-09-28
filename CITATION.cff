@@ -5,7 +5,7 @@ authors:
   - family-names: Aruquipa
     given-names: Grover
     affiliation: "Université Laval"
-repository-code: "https://github.com/GroverAruquipa/ros2_control"
+repository-code: "https://github.com/GroverAruquipa/9dof-parallel-robot-ros2"
 license: Apache-2.0
 preferred-citation:
   type: conference-paper
