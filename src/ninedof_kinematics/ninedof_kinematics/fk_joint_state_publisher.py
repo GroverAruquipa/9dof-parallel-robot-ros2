@@ -6,6 +6,11 @@ with the previous solution) and publishes on ``joint_states`` the positions of
 the passive and virtual joints of the URDF, so robot_state_publisher can draw
 the whole robot. It also publishes the measured pose of the platforms on
 ``platform_pose`` ([x, y, z, alpha1, alpha2, alpha3, beta1, beta2, beta3]).
+
+When there is no previous solution (start-up, or after the solver failed) the
+initial guess comes from the learned model of ninedof_kinematics.learned_fk
+(parameter ``initial_guess: learned``, default) or is the home pose
+(``initial_guess: home``).
 """
 
 import os
@@ -18,6 +23,7 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 
 from ninedof_kinematics.kinematics import NineDofKinematics
+from ninedof_kinematics.learned_fk import default_model_path, LearnedForwardKinematics
 
 
 class FkJointStatePublisher(Node):
@@ -27,10 +33,17 @@ class FkJointStatePublisher(Node):
         default_geometry = os.path.join(
             get_package_share_directory('ninedof_description'), 'config', 'geometry.yaml')
         geometry = self.declare_parameter('geometry_file', default_geometry).value
+        initial_guess = self.declare_parameter('initial_guess', 'learned').value
+        model_file = self.declare_parameter('model_file', default_model_path()).value
 
         self.kin = NineDofKinematics.from_yaml(geometry)
         self.actuators = [f'{leg}_actuator_joint' for leg in self.kin.names]
-        self.pose = self.kin.home.copy()
+        self.model = None
+        if initial_guess == 'learned':
+            self.model = LearnedForwardKinematics.load(model_file)
+        elif initial_guess != 'home':
+            raise ValueError(f"initial_guess must be 'learned' or 'home', not {initial_guess!r}")
+        self.pose = None   # no previous solution yet
 
         self.joint_pub = self.create_publisher(JointState, 'joint_states', 10)
         self.pose_pub = self.create_publisher(Float64MultiArray, 'platform_pose', 10)
@@ -43,11 +56,11 @@ class FkJointStatePublisher(Node):
             return
         q = np.array([msg.position[index[name]] for name in self.actuators])
         try:
-            self.pose = self.kin.forward(q, self.pose)
+            self.pose = self.kin.forward(q, self.initial_guess(q))
         except RuntimeError:
             self.get_logger().warn('Forward kinematics did not converge',
                                    throttle_duration_sec=2.0)
-            self.pose = self.kin.home.copy()
+            self.pose = None
             return
 
         joints = self.kin.joint_positions(self.pose, q)
@@ -57,6 +70,12 @@ class FkJointStatePublisher(Node):
         out.position = [float(joints[name]) for name in out.name]
         self.joint_pub.publish(out)
         self.pose_pub.publish(Float64MultiArray(data=[float(v) for v in self.pose]))
+
+
+    def initial_guess(self, q):
+        if self.pose is not None:
+            return self.pose
+        return self.model(q) if self.model is not None else self.kin.home
 
 
 def main(args=None):

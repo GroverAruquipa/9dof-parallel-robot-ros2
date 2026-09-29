@@ -22,7 +22,7 @@ other (the relative rotation about X opens and closes the gripper).
 | Package | Contents |
 |---|---|
 | `ninedof_description` | STL meshes, geometry measured on the CAD model (`config/geometry.yaml`), URDF/xacro, MuJoCo models |
-| `ninedof_kinematics` | Analytic inverse kinematics, Gauss–Newton forward kinematics, Jacobian matrices **J** and **K**, showcase trajectory, tests |
+| `ninedof_kinematics` | Analytic inverse kinematics, Gauss–Newton forward kinematics with a [learned initial guess](#learned-forward-kinematics), Jacobian matrices **J** and **K**, showcase trajectory, tests |
 | `ninedof_controllers` | `CartesianPoseController` (C++, ros2_control): takes the pose of both platforms, interpolates it and solves the inverse kinematics at every cycle |
 | `ninedof_bringup` | Launch files, controller configuration, RViz |
 | `ninedof_mujoco` | Showcase video renderer and MuJoCo tools |
@@ -101,6 +101,41 @@ ros2 run ninedof_mujoco showcase_video --check                       # check the
 MUJOCO_GL=osmesa ros2 run ninedof_mujoco showcase_video -o showcase.mp4
 ```
 
+## Learned forward kinematics
+
+![Cold-start forward kinematics: home pose vs learned initial guess](docs/learned_fk.png)
+
+The forward kinematics of a parallel robot has no closed form and several
+solutions (assembly modes); Gauss–Newton converges to the one nearest to its
+initial guess. While the robot is tracked, the previous solution is a good
+guess, but at start-up — or after the solver loses track — only the actuator
+positions are known.
+
+A small neural network (3 × 128, tanh) learns the map *actuator positions →
+pose* from 400 000 poses labelled with the exact inverse kinematics, and its
+estimate is the initial guess of Gauss–Newton, which then refines it to
+machine precision. On 2 000 random poses of the operating workspace, never
+seen in training:
+
+| Initial guess | True pose | Other assembly mode | Diverged | Iterations | Time |
+|---|---|---|---|---|---|
+| Home pose | 52 % | 15 % | 33 % | 6.7 | 5.4 ms |
+| **Learned model** | **84 %** | 12 % | 4 % | **4.3** | **3.4 ms** |
+
+In the remaining poses another solution with the same actuator positions exists
+inside the workspace, so the actuator positions alone cannot identify the pose:
+a network with four times the parameters only reaches 86 %.
+
+The network is evaluated with numpy (about 20 µs per call), so the robot needs
+no deep-learning framework. `fk_joint_state_publisher` uses it whenever it has
+no previous solution (`initial_guess:=learned`, default, or `home`).
+
+```bash
+pip install -r learning/requirements.txt
+python3 learning/train_fk.py          # ~4 min on a 4-core CPU
+python3 learning/benchmark_fk.py --plot docs/learned_fk.png
+```
+
 ## Geometry
 
 ![URDF vs CAD](docs/urdf_vs_cad.png)
@@ -116,7 +151,8 @@ colcon test && colcon test-result --verbose
 ```
 
 Inverse and forward kinematics against the CAD model, Jacobians against finite
-differences, the Cartesian controller and the showcase trajectory.
+differences, the learned initial guess, the Cartesian controller and the
+showcase trajectory.
 
 ## How to cite
 
