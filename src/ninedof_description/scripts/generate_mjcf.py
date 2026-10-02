@@ -38,7 +38,7 @@ FINGER = {
 
 
 def fmt(v):
-    return ' '.join(f'{x:.6g}' for x in np.atleast_1d(v))
+    return ' '.join(f'{x:.9g}' for x in np.atleast_1d(v))
 
 
 def quat_z_to(u):
@@ -56,11 +56,6 @@ def quat_z_to(u):
 def rot_x_matrix(t):
     c, s = math.cos(t), math.sin(t)
     return np.array([[1.0, 0.0, 0.0], [0.0, c, -s], [0.0, s, c]])
-
-
-def disk_inertia(mass, radius, height):
-    ixx = mass * (3 * radius ** 2 + height ** 2) / 12
-    return [ixx, ixx, mass * radius ** 2 / 2]
 
 
 def rod_inertia(mass, length):
@@ -84,6 +79,12 @@ def robot_parts(geometry, dynamics, finger_friction=None, indent='    ', mount=N
     m = d['mass']
     legs = g['legs']
 
+    def inertial(part):
+        """Inertial element from the mesh-based block of dynamics.yaml."""
+        props = d['inertia'][part]
+        return (f'<inertial pos="{fmt(props["com"])}" mass="{m[part]}" '
+                f'fullinertia="{fmt(props["inertia"])}"/>')
+
     b = []
 
     def w(line):
@@ -97,9 +98,15 @@ def robot_parts(geometry, dynamics, finger_friction=None, indent='    ', mount=N
         n = leg['name']
         A = home + np.array(leg['a'])
         B = np.array([leg['base_x'], leg['base_y'], leg['base_z0']])
-        u = (A - B) / np.linalg.norm(A - B)
+        # The geometry is rounded to 0.01 mm, so |A - B| = l at home needs
+        # q = q_home (a few um), not 0: the slider is built there (ref) so that
+        # the loop-closure anchors match the attachment points a_i exactly.
+        nz = A[2] - B[2]
+        q_home = nz - math.sqrt(nz ** 2 - (float((A - B) @ (A - B)) - l ** 2))
+        B[2] += q_home
+        u = (A - B) / l
         w(f'  <body name="{n}_slider" pos="{fmt([B[0], B[1], B[2] - ball_h])}">')
-        w(f'    <joint name="{n}_actuator_joint" type="slide" axis="0 0 1" '
+        w(f'    <joint name="{n}_actuator_joint" type="slide" axis="0 0 1" ref="{fmt(q_home)}" '
           f'range="{-stroke} {stroke}" armature="{act["armature"]}" '
           f'actuatorfrcrange="{-act["max_force"]} {act["max_force"]}"/>')
         w(f'    <inertial pos="0 0 {ball_h / 2:.6g}" mass="{m["slider"]}" '
@@ -108,8 +115,7 @@ def robot_parts(geometry, dynamics, finger_friction=None, indent='    ', mount=N
         w(f'    <body name="{n}_distal" pos="0 0 {ball_h}" quat="{fmt(quat_z_to(u))}">')
         w(f'      <joint name="{n}_lower_joint" type="ball" '
           f'damping="{d["passive_joint_damping"]}"/>')
-        w(f'      <inertial pos="0 0 {l / 2}" mass="{m["distal_link"]}" '
-          f'diaginertia="{fmt(rod_inertia(m["distal_link"], l))}"/>')
+        w(f'      {inertial("distal_link")}')
         w('      <geom class="visual" mesh="distal_link" material="rod_white"/>')
         w(f'      <site name="{n}_A" pos="0 0 {l}" size="0.002"/>')
         w('    </body>')
@@ -129,16 +135,14 @@ def robot_parts(geometry, dynamics, finger_friction=None, indent='    ', mount=N
                 else f' friction="{finger_friction} 0.02 0.0001"')
     w(f'  <body name="platform_1" {platform_pose}>')
     w('    <freejoint name="platform_1_free"/>')
-    w(f'    <inertial pos="0 0 0.005" mass="{m["platform_1"]}" '
-      f'diaginertia="{fmt(disk_inertia(m["platform_1"], 0.035, 0.01))}"/>')
+    w(f'    {inertial("platform_1")}')
     w('    <geom class="visual" mesh="platform_1" material="platform_1_red"/>')
     w(f'    <geom class="finger" name="finger_1_lower" mesh="finger_1_lower"{friction}/>')
     w(f'    <geom class="finger" name="finger_1_upper" mesh="finger_1_upper"{friction}/>')
     w('    <body name="platform_2">')
     w(f'      <joint name="central_sphere_joint" type="ball" '
       f'damping="{d["passive_joint_damping"]}"/>')
-    w(f'      <inertial pos="0 0 0.005" mass="{m["platform_2"]}" '
-      f'diaginertia="{fmt(disk_inertia(m["platform_2"], 0.035, 0.01))}"/>')
+    w(f'      {inertial("platform_2")}')
     w('      <geom class="visual" mesh="platform_2" material="platform_2_blue"/>')
     w(f'      <geom class="finger" name="finger_2_lower" mesh="finger_2_lower"{friction}/>')
     w(f'      <geom class="finger" name="finger_2_upper" mesh="finger_2_upper"{friction}/>')

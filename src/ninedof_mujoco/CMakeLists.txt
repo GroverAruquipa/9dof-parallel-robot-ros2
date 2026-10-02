@@ -36,6 +36,7 @@ install(TARGETS ninedof_mujoco_plugins
 
 ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS scripts/pick_place_demo scripts/render_video scripts/showcase_video
+  scripts/validate_dynamics
   DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY config launch DESTINATION share/${PROJECT_NAME})
 
@@ -43,6 +44,8 @@ if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_pick_place test/test_pick_place.py
     APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR})
+  ament_add_pytest_test(test_dynamics_validation test/test_dynamics_validation.py
+    APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR} TIMEOUT 300)
 endif()
 
 ament_package()

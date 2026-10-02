@@ -1,13 +1,29 @@
-# Dynamic parameters for the MuJoCo simulation.
-# ESTIMATES: masses come from the STL volumes with PLA (1240 kg/m^3) and the
-# actuator data are placeholders. Replace them with SolidWorks "Mass
-# Properties" and the actuator datasheet, then run scripts/generate_mjcf.py.
+# Dynamic parameters of the robot (MuJoCo simulation and analytic model,
+# ninedof_kinematics/dynamics.py).
+# ESTIMATES chosen for the dynamic-model validation, not weighed parts:
+#   slider      actuator rod + lead-screw nut + ball B_i of a micro linear
+#               actuator (the printed rod alone is 1.7 g)
+#   distal_link PLA rod (2.2 g) + two ball sockets
+#   platform_k  PLA platform and finger (12.5 g) + five/four steel ball studs,
+#               screws and the half of the central spherical joint
+# The inertia block is generated from the meshes scaled to these masses:
+#   python3 scripts/mass_properties.py   (then run scripts/generate_mjcf.py)
 ninedof_dynamics:
   mass:              # kg
-    slider: 0.00174
-    distal_link: 0.00224
-    platform_1: 0.01275
-    platform_2: 0.01240
+    slider: 0.015
+    distal_link: 0.005
+    platform_1: 0.025
+    platform_2: 0.025
+  inertia:           # body frame, about the centre of mass: [ixx, iyy, izz, ixy, ixz, iyz]
+    platform_1:
+      com: [-0.01581, 0.007503, 0.002803]
+      inertia: [4.9274e-06, 3.9517e-06, 5.2415e-06, -6.7395e-07, -3.4207e-07, 1.4387e-07]
+    platform_2:
+      com: [0.015363, -0.007355, 0.002882]
+      inertia: [4.8955e-06, 3.8475e-06, 5.0176e-06, -6.9869e-07, 3.196e-07, -1.3731e-07]
+    distal_link:
+      com: [0.0, 0.0, 0.06]
+      inertia: [1.2486e-05, 1.2486e-05, 3.0725e-08, 0.0, 0.0, 0.0]
   actuator:
     max_force: 20.0      # N
     kp: 50000.0          # N/m, position servo stiffness (lead-screw actuator, estimate)

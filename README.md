@@ -22,7 +22,7 @@ closes the gripper.
 | Package | Contents |
 |---|---|
 | `ninedof_description` | STL meshes, geometry measured on the CAD model (`config/geometry.yaml`), URDF/xacro, MuJoCo models |
-| `ninedof_kinematics` | Analytic inverse kinematics, Gauss–Newton forward kinematics, Jacobian matrices **J** and **K**, showcase trajectory, tests |
+| `ninedof_kinematics` | Analytic inverse kinematics, Gauss–Newton forward kinematics, Jacobian matrices **J** and **K**, inverse dynamics, showcase trajectory, tests |
 | `ninedof_controllers` | `CartesianPoseController` (C++, ros2_control): takes the pose of both platforms, interpolates it and solves the inverse kinematics at every cycle |
 | `ninedof_bringup` | Launch files, controller configuration, RViz |
 | `ninedof_mujoco` | Showcase video renderer and MuJoCo tools |
@@ -108,6 +108,23 @@ The geometry in `config/geometry.yaml` was measured on the SolidWorks
 assembly: the URDF matches the CAD model within 0.6 mm, and the inverse
 kinematics reproduces the actuator positions of the CAD within 0.02 mm.
 
+## Dynamics
+
+`ninedof_kinematics/dynamics.py` computes the actuator forces of a trajectory
+(virtual work with **J** and **K**: platforms with their full inertia, distal
+links, sliders, drive armature and ball-joint friction). It agrees with
+MuJoCo's rigid multibody solution within 2 × 10⁻⁵ N on forces of up to 12 N,
+and a computed-torque controller built on it tracks a 9-DoF trajectory in
+MuJoCo within 7 µm and 0.01°. Masses are estimates (`config/dynamics.yaml`).
+Details and findings (weak direction at home, sensitivity to joint friction):
+[docs/dynamics_validation.md](docs/dynamics_validation.md).
+
+![Dynamics validation](docs/dynamics_validation_forces.png)
+
+```bash
+python3 -m ninedof_mujoco.validate_dynamics --plot docs
+```
+
 ## Tests
 
 ```bash
@@ -115,7 +132,8 @@ colcon test && colcon test-result --verbose
 ```
 
 Inverse and forward kinematics against the CAD model, Jacobians against finite
-differences, the Cartesian controller and the showcase trajectory.
+differences, the Cartesian controller, the showcase trajectory, and the inverse
+dynamics against the potential energy, the energy balance and MuJoCo.
 
 ## How to cite
 
