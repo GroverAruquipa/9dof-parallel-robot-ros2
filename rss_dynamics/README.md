@@ -170,6 +170,11 @@ Observaciones sobre el documento:
 ## 4. Simulaciones y videos
 
 - `videos/tracking_d35_core.mp4`: showcase al doble de velocidad (giro z limitado a ±30°), 50 g por plataforma, robot `real` con encoders de 14 bit. A la izquierda el robot; a la derecha, el par aplicado en MuJoCo frente al par predicho por el modelo, y el error con y sin modelo. Sólo PD: 10 mm / 20°. PD + modelo: 1.5 mm máx. (0.25 mm RMS) / 4.5°.
+  Filtrado a 25 ms, el par aplicado difiere del predicho por el modelo en
+  7 mN·m RMS, con picos de 317 mN·m. El par crudo lleva además un rizado de
+  alta frecuencia (96 mN·m RMS) que viene del ruido de velocidad derivado del
+  encoder. En el robot real conviene un observador de velocidad o un filtrado
+  más fuerte de la parte derivativa.
 - `videos/phri_d35_core.mp4`: modo impedancia; un "humano" empuja 6 N en x, z e y y abre la pinza con un momento sobre la plataforma azul. La flecha roja es la fuerza aplicada y la verde la estimada con el modelo, sólo desde los encoders.
 
 Con el showcase original (giro z de ±45°), la versión con modelo se pierde a

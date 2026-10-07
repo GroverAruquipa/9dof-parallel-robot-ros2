@@ -36,10 +36,10 @@ def renderer_for(m):
 def cam(m, h):
     c = mujoco.MjvCamera()
     c.type = mujoco.mjtCamera.mjCAMERA_FREE
-    c.lookat[:] = [0, 0, h * 0.5]
-    c.distance = 0.50
+    c.lookat[:] = [0, 0, h * 0.42]
+    c.distance = 0.78
     c.azimuth = 135
-    c.elevation = -18
+    c.elevation = -24
     return c
 
 
@@ -67,10 +67,12 @@ def tracking_video(name, speedup=1.0):
     rend = renderer_for(m)
     camera = cam(m, S['h'])
     out = os.path.join(HERE, 'videos', f'tracking_{name}.mp4')
-    wr = imageio.get_writer(out, fps=30, codec='libx264', quality=7, macro_block_size=8)
+    wr = imageio.get_writer(out, fps=30, codec='libx264', quality=6, macro_block_size=8)
     ps.style()
     t, tau, tff = ff['t'], ff['tau'], ff['tau_ff']
     legs = np.argsort(-np.abs(tff).max(0))[:3]
+    kern = np.ones(25) / 25                      # 25 ms moving average (1 kHz log)
+    tauf = np.column_stack([np.convolve(tau[:, j], kern, mode='same') for j in range(tau.shape[1])])
     labels = ff['label']
     for k, (tf, qpos) in enumerate(zip(ff['tfr'], ff['qpos'])):
         d.qpos[:] = qpos
@@ -82,21 +84,22 @@ def tracking_video(name, speedup=1.0):
         axr = fig.add_axes([0, 0, RW / W, 1]); axr.imshow(img); axr.axis('off')
         axr.text(0.03, 0.96, f'{labels[i]}', transform=axr.transAxes, fontsize=16, weight='bold')
         axr.text(0.03, 0.92, f't = {tf:5.2f} s   (showcase x2, 50 g por plataforma)', transform=axr.transAxes, fontsize=11)
-        axr.text(0.03, 0.03, 'MuJoCo "real": tubos de carbono, rotor, fricción, encoders 2000 cpr\n'
-                 'control: PD articular suave + par del modelo dinámico (prealimentación)',
+        axr.text(0.03, 0.03, 'MuJoCo "real": tubos de carbono, rotor, fricción, encoders de 14 bit en la manivela, N = 4\n'
+                 'control: impedancia cartesiana + par del modelo dinámico (prealimentación)',
                  transform=axr.transAxes, fontsize=9.5, color='0.25')
         a1 = fig.add_axes([0.61, 0.56, 0.37, 0.38])
         w0 = max(0, tf - 4.0)
         sel = (t >= w0) & (t <= tf)
         for j, c in zip(legs, ps.C):
-            a1.plot(t[sel], tau[sel, j] * 1e3, color=c, lw=1.8, label=f'aplicado, manivela {j + 1}')
-            a1.plot(t[sel], tff[sel, j] * 1e3, '--', color='k', lw=1.0)
+            a1.plot(t[sel], tau[sel, j] * 1e3, color=c, lw=0.6, alpha=0.25)
+            a1.plot(t[sel], tauf[sel, j] * 1e3, color=c, lw=2.0, label=f'aplicado (filtrado 25 ms), manivela {j + 1}')
+            a1.plot(t[sel], tff[sel, j] * 1e3, '--', color='k', lw=1.1)
         a1.plot([], [], '--', color='k', lw=1, label='predicho por el modelo')
         a1.set_xlim(w0, w0 + 4.0)
-        lim = np.abs(tau[:, legs]).max() * 1.1e3
+        lim = max(np.abs(tauf[:, legs]).max(), np.abs(tff[:, legs]).max()) * 1.4e3
         a1.set_ylim(-lim, lim)
         a1.set_title('Par en la manivela: total aplicado vs modelo', fontsize=11)
-        a1.set_ylabel('mN·m'); a1.legend(fontsize=8, loc='upper left', ncol=2)
+        a1.set_ylabel('mN·m'); a1.legend(fontsize=7.5, loc='upper left', ncol=2)
         a2 = fig.add_axes([0.61, 0.08, 0.37, 0.36])
         a2.plot(pd['t'][pd['t'] <= tf], pd['ep'][pd['t'] <= tf] * 1e3, color=ps.C[1], lw=1.4, label='solo PD')
         a2.plot(t[t <= tf], ff['ep'][t <= tf] * 1e3, color=ps.C[2], lw=1.4, label='PD + modelo dinámico')
@@ -117,7 +120,7 @@ def phri_video(name):
     camera = cam(m, S['h'])
     camera.azimuth = 120
     out = os.path.join(HERE, 'videos', f'phri_{name}.mp4')
-    wr = imageio.get_writer(out, fps=30, codec='libx264', quality=7, macro_block_size=8)
+    wr = imageio.get_writer(out, fps=30, codec='libx264', quality=6, macro_block_size=8)
     ps.style()
     t = L['t']
     pid1 = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, 'platform_1')
@@ -140,7 +143,7 @@ def phri_video(name):
         axr.text(0.03, 0.92, f't = {tf:5.2f} s     rojo: fuerza del humano     verde: estimada con el modelo',
                  transform=axr.transAxes, fontsize=11)
         axr.text(0.03, 0.03, 'sin sensor de fuerza: observador de momento con M$_a$, c$_a$, g$_a$ del modelo\n'
-                 'y solo los 9 encoders (2000 cpr x N)', transform=axr.transAxes, fontsize=9.5, color='0.25')
+                 'y solo los 9 encoders de 14 bit', transform=axr.transAxes, fontsize=9.5, color='0.25')
         a1 = fig.add_axes([0.61, 0.56, 0.37, 0.38])
         sel = t <= tf
         for j, (c, lab) in enumerate(zip(ps.C, 'xyz')):
