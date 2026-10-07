@@ -1,0 +1,10 @@
+   gen 10: f = 3.60009
+   gen 20: f = 3.07241
+   gen 30: f = 2.45807
+   gen 40: f = 2.14023
+   gen 50: f = 1.71765
+   gen 60: f = 1.57957
+   gen 70: f = 1.57957
+   gen 80: f = 1.39789
+/usr/lib/python3.13/multiprocessing/resource_tracker.py:479: UserWarning: resource_tracker: There appear to be 6 leaked semaphore objects to clean up at shutdown: {'/mp-q3e156b0', '/mp-0asys33e', '/mp-er53awsi', '/mp-cvoq73kl', '/mp-ni56yrej', '/mp-il8dtjf8'}
+  warnings.warn(

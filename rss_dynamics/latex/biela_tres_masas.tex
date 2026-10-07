@@ -1,0 +1,61 @@
+% Extension of the document: distributed mass of the S-S link.
+% Paste after the paragraph that lumps m_bi/2 + m_bi/2 (section "Hipotesis y notacion del robot")
+% and add the term to eqs. (deflam) and (fi).  Same notation and macros as the document.
+
+\subsection{Masa distribuida de la biela}
+
+El reparto $m_{bi}/2+m_{bi}/2$ conserva la masa y el centro de masa de la biela, pero no su inercia transversal.
+
+Para una biela delgada de longitud $l_i$ con un tubo de masa $m_{ti}$ y longitud $l_{ti}$ centrado entre las rótulas y dos terminales de masa $m_{ei}$ en las rótulas, el momento de inercia respecto a su centro y perpendicular a ella es
+\begin{equation}
+I_{bi}=\frac{m_{ti}l_{ti}^2}{12}+2m_{ei}\Big(\frac{l_i}{2}\Big)^2,
+\label{eq:Ibi}
+\end{equation}
+mientras que el reparto en dos mitades da $m_{bi}l_i^2/4$, que con $m_{ei}=0$ y $l_{ti}=l_i$ es tres veces mayor.
+
+Tres masas puntuales sobre la recta de la biela, $\mu_{ei}$ en cada rótula y $\mu_{ci}$ en el punto medio, reproducen la masa, el centro de masa y la inercia transversal si
+\begin{equation}
+\mu_{ei}=m_{ei}+\frac{m_{ti}l_{ti}^2}{6l_i^2},
+\qquad
+\mu_{ci}=m_{ti}-\frac{m_{ti}l_{ti}^2}{3l_i^2},
+\label{eq:tresmasas}
+\end{equation}
+que para $l_{ti}=l_i$ y $m_{ei}=0$ es el reparto clásico $m_{ti}/6$, $2m_{ti}/3$, $m_{ti}/6$.
+
+La inercia alrededor del propio eje de la biela es nula en las dos descripciones, y no interviene porque las dos rótulas no transmiten momento alrededor de ese eje.
+
+Las masas $\mu_{ei}$ se tratan como antes, sustituyendo $m_{bi}/2$ por $\mu_{ei}$ en la manivela y en el cuerpo $k$.
+
+La masa central está en $(\mathbf{b}_i+\mathbf{A}_i)/2$, con $\mathbf{A}_i=O_p+\mathbf{Q}_k\mathbf{a}_i$, y su aceleración es la media de las de las dos rótulas,
+\begin{equation}
+\ddot{\mathbf{r}}_{ci}=\tfrac12\big(\ddot{\mathbf{b}}_i+\ddot{\mathbf{A}}_i\big),
+\qquad
+\ddot{\mathbf{A}}_i=\ddot{\pvec}+\dot{\wv}_k\times\mathbf{Q}_k\mathbf{a}_i+\wv_k\times\big(\wv_k\times\mathbf{Q}_k\mathbf{a}_i\big),
+\label{eq:aci}
+\end{equation}
+con $\ddot{\mathbf{b}}_i$ de \eqref{eq:bdd}.
+
+Su desplazamiento virtual es también la media, $\delta\mathbf{r}_{ci}=\tfrac12(\delta\mathbf{b}_i+\delta\mathbf{A}_i)$, luego en el trabajo virtual su inercia menos su peso,
+\begin{equation}
+\mathbf{f}_{ci}=\mu_{ci}\big(\ddot{\mathbf{r}}_{ci}-\mathbf{g}\big),
+\label{eq:fci}
+\end{equation}
+actúa como $\tfrac12\mathbf{f}_{ci}$ en la rótula de la manivela y $\tfrac12\mathbf{f}_{ci}$ en la rótula del cuerpo $k$.
+
+En \eqref{eq:deflam} se suma al lado derecho el vector de nueve componentes formado igual que \eqref{eq:JTcol},
+\begin{equation}
+\mathbf{J}\T\lam=\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c+\sum_{i=1}^{n}\tfrac12
+\begin{bmatrix}\mathbf{f}_{ci}\\ \delta_{k1}\,\mathbf{Q}_1\mathbf{a}_i\times\mathbf{f}_{ci}\\ \delta_{k2}\,\mathbf{Q}_2\mathbf{a}_i\times\mathbf{f}_{ci}\end{bmatrix},
+\label{eq:deflamc}
+\end{equation}
+donde $\delta_{kj}$ vale 1 si la pata $i$ está fijada al cuerpo $j$ y 0 si no, y en \eqref{eq:fi} se suma el momento de $\tfrac12\mathbf{f}_{ci}$ alrededor del eje de la manivela,
+\begin{equation}
+\tau_i=I_{mi}\ddot\theta_i-m_{mi}\,\mathbf{g}\T\big(\mathbf{v}_i\times\mathbf{d}_{ci}\big)+K_{ii}\sigma_i+\tfrac12\,\mathbf{f}_{ci}\T\big(\mathbf{v}_i\times\mathbf{d}_i\big).
+\label{eq:fic}
+\end{equation}
+
+En la dinámica inversa $\cdd$ y $\ddot{\thv}$ son conocidas antes de resolver \eqref{eq:deflamc}, y el cálculo sigue siendo un único sistema de $9\times9$.
+
+En la dinámica directa $\mathbf{f}_{ci}$ depende de $\xdd$ a través de $\ddot{\pvec}$, $\dot{\wv}_k$ y $\ddot\theta_i$, de forma afín, y \eqref{eq:directa} conserva su estructura con una matriz de masa aumentada, que puede obtenerse columna a columna evaluando la dinámica inversa con $\xd$ fijo y $\xdd$ igual a cada vector de la base.
+
+Con los datos del prototipo ($m_{ti}\approx2.6$ g, $m_{ei}\approx1.2$ g, $l_i\approx180$ mm, plataformas de unos 10 g cada una), la diferencia entre $m_{bi}l_i^2/4$ y \eqref{eq:Ibi} es del orden de la inercia de las propias plataformas, y omitirla cambia las aceleraciones de la plataforma en decenas por ciento para unos pares dados.
