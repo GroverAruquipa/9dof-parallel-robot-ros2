@@ -1,0 +1,87 @@
+[
+ {
+  "N": 3,
+  "encoder": "True",
+  "label": "N=3, encoder del motor",
+  "tracking": {
+   "ep_max_mm": 2.161098213609245,
+   "eR_max_deg": 3.714019960668535,
+   "tau_max": 0.873205679214578,
+   "fb_rms": 0.10412472819940913
+  },
+  "phri": {
+   "force_err_max_N": 9.632144220408389,
+   "force_err_rms_N": 2.223465806225278,
+   "disp_max_mm": 32.805039188205306,
+   "tau_max": 0.9119999999999999
+  }
+ },
+ {
+  "N": 4,
+  "encoder": "True",
+  "label": "N=4, encoder del motor",
+  "tracking": {
+   "ep_max_mm": 0.6726808757072256,
+   "eR_max_deg": 1.6220233008143103,
+   "tau_max": 0.729558799018527,
+   "fb_rms": 0.07793550947589938
+  },
+  "phri": {
+   "force_err_max_N": 4.170088776528442,
+   "force_err_rms_N": 1.0210265835720034,
+   "disp_max_mm": 27.474740827961877,
+   "tau_max": 1.216
+  }
+ },
+ {
+  "N": 6,
+  "encoder": "True",
+  "label": "N=6, encoder del motor",
+  "tracking": {
+   "ep_max_mm": 0.7843340084579931,
+   "eR_max_deg": 1.8138723354020072,
+   "tau_max": 0.6157753810586767,
+   "fb_rms": 0.052869033283241225
+  },
+  "phri": {
+   "force_err_max_N": 2.4018386329867125,
+   "force_err_rms_N": 0.5414105607980813,
+   "disp_max_mm": 22.75851603164864,
+   "tau_max": 1.8239999999999998
+  }
+ },
+ {
+  "N": 3,
+  "encoder": "16384",
+  "label": "N=3 + encoder 14 bit en la manivela",
+  "tracking": {
+   "ep_max_mm": 0.7027049248315052,
+   "eR_max_deg": 1.118145007162633,
+   "tau_max": 0.38016554378546386,
+   "fb_rms": 0.04244042758695694
+  },
+  "phri": {
+   "force_err_max_N": 8.623671795933484,
+   "force_err_rms_N": 1.0589484616041762,
+   "disp_max_mm": 29.989569341719797,
+   "tau_max": 0.9119999999999999
+  }
+ },
+ {
+  "N": 4,
+  "encoder": "16384",
+  "label": "N=4 + encoder 14 bit en la manivela",
+  "tracking": {
+   "ep_max_mm": 0.41556590527757076,
+   "eR_max_deg": 0.6445465355157856,
+   "tau_max": 0.3869102779183933,
+   "fb_rms": 0.04148944502961497
+  },
+  "phri": {
+   "force_err_max_N": 2.032019388622755,
+   "force_err_rms_N": 0.37633838250626345,
+   "disp_max_mm": 26.06331267698108,
+   "tau_max": 1.216
+  }
+ }
+]

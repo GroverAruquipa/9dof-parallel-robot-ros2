@@ -80,7 +80,7 @@ class Showcase:
     """The showcase of the grasping robot (same motions and amplitudes), time-scaled
     by `speed` (1 = original timing)."""
 
-    def __init__(self, h, speed=1.0, amp=1.0):
+    def __init__(self, h, speed=1.0, amp=1.0, yaw=45 * DEG):
         self.h = h
         z = params()
         A = amp
@@ -95,7 +95,7 @@ class Showcase:
         pieces += swing('Traslacion Z', 'z', 15 * MM * A, 4.5)
         pieces += swing('Rotacion X', 'roll', 20 * DEG * A, 4.5)
         pieces += swing('Rotacion Y', 'pitch', 20 * DEG * A, 4.5)
-        pieces += swing('Rotacion Z', 'yaw', 45 * DEG * A, 5.0)
+        pieces += swing('Rotacion Z', 'yaw', yaw * A, 5.0)
         j = params(jaw=15 * DEG * A)
         pieces += [('Pinza (rotacion relativa)', Line(z, j), 1.5, True), ('Pinza (rotacion relativa)', Line(j, z), 1.5, True)] * 2
         c0 = params(x=25 * MM * A)

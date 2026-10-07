@@ -34,14 +34,14 @@ def crank_angles(S):
 
 
 def tracking(S, speed=2.0, feedforward=True, Kt=600.0, Kr=0.5, zeta=0.8, T=None, fps=30,
-             rod_model='3mass', quantise=True, fc=60.0):
+             rod_model='3mass', quantise=True, fc=60.0, yaw=30 * np.pi / 180):
     """Showcase tracking with a Cartesian PD (impedance) on c, from the encoders only:
         tau = tau_ff + G^T (K e + D e_dot),  tau_ff = inverse dynamics of the reference + friction.
     A joint PD is not used: the robot is far more compliant in some directions
     (yaw of each half), so equal joint gains give very unequal Cartesian stiffness."""
     r, b, m = S['robot'], S['bridge'], S['model']
     r.set_inertia(lumped_inertia(S['P'], r.a, rod_model))
-    tr = Showcase(S['h'], speed=speed)
+    tr = Showcase(S['h'], speed=speed, yaw=yaw)
     T = tr.duration if T is None else T
     dt = m.opt.timestep
     dtc = 1e-3

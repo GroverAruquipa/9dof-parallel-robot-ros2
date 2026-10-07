@@ -1,0 +1,48 @@
+{
+ "V1": {
+  "max_rel_err_theta_dot": 1.3290353739412094e-09,
+  "max_rel_err_theta_dd": 3.0053809142038628e-05,
+  "note": "central differences, h = 1e-5 s (velocity) and 3e-5 s (acceleration): the error shown is the finite-difference error"
+ },
+ "V2": {
+  "max_rel_err_Ec_matrix_vs_bodies": 3.415336077345188e-16,
+  "max_abs_power_residual_W": 2.2579973748930449e-07,
+  "max_power_W": 0.04112037556482016
+ },
+ "V3": {
+  "max_abs_tau_err_Nm": 6.452444148430381e-09,
+  "max_tau_Nm": 0.11991454180979949,
+  "rel": 5.380868784592298e-08,
+  "lsq_residual_tree": 2.6886428840381104e-14,
+  "max_rel_acc_err_rigid_forward": 7.738565404699314e-07
+ },
+ "V4": {
+  "max_abs_leg_force_err_N": 1.9114461746738698e-07,
+  "max_leg_force_N": 3.489871671015764
+ },
+ "V5": {
+  "doc_tau_max_rel": 0.014761131159096292,
+  "mass3_tau_max_rel": 8.52631156533148e-06,
+  "doc_acc_max_rel": 0.17467107943210197,
+  "mass3_acc_max_rel": 0.00010605739432352498,
+  "doc_acc_platform_rms_rel": 0.019452129527167954,
+  "mass3_acc_platform_rms_rel": 1.1369200102167562e-05
+ },
+ "V6": {
+  "MuJoCo ideal vs modelo (documento)": {
+   "max_dp_mm": 0.026544361791980962,
+   "max_dQ_deg": 0.0657402852147739,
+   "drift_from_reference_mm": 0.02580264096233819
+  },
+  "MuJoCo real vs modelo (documento)": {
+   "max_dp_mm": 24.069997219437706,
+   "max_dQ_deg": 179.75376659144783,
+   "drift_from_reference_mm": 0.02580264096233819
+  },
+  "MuJoCo real vs modelo (3 masas)": {
+   "max_dp_mm": 0.0983691434895157,
+   "max_dQ_deg": 0.249247654332105,
+   "drift_from_reference_mm": 0.04248134715775875
+  }
+ }
+}

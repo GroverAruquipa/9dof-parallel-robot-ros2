@@ -36,7 +36,7 @@ import plotstyle as ps
 
 name = sys.argv[1] if len(sys.argv) > 1 else 'd25'
 PAYLOAD = (0.020, 0.020)
-T_OPEN = float(os.environ.get("T_OPEN", "1.5"))
+T_OPEN = float(os.environ.get("T_OPEN", "0.8"))
 FIG = os.path.join(HERE, 'figures')
 RES = {}
 
@@ -203,7 +203,7 @@ def open_loop(S, rod_model, T=None, dt=1e-4):
     mujoco.mj_resetData(m, b.d)
     b.set(qpos, qvel)
     mj = []
-    nsteps = int(round(T / dt))
+    nsteps = (len(out) - 1) * 20
     for k in range(nsteps + 1):
         if k % 20 == 0:
             mj.append(b.model_state())

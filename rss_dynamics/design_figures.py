@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src', 'ninedof_kinematics'))
 from ninedof_kinematics.kinematics import NineDofKinematics, xyz_from_rot
 
-from design import make_robot, NAMES, workspace, evaluate, pose_metrics, L_CHAR, LIMITS, HERE, MM, DEG
+from design import make_robot, NAMES, workspace, core_workspace, evaluate, pose_metrics, L_CHAR, LIMITS, HERE, MM, DEG
 from geometry import pose_from_params, GEOM_YAML
 import plotstyle as ps
 
@@ -51,7 +51,7 @@ def icond_pss(v):
 
 def main():
     ps.style()
-    designs = {n: load(n) for n in ('d25', 'd35')}
+    designs = {n: load(n) for n in ('d25_core', 'd35_core')}
     summary = {}
     W = workspace()
     # ------------------------------------------------------------ summary
@@ -67,12 +67,14 @@ def main():
             tip_radius_Rt_mm=x[0] / MM, pivot_radius_mm=float(np.hypot(r.c[:, 0], r.c[:, 1]).max() / MM),
             gamma_deg=x[2] / DEG, beta_deg=x[3] / DEG, dpsi1_deg=x[1] / DEG, dpsi2_deg=x[6] / DEG, alt_deg=x[7] / DEG,
             icond_home=float(ic[0]), icond_min=float(ic.min()), icond_median=float(np.median(ic)),
+            icond_core_min=float(min(icond_rss(r, x, D['d'], v) for v in core_workspace())),
             kappa_home=float(1 / ic[0]), kappa_max=float(1 / ic.min()),
             worst={k: float(v) for k, v in det['worst'].items()}, fails=det['fails'],
             crank_axes=r.v.tolist(), pivots_mm=(r.c / MM).tolist(), tips_home_mm=(tips / MM).tolist(),
             socket_axes_platform=det['socket_axis'].tolist())
     icp = np.array([icond_pss(v) for v in W])
-    summary['pss_original'] = dict(icond_home=float(icp[0]), icond_min=float(np.nanmin(icp)),
+    summary['pss_original'] = dict(icond_core_min=float(np.nanmin([icond_pss(v) for v in core_workspace()])),
+                                   icond_home=float(icp[0]), icond_min=float(np.nanmin(icp)),
                                    icond_median=float(np.nanmedian(icp)), kappa_home=float(1 / icp[0]))
     json.dump(summary, open(os.path.join(HERE, 'results', 'design_summary.json'), 'w'), indent=1)
     # ------------------------------------------------------------ geometry

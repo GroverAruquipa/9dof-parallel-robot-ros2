@@ -36,10 +36,10 @@ def renderer_for(m):
 def cam(m, h):
     c = mujoco.MjvCamera()
     c.type = mujoco.mjtCamera.mjCAMERA_FREE
-    c.lookat[:] = [0, 0, h * 0.55]
-    c.distance = 0.62
+    c.lookat[:] = [0, 0, h * 0.5]
+    c.distance = 0.50
     c.azimuth = 135
-    c.elevation = -22
+    c.elevation = -18
     return c
 
 

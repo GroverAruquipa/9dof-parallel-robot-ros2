@@ -47,7 +47,10 @@ def simulate(robot, p, Q1, Q2, cd, tau_fn, T, dt=1e-4, every=10, f_ext_fn=None):
             out.append((t, p.copy(), Q1.copy(), Q2.copy(), cd.copy()))
         if k == nsteps:
             break
-        p, Q1, Q2, cd = rk4_step(robot, p, Q1, Q2, cd, tau_fn, t, dt, f_ext_fn)
+        try:
+            p, Q1, Q2, cd = rk4_step(robot, p, Q1, Q2, cd, tau_fn, t, dt, f_ext_fn)
+        except ValueError:          # left the workspace (open loop): stop here
+            break
         t += dt
     return out
 

@@ -159,15 +159,15 @@ def main():
             ax[1, 1].plot(NS, np.array(rs) * 1e3, ls, color=ps.C[0], alpha=al, label=lab + ' (mm)')
             ax[1, 1].plot(NS, np.degrees(rr_), ls, color=ps.C[3], alpha=al, label=lab + ' (grados)')
         # torque split at N = 3 (example)
-        if name == 'd25':
-            N = 3.0
+        if name.startswith('d35'):
+            N = 4.0
             Jm = MOTOR['J_rotor'] + 5e-8
             a = ax[1, 2]
             i = np.argmax(np.abs(TAU).max(0))
             a.plot(ts, TAU[:, i] * 1e3, color=ps.C[0], label='plataformas + bielas + manivela + gravedad')
             a.plot(ts, N ** 2 * Jm * THDD[:, i] * 1e3, color=ps.C[1], label=r'rotor reflejado $N^2 J_r\ddot\theta$')
             a.plot(ts, N * MOTOR['tau_coulomb'] * np.sign(THD[:, i]) * 1e3, color='0.5', lw=0.8, label=r'fricción Coulomb $N\tau_c$ (estimada)')
-            a.set_title(f'Par en la manivela {i + 1}, showcase 2x, 50 g, N = 3, d = 25 mm', fontsize=10)
+            a.set_title(f'Par en la manivela {i + 1}, showcase 2x, 50 g, N = 4, d = 35 mm', fontsize=10)
             a.set_xlabel('t (s)'); a.set_ylabel('mN·m'); a.legend(fontsize=7.5)
         out[name] = res
     ax[0, 0].axhline(MOTOR['I_cont'], color='k', lw=0.8, ls=':'); ax[0, 0].text(1, MOTOR['I_cont'] * 1.04, 'I continua (estimada)', fontsize=8)
