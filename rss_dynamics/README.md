@@ -111,7 +111,7 @@ estimaciones.
 
 ![factibilidad](figures/feasibility.png)
 
-- **Inercia:** con N = 4, la inercia reflejada del rotor (1.6·10<sup>-4</sup> kg·m²) es 18 veces la de la manivela con su polea (9·10<sup>-6</sup>). Para las manivelas, el robot es sobre todo "rotores".
+- **Inercia:** con N = 4, la inercia reflejada del rotor (1.6·10<sup>-4</sup> kg·m²) es 18 veces la de la manivela con su polea (9·10<sup>-6</sup>). Aun así, en el par de manivela pesa más la inercia de plataformas y bielas reflejada por el mecanismo (tabla de la sección 4).
 - **Par:** en el showcase al doble de velocidad con 50 g por plataforma, la corriente RMS es 0.6 A con N = 4. El pico, 5.3 A con K<sub>t</sub> bajo o 2.8 A con K<sub>t</sub> alto, aparece sólo en los extremos (giro z ±45°, cono), donde la plataforma se acerca a la banda casi singular.
 - **pHRI:** sin compensar, la fricción de Coulomb que se siente al empujar O<sub>p</sub> en traslación pura es de unos 16 N en la peor dirección con N = 4. Es intrínseca: N·τ<sub>c</sub>/d por pata ≈ 1.7 N. La compensación de fricción con el modelo es imprescindible. La masa aparente en O<sub>p</sub> es de 18 a 69 g.
 - **Resolución:** un conteo del encoder del motor con N = 4 equivale a ~0.7 mm o ~1° en la dirección débil, y eso es lo que falla en lazo cerrado. Un AS5048A (14 bit, absoluto) en cada manivela lo mejora 2× y además resuelve la calibración de ceros, que fue el problema del giro en y del robot de 3 rotaciones.
@@ -181,9 +181,27 @@ Con el showcase original (giro z de ±45°), la versión con modelo se pierde a
 los 12 s, al cruzar la banda casi singular cerca de −50°. Está documentado en
 la sección 1 y es la razón del límite de ±30°.
 
+### Qué términos dominan el par
+
+Descomposición del par de manivela del modelo (máximo en el showcase con el giro z limitado a ±30°, N = 4):
+
+| caso | gravedad | inercia del mecanismo | rotor N²J | Coriolis/centrífugos |
+|---|---|---|---|---|
+| 50 g por plataforma, ×2 | 256 mN·m | 16 | 2 | 2 |
+| 50 g por plataforma, ×6 | 256 | 142 | 18 | 16 |
+| sin carga, ×2 | 67 | 5 | 2 | 0.5 |
+| sin carga, ×6 | 67 | 45 | 18 | 4 |
+
+A la velocidad del showcase el robot es casi cuasiestático: la gravedad
+amplificada por el mecanismo es más del 90 % del par. Los términos inerciales
+crecen con el cuadrado de la velocidad y sólo a ×6 llegan a la mitad de la
+gravedad. La fricción de Coulomb reflejada (N·τ<sub>c</sub> ≈ 60 mN·m por
+manivela) es del orden de la gravedad sin carga, así que para ver la dinámica
+hay que compensar la fricción y moverse rápido o con carga.
+
 ## 5. Limitaciones y qué medir en el prototipo
 
 - K<sub>t</sub>, inercia del rotor y fricción del motor (Coulomb y viscosa): son las tres estimaciones que más pesan. Con ensayos de una sola manivela sin biela (rampa de par y desaceleración libre) se identifican en minutos.
 - Rótulas impresas en PA12: fricción y holgura no están modeladas, y con plataformas de 10 g pueden dominar la dinámica de la plataforma.
 - La correa se trata como rígida. Una GT2 de 6 mm con estos pares es rígida comparada con las rótulas, pero conviene tensarla bien.
-- Para demostrar la dinámica (no sólo la estática), conviene añadir masa conocida en las plataformas (50–100 g). Sin ella, el par está dominado por los rotores y la fricción, y los términos M<sub>c</sub>, h<sub>c</sub> de las plataformas son pequeños frente a esos.
+- Para demostrar la dinámica (no sólo la estática), conviene añadir masa conocida en las plataformas (50–100 g). Sin ella, la fricción del motor es del orden de la gravedad, y los términos inerciales sólo se notan a velocidades altas.
