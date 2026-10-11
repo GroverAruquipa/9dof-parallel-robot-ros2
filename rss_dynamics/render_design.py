@@ -26,11 +26,12 @@ name, ref = sys.argv[1], (sys.argv[2] if len(sys.argv) > 2 else None)
 S = setup(name, mode='real', payload=(0.0, 0.0), motors=[])
 h = S['h']; D = np.pi / 180
 look = [0, 0, h * 0.45]
-iso = lambda: cam(135, -20, 0.45, look)
-top = lambda: cam(90, -62, 0.42, [0, 0, 0.02])
+ZOOM = h / 0.136
+iso = lambda: cam(135, -20, 0.45 * ZOOM, look)
+top = lambda: cam(90, -62, 0.42 * ZOOM, [0, 0, 0.02])
 home = np.r_[0, 0, 0, 0, 0, 0, 8 * D]
 imgs = [('Isométrica, home', shot(S, home, iso())),
-        ('Frontal (x-z), home', shot(S, home, cam(90, -4, 0.45, look))),
+        ('Frontal (x-z), home', shot(S, home, cam(90, -4, 0.45 * ZOOM, look))),
         ('Pinza abierta 30°, giro x 15°, x +20 mm', shot(S, np.r_[0.02, 0, 0, 15 * D, 0, 0, 15 * D], iso())),
         ('Vista desde arriba: este diseño', shot(S, home, top()))]
 if ref:

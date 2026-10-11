@@ -22,10 +22,10 @@ import numpy as np
 from scipy.optimize import differential_evolution
 
 from model import RSS9
-from geometry import build_geometry, fix_branch, pose_from_params, home_pose, MM, DEG
+from geometry import build_geometry, fix_branch, pose_from_params, home_pose, MM, DEG, PSCALE
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-L_CHAR = 0.0375
+L_CHAR = 0.0375 * PSCALE          # platform radius (homogenises translations and rotations)
 WORKERS = int(os.environ.get('WORKERS', '-1'))
 DUMMY_INERTIA = dict(M=[1, 1], s0=np.zeros((2, 3)), IC0=np.array([np.eye(3)] * 2),
                      Im=np.ones(9), mm=np.ones(9), rc=np.ones(9))
@@ -191,8 +191,8 @@ def evaluate(x, d, W, details=False):
 CORE = core_workspace()
 
 
-BOUNDS = [(0.04, 0.12), (-80 * DEG, 80 * DEG), (-180 * DEG, 180 * DEG), (-60 * DEG, 60 * DEG),
-          (0.06, 0.18), (0.04, 0.18), (-80 * DEG, 80 * DEG), (0, 40 * DEG)]
+BOUNDS = [(0.04, 0.12 * PSCALE), (-80 * DEG, 80 * DEG), (-180 * DEG, 180 * DEG), (-60 * DEG, 60 * DEG),
+          (0.06, 0.18 * PSCALE), (0.04, 0.18 * PSCALE), (-80 * DEG, 80 * DEG), (0, 40 * DEG)]
 NAMES = ['Rt', 'dpsi', 'gamma', 'beta', 'l', 'h', 'dpsi2', 'alt']
 
 
@@ -230,7 +230,6 @@ if __name__ == '__main__':
         out = dict(d=d, x=dict(zip(NAMES, best.x.tolist())), objective=-best.fun,
                    worst={k: float(v) for k, v in w.items()}, fails=det['fails'],
                    limits={k: float(v) for k, v in LIMITS.items()}, L_char=L_CHAR)
-        from geometry import PSCALE
         out['platform_scale'] = PSCALE
         tag = f'd{d / MM:.0f}' + ('' if PSCALE == 1 else f'_s{PSCALE:g}'.replace('.', '')) + ('' if OBJ == 'worst' else f'_{OBJ}') + ('' if RMAX >= 1 else f'_R{RMAX * 1e3:.0f}')
         out['objective_kind'] = OBJ

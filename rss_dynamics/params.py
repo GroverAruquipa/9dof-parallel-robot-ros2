@@ -49,7 +49,10 @@ def pulley(teeth, width=9 * MM, rho=RHO['pa12']):
 
 
 def platform_mesh(k):
+    from geometry import PSCALE
     m = trimesh.load(os.path.join(MESH_DIR, f'platform_{k}.stl'))
+    if PSCALE != 1:
+        m.apply_scale(PSCALE)          # CAD platform scaled uniformly (solid PA12: mass x PSCALE^3)
     m.density = RHO['pa12']
     return dict(mass=m.mass, com=m.center_mass.copy(), I=m.moment_inertia.copy(), mesh=m)
 

@@ -113,12 +113,17 @@ def layout(name, R, ring_offset, LEVELS=1):
 name = sys.argv[1] if len(sys.argv) > 1 else 'd35_core_R100'
 out = {}
 fig, axs = plt.subplots(1, 2, figsize=(15, 7.5))
-for ax, (lab, R, stag) in zip(axs, (('mismo nivel', R_same, False), ('en 3 niveles', R_stag, True))):
+_D = json.load(open(os.path.join(HERE, 'results', f'design_{name}.json')))
+R_BIG = pulley(round(16 * _D.get('N', 4.0)))['r'] * 1e3
+for ax, (lab, R0, stag) in zip(axs, (('mismo nivel', R_same, False), ('en 3 niveles', R_stag, True))):
     best = None
-    for off in np.linspace(0, 2 * np.pi / n, 40, endpoint=False):
-        res = layout(name, R, off, 3 if stag else 1)
-        if res is not None and (best is None or res[4].max() < best[4].max()):
-            best = res + (off,)
+    for R in np.arange(R0, R0 + 120, 2.0):          # smallest ring that also fits the belts
+        for off in np.linspace(0, 2 * np.pi / n, 40, endpoint=False):
+            res = layout(name, R, off, 3 if stag else 1)
+            if res is not None and (best is None or res[4].max() < best[4].max()):
+                best = res + (off,)
+        if best is not None:
+            break
     r, motors, shafts, assign, C, belts, lev, off = best
     if best is None:
         out[lab] = dict(ring_radius_mm=R, feasible=False); continue
@@ -137,7 +142,7 @@ for ax, (lab, R, stag) in zip(axs, (('mismo nivel', R_same, False), ('en 3 nivel
         ax.add_patch(sq); ax.add_patch(Circle((mx, my), BODY / 2, fc='0.35', ec='k', alpha=0.8))
         ax.add_patch(Circle((mx, my), R_SMALL, fc='gold', ec='k'))
         ax.text(mx * 1.27, my * 1.27, f'M{k + 1}' + (f' (nivel {k % 3})' if stag else ''), ha='center', va='center', fontsize=8)
-    tips = r.c + r.crank(r.ik(np.array([0, 0, 0.13626]), np.eye(3), np.eye(3)))[0]
+    tips = r.c + r.crank(r.ik(np.array([0, 0, _D['x']['h']]), np.eye(3), np.eye(3)))[0]
     for i in range(n):
         ax.add_patch(Circle(shafts[i], R_BIG, fc='none', ec=['tab:blue', 'tab:green', 'tab:purple'][lev[i]], lw=1.5))
         m = motors[assign[i]]; ax.plot(*np.c_[shafts[i], m], color='tab:blue', lw=1)
@@ -145,10 +150,11 @@ for ax, (lab, R, stag) in zip(axs, (('mismo nivel', R_same, False), ('en 3 nivel
         ax.text(*(tips[i, :2] * 1e3 * 1.12), str(i + 1), color='r', fontsize=9, ha='center')
     th = np.linspace(0, 2 * np.pi, 200)
     ax.plot(corner * np.cos(th), corner * np.sin(th), 'k--', lw=0.8)
-    ax.plot(100 * np.cos(th), 100 * np.sin(th), 'r:', lw=0.8)
-    ax.set_aspect('equal'); ax.set_xlim(-160, 160); ax.set_ylim(-160, 160); ax.grid(alpha=0.3)
+    env = (np.max(np.hypot(r.c[:, 0], r.c[:, 1])) + _D['d']) * 1e3
+    ax.plot(env * np.cos(th), env * np.sin(th), 'r:', lw=0.8)
+    ax.set_aspect('equal'); lim = max(160, corner + 15, np.hypot(*tips[:, :2].T).max() * 1e3 + 15); ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim); ax.grid(alpha=0.3)
     ax.set_title(f'Motores verticales {lab}: anillo R {R:.0f} mm, exterior R {corner:.0f} mm\n'
-                 f'correas 16T-64T, distancia entre centros {C.min():.0f}-{C.max():.0f} mm', fontsize=11)
+                 f'correas 16T-{round(16 * _D.get("N", 4.0))}T, distancia entre centros {C.min():.0f}-{C.max():.0f} mm', fontsize=11)
     ax.set_xlabel('x (mm)'); ax.set_ylabel('y (mm)')
 fig.suptitle('\n' + 'Vista superior. Rojo: manivelas (radio barrido 100 mm, punteado). Azul: polea de 64T en el eje vertical '
              'de transferencia, con par cónico 1:1 a la manivela. Gris: brida y cuerpo del motor; amarillo: polea 16T', fontsize=11)

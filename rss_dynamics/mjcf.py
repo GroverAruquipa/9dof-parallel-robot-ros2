@@ -87,8 +87,9 @@ def build(robot, P, h, mode='real', motors=None, payload_geoms=True, timestep=2e
     w('    <material name="carbon" rgba=".10 .10 .11 1" specular=".6" shininess=".8"/>')
     w('    <material name="alu" rgba=".75 .76 .78 1" specular=".7"/>')
     w('    <material name="motor" rgba=".22 .22 .25 1" specular=".5"/>')
-    w('    <mesh name="platform_1" file="platform_1.stl"/>')
-    w('    <mesh name="platform_2" file="platform_2.stl"/>')
+    from geometry import PSCALE
+    w(f'    <mesh name="platform_1" file="platform_1.stl" scale="{PSCALE} {PSCALE} {PSCALE}"/>')
+    w(f'    <mesh name="platform_2" file="platform_2.stl" scale="{PSCALE} {PSCALE} {PSCALE}"/>')
     w('  </asset>')
     w('  <worldbody>')
     zfloor = -0.20 if motors else -0.08
