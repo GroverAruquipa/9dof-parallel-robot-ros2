@@ -205,3 +205,41 @@ hay que compensar la fricción y moverse rápido o con carga.
 - Rótulas impresas en PA12: fricción y holgura no están modeladas, y con plataformas de 10 g pueden dominar la dinámica de la plataforma.
 - La correa se trata como rígida. Una GT2 de 6 mm con estos pares es rígida comparada con las rótulas, pero conviene tensarla bien.
 - Para demostrar la dinámica (no sólo la estática), conviene añadir masa conocida en las plataformas (50–100 g). Sin ella, la fricción del motor es del orden de la gravedad, y los términos inerciales sólo se notan a velocidades altas.
+
+## 6. Footprint reducido (para el CAD)
+
+Optimicé de nuevo d = 35 mm con el radio barrido por las manivelas limitado
+(|c<sub>xy</sub>| + d). Todos los diseños siguen alcanzando el showcase
+completo. El espacio traslacional se mide con la orientación de home y la
+pinza abierta 8°, en las posiciones de O<sub>p</sub> que cumplen todas las
+restricciones (`trans_workspace.py`).
+
+| radio barrido por las manivelas | 126 mm (actual) | **100 mm** | 85 mm | 70 mm |
+|---|---|---|---|---|
+| ejes de manivela a | 91 mm | **65 mm** | 50 mm | 35 mm |
+| biela l / altura de O<sub>p</sub> sobre los ejes | 177 / 167 mm | **148 / 143 mm** | 121 / 119 mm | 99 / 99 mm |
+| κ en el núcleo (peor) | 67 | **80** | 99 | 164 |
+| cubo centrado (κ ≤ 200) | ±11 mm | **±14 mm** | ±14 mm | ±17 mm |
+| cilindro centrado (κ ≤ 200) | r 21 × ±9 mm | **r 27 × ±6 mm** | r 27 × ±6 mm | r 33 × ±9 mm |
+| volumen (κ ≤ 100) | 291 cm³ | **232 cm³** | 164 cm³ | 0 (κ > 100 ya en home) |
+| seguimiento con modelo / pHRI | 1.5 mm, 4.5° / 0.38 N RMS | **0.59 mm, 2.7° / 0.51 N RMS** | – | – |
+
+Reducir el footprint no encoge el espacio traslacional centrado: lo limitan
+el ángulo de transmisión y el cono de las rótulas, no el tamaño de la base. Lo
+que sí empeora es el condicionamiento. Por debajo de ~85 mm cae rápido, y con
+70 mm ningún punto cumple κ ≤ 100. **Recomiendo 100 mm**; las cotas para
+SolidWorks están en `results/cad_d35_core_R100.md` y `.csv`.
+
+### Los motores son el footprint real
+
+Con correa simple, el eje del motor debe ser paralelo al de la manivela, que
+es casi tangente. La polea del motor queda entonces en el plano de la polea de
+la manivela, y el cuerpo del motor (~160 mm con encoder) sale hacia un lado a
+lo largo de ese eje. Por eso, con motores horizontales el radio ocupado no baja
+de ~190 mm aunque se apilen en profundidad, y la optimización dio 260–270 mm.
+
+Para que los motores quepan bajo las manivelas (~110 mm de radio) hay que
+ponerlos **verticales**, en dos anillos de 5 y 4 a distintas alturas
+(radio ~60 mm, brida de 67 mm), con una de estas dos transmisiones:
+- **correa GT2 con media torsión de 90°**: necesita una distancia entre centros de unas 20 veces el ancho de la correa (≥ 120 mm con 6 mm), y la correa dura menos;
+- **par cónico 1:1 en la manivela** más una correa vertical normal.

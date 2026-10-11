@@ -29,6 +29,7 @@ R_BODY, L_BODY, R_FLANGE, L_FLANGE = 0.0255, 0.140, 0.034, 0.020
 PULLEY_OFFSET = -0.0215          # crank pulley centre along v_i (behind the crank)
 SHAFT_OUT = 0.018                # motor pulley to flange face
 CLEAR = 0.004
+DEPTH_W = float(os.environ.get('DEPTH_W', '0.5'))   # weight of the depth against the radius
 
 
 def motor_geometry(r, z_plate, X):
@@ -68,7 +69,7 @@ def cost(X, r, z_plate, detail=False):
     pts = np.r_[A0, A1]
     radius = np.max(np.hypot(pts[:, 0], pts[:, 1])) + R_FLANGE
     depth = z_plate - (np.min(pts[:, 2]) - R_FLANGE)
-    f = radius + 0.5 * depth + pen
+    f = radius + DEPTH_W * depth + pen
     if detail:
         return dict(radius=radius, depth=depth, pen=pen, motors=M)
     return f
@@ -80,9 +81,9 @@ def main(name='d25'):
     r = make_robot(x, D['d'])
     z_plate = r.c[:, 2].min() - 0.024
     n = r.n
-    bounds = [(0.05, 0.30)] * n + [(-1.2, 1.2)] * n + [(-1, 1)] * n
+    bounds = [(0.05, float(os.environ.get('CMAX', '0.30')))] * n + [(-1.2, 1.2)] * n + [(-1, 1)] * n
     best = None
-    for seed in (0, 1):
+    for seed in [int(v) for v in os.environ.get('SEEDS', '0,1').split(',')]:
         res = differential_evolution(cost, bounds, args=(r, z_plate), seed=seed, maxiter=400,
                                      popsize=10, tol=1e-10, polish=False, init='sobol')
         print(name, seed, res.fun, flush=True)
@@ -99,10 +100,11 @@ def main(name='d25'):
         motors.append(dict(pos=mid.tolist(), axis=m['axis'].tolist(), len=L_BODY, r=R_BODY,
                            pulley_pos=m['pm'].tolist(), belt_offset=PULLEY_OFFSET,
                            C_mm=1e3 * C, belt_length_mm=1e3 * Lb, belt_teeth=int(round(1e3 * Lb / 2))))
-    json.dump(motors, open(os.path.join(HERE, 'results', f'motors_{name}.json'), 'w'), indent=1)
+    tag = name + os.environ.get('TAG', '')
+    json.dump(motors, open(os.path.join(HERE, 'results', f'motors_{tag}.json'), 'w'), indent=1)
     summary = dict(footprint_radius_mm=1e3 * det['radius'], depth_below_plate_mm=1e3 * det['depth'],
                    penalty=det['pen'], z_plate_mm=1e3 * z_plate)
-    json.dump(summary, open(os.path.join(HERE, 'results', f'packaging_{name}.json'), 'w'), indent=1)
+    json.dump(summary, open(os.path.join(HERE, 'results', f'packaging_{tag}.json'), 'w'), indent=1)
     print(json.dumps(summary, indent=1))
     # figure: top and side views
     fig, ax = plt.subplots(1, 2, figsize=(13, 6))
@@ -121,7 +123,7 @@ def main(name='d25'):
                     f'radio ocupado {1e3 * det["radius"]:.0f} mm')
     ax[1].set_title(f'Vista frontal (x-z): profundidad bajo la placa {1e3 * det["depth"]:.0f} mm')
     ax[0].set_xlabel('x (mm)'); ax[0].set_ylabel('y (mm)'); ax[1].set_xlabel('x (mm)'); ax[1].set_ylabel('z (mm)')
-    fig.tight_layout(); fig.savefig(os.path.join(HERE, 'figures', f'packaging_{name}.png'), dpi=140)
+    fig.tight_layout(); fig.savefig(os.path.join(HERE, 'figures', f'packaging_{tag}.png'), dpi=140)
 
 
 if __name__ == '__main__':

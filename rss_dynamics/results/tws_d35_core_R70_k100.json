@@ -1,0 +1,14 @@
+{
+ "name": "d35_core_R70",
+ "crank_envelope_radius_mm": 69.99999552650733,
+ "volume_cm3": 0.0,
+ "centred_cube_half_mm": 0.0,
+ "cylinder_radius_mm": 0.0,
+ "cylinder_half_height_mm": 0.0,
+ "x_range_mm": null,
+ "z_range_mm": null,
+ "icond_core": 0.006111350145439958,
+ "icond_min_showcase": 0.0015005841390171226,
+ "fails": 0,
+ "icond_threshold": 0.01
+}

@@ -1,0 +1,20 @@
+{
+ "name": "d35_core",
+ "crank_envelope_radius_mm": 126.15475510431078,
+ "volume_cm3": 290.95200000000006,
+ "centred_cube_half_mm": 11.0,
+ "cylinder_radius_mm": 21.0,
+ "cylinder_half_height_mm": 9.0,
+ "x_range_mm": [
+  -54.0,
+  60.0
+ ],
+ "z_range_mm": [
+  -30.0,
+  21.0
+ ],
+ "icond_core": 0.014995625079218049,
+ "icond_min_showcase": 0.0034730155855065893,
+ "fails": 0,
+ "icond_threshold": 0.01
+}

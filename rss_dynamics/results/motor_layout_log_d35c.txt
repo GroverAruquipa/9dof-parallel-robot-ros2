@@ -1,0 +1,7 @@
+d35_core 0 0.31929157956906196
+{
+ "footprint_radius_mm": 266.13957425177614,
+ "depth_below_plate_mm": 354.34670211523854,
+ "penalty": 0.0,
+ "z_plate_mm": -52.55840627207621
+}

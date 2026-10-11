@@ -1,0 +1,20 @@
+{
+ "name": "d35_core_R85",
+ "crank_envelope_radius_mm": 84.9999948956101,
+ "volume_cm3": 163.971,
+ "centred_cube_half_mm": 14.0,
+ "cylinder_radius_mm": 18.0,
+ "cylinder_half_height_mm": 9.0,
+ "x_range_mm": [
+  -33.0,
+  39.0
+ ],
+ "z_range_mm": [
+  -33.0,
+  21.0
+ ],
+ "icond_core": 0.010053337015447934,
+ "icond_min_showcase": 0.0018734420088416881,
+ "fails": 0,
+ "icond_threshold": 0.01
+}

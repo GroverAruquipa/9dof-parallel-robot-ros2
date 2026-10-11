@@ -70,6 +70,7 @@ def core_workspace(n_random=30, seed=2):
 
 
 OBJ = os.environ.get('OBJ', 'worst')       # 'worst': min 1/kappa over the showcase; 'core': over core_workspace
+RMAX = float(os.environ.get('RMAX', '1'))     # max radius of the crank envelope |c_xy| + d (m)
 ICOND_FLOOR = 1.5e-3                        # with OBJ = core: required 1/kappa on the whole showcase
 
 
@@ -163,6 +164,8 @@ def evaluate(x, d, W, details=False):
     if details:
         return dict(worst=worst, fails=fails, robot=r, all=allm, socket_axis=axis)
     pen = 10.0 * fails
+    env = np.max(np.hypot(r.c[:, 0], r.c[:, 1])) + d       # radius swept by the cranks
+    pen += 100 * max(0, env - RMAX)
     pen += 10 * max(0, worst['travel'] - LIMITS['travel'])
     pen += 10 * max(0, LIMITS['trans'] - worst['trans'])
     pen += 10 * max(0, worst['mis'] - LIMITS['mis'])
@@ -229,7 +232,7 @@ if __name__ == '__main__':
                    limits={k: float(v) for k, v in LIMITS.items()}, L_char=L_CHAR)
         from geometry import PSCALE
         out['platform_scale'] = PSCALE
-        tag = f'd{d / MM:.0f}' + ('' if PSCALE == 1 else f'_s{PSCALE:g}'.replace('.', '')) + ('' if OBJ == 'worst' else f'_{OBJ}')
+        tag = f'd{d / MM:.0f}' + ('' if PSCALE == 1 else f'_s{PSCALE:g}'.replace('.', '')) + ('' if OBJ == 'worst' else f'_{OBJ}') + ('' if RMAX >= 1 else f'_R{RMAX * 1e3:.0f}')
         out['objective_kind'] = OBJ
         json.dump(out, open(os.path.join(HERE, 'results', f'design_{tag}.json'), 'w'), indent=1)
         print(json.dumps(out, indent=1), flush=True)
