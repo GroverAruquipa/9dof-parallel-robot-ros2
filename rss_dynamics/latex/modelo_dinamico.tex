@@ -1,0 +1,1677 @@
+\documentclass[11pt]{article}
+\usepackage[OT1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{accents}
+\newcommand{\barbelow}[1]{\underaccent{\bar}{#1}}
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+\allowdisplaybreaks
+
+\newcommand{\T}{^{\mathrm{T}}}
+\newcommand{\pvec}{\mathbf{p}}
+\newcommand{\Fmat}{\mathbf{F}}
+\newcommand{\Nmat}{\mathbf{N}}
+\newcommand{\wv}{\boldsymbol{\omega}}
+\newcommand{\lam}{\boldsymbol{\lambda}}
+\newcommand{\muv}{\boldsymbol{\mu}}
+\newcommand{\sig}{\boldsymbol{\sigma}}
+\newcommand{\cd}{\dot{\mathbf{c}}}
+\newcommand{\cdd}{\ddot{\mathbf{c}}}
+\newcommand{\xd}{\dot{\mathbf{x}}}
+\newcommand{\xdd}{\ddot{\mathbf{x}}}
+\newcommand{\IO}[1]{\mathbf{I}_{O#1}}
+\newcommand{\IC}[1]{\mathbf{I}_{C#1}}
+\newcommand{\Om}{\boldsymbol{\Omega}}
+\newcommand{\dth}{\delta\boldsymbol{\rho}}
+\newcommand{\thv}{\boldsymbol{\theta}}
+\newcommand{\tauv}{\boldsymbol{\tau}}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+
+\title{\bfseries Modelo dinámico de las arquitecturas de 9, 8 y 7 grados de libertad con $\boldsymbol{\omega}_1$ y $\boldsymbol{\omega}_2$ y patas $\protect\barbelow{R}SS$}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-14mm}
+
+\section{Introducción a las ecuaciones de Lagrange}
+
+\subsection{Coordenadas generalizadas}
+
+Un sistema con $m$ grados de libertad se describe con $m$ coordenadas independientes $q_1,\dots,q_m$, llamadas coordenadas generalizadas, de las que depende toda posición.
+
+En esta sección $q_j$ designa una coordenada cualquiera, y en el robot los actuadores serán los ángulos $\theta_i$ de las manivelas.
+
+Para una partícula de masa $m$ y posición $\mathbf{r}$,
+\begin{equation}
+\mathbf{r}=\mathbf{r}\big(q_1,\ q_2,\ \dots,\ q_m\big).
+\label{eq:L0}
+\end{equation}
+
+Derivando con la regla de la cadena se obtiene la velocidad,
+\begin{equation}
+\dot{\mathbf{r}}=\pd{\mathbf{r}}{q_1}\dot q_1+\pd{\mathbf{r}}{q_2}\dot q_2+\dots+\pd{\mathbf{r}}{q_m}\dot q_m ,
+\label{eq:L1}
+\end{equation}
+que es lineal en las velocidades $\dot q_j$ con coeficientes que dependen solo de las posiciones.
+
+\subsection{Dos identidades cinemáticas}
+
+Como en \eqref{eq:L1} el coeficiente de $\dot q_j$ es $\partial\mathbf{r}/\partial q_j$, derivar respecto a $\dot q_j$ lo deja aislado,
+\begin{equation}
+\boxed{\ \pd{\dot{\mathbf{r}}}{\dot q_j}=\pd{\mathbf{r}}{q_j}\ }
+\label{eq:L2}
+\end{equation}
+
+Derivando $\partial\mathbf{r}/\partial q_j$ respecto al tiempo con la regla de la cadena,
+\begin{equation}
+\frac{d}{dt}\pd{\mathbf{r}}{q_j}
+=\frac{\partial^2\mathbf{r}}{\partial q_1\partial q_j}\dot q_1+\dots+\frac{\partial^2\mathbf{r}}{\partial q_m\partial q_j}\dot q_m ,
+\label{eq:L3a}
+\end{equation}
+y derivando \eqref{eq:L1} respecto a $q_j$, donde los $\dot q$ no dependen de $q_j$,
+\begin{equation}
+\pd{\dot{\mathbf{r}}}{q_j}
+=\frac{\partial^2\mathbf{r}}{\partial q_j\partial q_1}\dot q_1+\dots+\frac{\partial^2\mathbf{r}}{\partial q_j\partial q_m}\dot q_m .
+\label{eq:L3b}
+\end{equation}
+
+Como el orden de las derivadas segundas se puede intercambiar, los dos resultados coinciden,
+\begin{equation}
+\boxed{\ \frac{d}{dt}\pd{\mathbf{r}}{q_j}=\pd{\dot{\mathbf{r}}}{q_j}\ }
+\label{eq:L3}
+\end{equation}
+
+\subsection{De Newton a Lagrange}
+
+La partícula cumple la segunda ley de Newton con la fuerza total $\mathbf{f}$,
+\begin{equation}
+m\ddot{\mathbf{r}}=\mathbf{f}.
+\label{eq:L4}
+\end{equation}
+
+Se proyecta \eqref{eq:L4} sobre la dirección $\partial\mathbf{r}/\partial q_j$, que es la dirección en la que se mueve la partícula cuando solo cambia $q_j$,
+\begin{equation}
+m\ddot{\mathbf{r}}\T\pd{\mathbf{r}}{q_j}=\mathbf{f}\T\pd{\mathbf{r}}{q_j}.
+\label{eq:L5}
+\end{equation}
+
+La regla del producto aplicada a $\dot{\mathbf{r}}\T\,\partial\mathbf{r}/\partial q_j$ permite reescribir el lado izquierdo,
+\begin{equation}
+\ddot{\mathbf{r}}\T\pd{\mathbf{r}}{q_j}
+=\frac{d}{dt}\Big(\dot{\mathbf{r}}\T\pd{\mathbf{r}}{q_j}\Big)-\dot{\mathbf{r}}\T\frac{d}{dt}\pd{\mathbf{r}}{q_j},
+\label{eq:L6}
+\end{equation}
+y sustituyendo las identidades \eqref{eq:L2} en el primer término y \eqref{eq:L3} en el segundo,
+\begin{equation}
+\ddot{\mathbf{r}}\T\pd{\mathbf{r}}{q_j}
+=\frac{d}{dt}\Big(\dot{\mathbf{r}}\T\pd{\dot{\mathbf{r}}}{\dot q_j}\Big)-\dot{\mathbf{r}}\T\pd{\dot{\mathbf{r}}}{q_j}.
+\label{eq:L7}
+\end{equation}
+
+Con la energía cinética $E_c=\tfrac12m\dot{\mathbf{r}}\T\dot{\mathbf{r}}$, sus dos derivadas parciales son
+\begin{equation}
+\pd{E_c}{\dot q_j}=m\dot{\mathbf{r}}\T\pd{\dot{\mathbf{r}}}{\dot q_j},
+\qquad
+\pd{E_c}{q_j}=m\dot{\mathbf{r}}\T\pd{\dot{\mathbf{r}}}{q_j},
+\label{eq:L8}
+\end{equation}
+luego el lado izquierdo de \eqref{eq:L5} es
+\begin{equation}
+m\ddot{\mathbf{r}}\T\pd{\mathbf{r}}{q_j}=\frac{d}{dt}\pd{E_c}{\dot q_j}-\pd{E_c}{q_j}.
+\label{eq:L9}
+\end{equation}
+
+\subsection{Fuerza generalizada y trabajo virtual}
+
+El lado derecho de \eqref{eq:L5} se llama fuerza generalizada asociada a $q_j$,
+\begin{equation}
+f_{qj}=\mathbf{f}\T\pd{\mathbf{r}}{q_j}.
+\label{eq:L10}
+\end{equation}
+
+Si solo $q_j$ cambia en una cantidad pequeña $\delta q_j$, la partícula se desplaza $\delta\mathbf{r}=(\partial\mathbf{r}/\partial q_j)\,\delta q_j$, y el trabajo de $\mathbf{f}$ en ese desplazamiento es
+\begin{equation}
+\mathbf{f}\T\delta\mathbf{r}=\mathbf{f}\T\pd{\mathbf{r}}{q_j}\,\delta q_j=f_{qj}\,\delta q_j ,
+\label{eq:L10b}
+\end{equation}
+que es el trabajo virtual, porque $\delta q_j$ es un desplazamiento imaginado y no el del movimiento real.
+
+Si una parte de la fuerza es el peso $m\mathbf{g}$, se define la energía potencial $E_p=-m\mathbf{g}\T\mathbf{r}$ y esa parte de $f_{qj}$ es
+\begin{equation}
+m\mathbf{g}\T\pd{\mathbf{r}}{q_j}=-\pd{E_p}{q_j}.
+\label{eq:L11}
+\end{equation}
+
+Juntando \eqref{eq:L9}, \eqref{eq:L10} y \eqref{eq:L11}, con $f_{qj}$ ahora sin el peso, se obtienen las ecuaciones de Lagrange,
+\begin{equation}
+\boxed{\ \frac{d}{dt}\pd{E_c}{\dot q_j}-\pd{E_c}{q_j}+\pd{E_p}{q_j}=f_{qj},
+\qquad
+j=1,\ 2,\ \dots,\ m\ }
+\label{eq:L12}
+\end{equation}
+
+Para varias partículas, o para un cuerpo rígido, se repite el mismo cálculo partícula por partícula y se suman las ecuaciones término a término.
+
+La observación central es que la ecuación de Lagrange número $j$ es la ecuación de Newton proyectada sobre $\partial\mathbf{r}/\partial q_j$, es decir, un balance de trabajo virtual para $\delta q_j$.
+
+La energía es solo una manera cómoda de calcular esa proyección, porque evita escribir las aceleraciones.
+
+\subsection{Forma matricial}
+
+Como $\dot{\mathbf{r}}$ es lineal en $\dot{\mathbf{q}}$, la energía cinética es siempre cuadrática en $\dot{\mathbf{q}}$,
+\begin{equation}
+E_c=\tfrac12\,\dot{\mathbf{q}}\T\mathbf{M}(\mathbf{q})\,\dot{\mathbf{q}},
+\label{eq:L13}
+\end{equation}
+con $\mathbf{M}$ simétrica y definida positiva, llamada matriz de masa.
+
+La derivada respecto al vector de velocidades es, por la simetría de $\mathbf{M}$,
+\begin{equation}
+\pd{E_c}{\dot{\mathbf{q}}}=\tfrac12\big(\mathbf{M}+\mathbf{M}\T\big)\dot{\mathbf{q}}=\mathbf{M}\dot{\mathbf{q}},
+\qquad
+\frac{d}{dt}\pd{E_c}{\dot{\mathbf{q}}}=\mathbf{M}\ddot{\mathbf{q}}+\dot{\mathbf{M}}\dot{\mathbf{q}}.
+\label{eq:L14}
+\end{equation}
+
+La derivada respecto a $q_j$ solo actúa sobre $\mathbf{M}$,
+\begin{equation}
+\pd{E_c}{q_j}=\tfrac12\,\dot{\mathbf{q}}\T\pd{\mathbf{M}}{q_j}\dot{\mathbf{q}} .
+\label{eq:L15}
+\end{equation}
+
+Sustituyendo en \eqref{eq:L12} las $m$ ecuaciones se juntan en una sola ecuación vectorial,
+\begin{equation}
+\boxed{\ \mathbf{M}\ddot{\mathbf{q}}+\mathbf{c}+\pd{E_p}{\mathbf{q}}=\mathbf{f}_q,
+\qquad
+\mathbf{c}=\dot{\mathbf{M}}\dot{\mathbf{q}}-\tfrac12
+\begin{bmatrix}
+\dot{\mathbf{q}}\T\dfrac{\partial\mathbf{M}}{\partial q_1}\dot{\mathbf{q}} & \cdots & \dot{\mathbf{q}}\T\dfrac{\partial\mathbf{M}}{\partial q_m}\dot{\mathbf{q}}
+\end{bmatrix}\T\ }
+\label{eq:L16}
+\end{equation}
+donde $\mathbf{c}$ contiene los términos centrípetos y de Coriolis, cuadráticos en las velocidades.
+
+\subsection{Ejemplo: manivela con péndulo}
+
+Una manivela gira alrededor de un eje fijo perpendicular al plano, con ángulo $\theta$ medido desde la horizontal, momento de inercia $I_m$ alrededor de su eje y par de actuador $\tau$.
+
+En su extremo, a distancia $d$ del eje, lleva articulada una barra sin masa de longitud $l$ con una masa puntual $m_e$, a un ángulo $\psi$ de la horizontal.
+
+Es el análogo plano de una pata $\barbelow{R}SS$ cuya biela lleva una masa en lugar de una plataforma, con $\mathbf{q}=[\theta\ \ \psi]\T$ y la gravedad hacia abajo con magnitud $g$.
+
+La posición de la masa es la del extremo de la manivela más la de la barra, y derivando cada seno y coseno con la regla de la cadena,
+\begin{equation}
+\mathbf{r}=\begin{bmatrix}d\cos\theta+l\cos\psi\\ d\sin\theta+l\sin\psi\end{bmatrix},
+\qquad
+\dot{\mathbf{r}}=\begin{bmatrix}-d\sin\theta\,\dot\theta-l\sin\psi\,\dot\psi\\ d\cos\theta\,\dot\theta+l\cos\psi\,\dot\psi\end{bmatrix}.
+\label{eq:E1}
+\end{equation}
+
+El cuadrado de la velocidad se desarrolla componente por componente,
+\begin{equation}
+\dot{\mathbf{r}}\T\dot{\mathbf{r}}
+=d^2\sin^2\theta\,\dot\theta^2+2dl\sin\theta\sin\psi\,\dot\theta\dot\psi+l^2\sin^2\psi\,\dot\psi^2
++d^2\cos^2\theta\,\dot\theta^2+2dl\cos\theta\cos\psi\,\dot\theta\dot\psi+l^2\cos^2\psi\,\dot\psi^2 ,
+\label{eq:E2a}
+\end{equation}
+y con $\sin^2+\cos^2=1$ y $\cos\psi\cos\theta+\sin\psi\sin\theta=\cos(\psi-\theta)$,
+\begin{equation}
+\dot{\mathbf{r}}\T\dot{\mathbf{r}}=d^2\dot\theta^2+2dl\,c_{\psi\theta}\,\dot\theta\dot\psi+l^2\dot\psi^2 ,
+\qquad
+c_{\psi\theta}=\cos(\psi-\theta),
+\qquad
+s_{\psi\theta}=\sin(\psi-\theta).
+\label{eq:E2}
+\end{equation}
+
+La manivela gira alrededor de un eje fijo y su energía cinética es $\tfrac12I_m\dot\theta^2$, de modo que las dos energías son
+\begin{equation}
+E_c=\tfrac12I_m\dot\theta^2+\tfrac12m_e\big(d^2\dot\theta^2+2dl\,c_{\psi\theta}\,\dot\theta\dot\psi+l^2\dot\psi^2\big),
+\qquad
+E_p=m_eg\big(d\sin\theta+l\sin\psi\big),
+\label{eq:E3}
+\end{equation}
+donde se toma la manivela equilibrada, con su centro de masa sobre el eje.
+
+Leyendo los coeficientes de $E_c=\tfrac12\dot{\mathbf{q}}\T\mathbf{M}\dot{\mathbf{q}}$, el término cruzado se reparte en las dos entradas fuera de la diagonal,
+\begin{equation}
+\mathbf{M}=\begin{bmatrix}I_m+m_ed^2 & m_edl\,c_{\psi\theta}\\ m_edl\,c_{\psi\theta} & m_el^2\end{bmatrix}.
+\label{eq:E4}
+\end{equation}
+
+Las derivadas de $c_{\psi\theta}$ que se necesitan salen de la regla de la cadena,
+\begin{equation}
+\frac{d}{dt}c_{\psi\theta}=-s_{\psi\theta}\big(\dot\psi-\dot\theta\big),
+\qquad
+\pd{c_{\psi\theta}}{\theta}=s_{\psi\theta},
+\qquad
+\pd{c_{\psi\theta}}{\psi}=-s_{\psi\theta}.
+\label{eq:E4b}
+\end{equation}
+
+Para la coordenada $\theta$ las cuatro derivadas son
+\begin{equation}
+\begin{gathered}
+\pd{E_c}{\dot\theta}=\big(I_m+m_ed^2\big)\dot\theta+m_edl\,c_{\psi\theta}\,\dot\psi,
+\qquad
+\frac{d}{dt}\pd{E_c}{\dot\theta}=\big(I_m+m_ed^2\big)\ddot\theta+m_edl\,c_{\psi\theta}\,\ddot\psi-m_edl\,s_{\psi\theta}\big(\dot\psi-\dot\theta\big)\dot\psi,\\
+\pd{E_c}{\theta}=m_edl\,s_{\psi\theta}\,\dot\theta\dot\psi,
+\qquad
+\pd{E_p}{\theta}=m_egd\cos\theta ,
+\end{gathered}
+\label{eq:E5}
+\end{equation}
+y al restar $\partial E_c/\partial\theta$ los términos en $\dot\theta\dot\psi$ se cancelan, $-m_edl\,s_{\psi\theta}(\dot\psi-\dot\theta)\dot\psi-m_edl\,s_{\psi\theta}\dot\theta\dot\psi=-m_edl\,s_{\psi\theta}\dot\psi^2$, luego
+\begin{equation}
+\big(I_m+m_ed^2\big)\ddot\theta+m_edl\,c_{\psi\theta}\,\ddot\psi-m_edl\,s_{\psi\theta}\,\dot\psi^2+m_egd\cos\theta=\tau .
+\label{eq:E6}
+\end{equation}
+
+Para la coordenada $\psi$ las cuatro derivadas son
+\begin{equation}
+\begin{gathered}
+\pd{E_c}{\dot\psi}=m_edl\,c_{\psi\theta}\,\dot\theta+m_el^2\dot\psi,
+\qquad
+\frac{d}{dt}\pd{E_c}{\dot\psi}=m_edl\,c_{\psi\theta}\,\ddot\theta-m_edl\,s_{\psi\theta}\big(\dot\psi-\dot\theta\big)\dot\theta+m_el^2\ddot\psi,\\
+\pd{E_c}{\psi}=-m_edl\,s_{\psi\theta}\,\dot\theta\dot\psi,
+\qquad
+\pd{E_p}{\psi}=m_egl\cos\psi ,
+\end{gathered}
+\label{eq:E7}
+\end{equation}
+y ahora $-m_edl\,s_{\psi\theta}(\dot\psi-\dot\theta)\dot\theta+m_edl\,s_{\psi\theta}\dot\theta\dot\psi=m_edl\,s_{\psi\theta}\dot\theta^2$, luego
+\begin{equation}
+m_edl\,c_{\psi\theta}\,\ddot\theta+m_el^2\ddot\psi+m_edl\,s_{\psi\theta}\,\dot\theta^2+m_egl\cos\psi=0 ,
+\label{eq:E8}
+\end{equation}
+con lado derecho nulo porque no hay actuador sobre $\psi$.
+
+La misma $\mathbf{c}$ sale de la fórmula \eqref{eq:L16}, con las matrices derivadas a partir de \eqref{eq:E4} y \eqref{eq:E4b},
+\begin{equation}
+\dot{\mathbf{M}}=-m_edl\,s_{\psi\theta}\big(\dot\psi-\dot\theta\big)\begin{bmatrix}0 & 1\\ 1 & 0\end{bmatrix},
+\qquad
+\pd{\mathbf{M}}{\theta}=m_edl\,s_{\psi\theta}\begin{bmatrix}0 & 1\\ 1 & 0\end{bmatrix},
+\qquad
+\pd{\mathbf{M}}{\psi}=-m_edl\,s_{\psi\theta}\begin{bmatrix}0 & 1\\ 1 & 0\end{bmatrix},
+\label{eq:E9}
+\end{equation}
+y con $\tfrac12\dot{\mathbf{q}}\T\begin{bmatrix}0 & 1\\ 1 & 0\end{bmatrix}\dot{\mathbf{q}}=\dot\theta\dot\psi$,
+\begin{equation}
+\mathbf{c}=
+-m_edl\,s_{\psi\theta}\big(\dot\psi-\dot\theta\big)\begin{bmatrix}\dot\psi\\ \dot\theta\end{bmatrix}
+-\begin{bmatrix}m_edl\,s_{\psi\theta}\,\dot\theta\dot\psi\\ -m_edl\,s_{\psi\theta}\,\dot\theta\dot\psi\end{bmatrix}
+=\begin{bmatrix}-m_edl\,s_{\psi\theta}\,\dot\psi^2\\ m_edl\,s_{\psi\theta}\,\dot\theta^2\end{bmatrix},
+\label{eq:E10}
+\end{equation}
+donde cada término es la fuerza centrípeta debida al giro de un elemento, reflejada sobre la coordenada del otro.
+
+\subsection{Restricciones y multiplicadores}
+
+El mismo sistema se puede describir con coordenadas que no son independientes, $\mathbf{q}=[\theta\ \ r_x\ \ r_y]\T$, añadiendo la condición de barra rígida.
+
+El vector de la manivela y su derivada son
+\begin{equation}
+\mathbf{d}=d\begin{bmatrix}\cos\theta\\ \sin\theta\end{bmatrix},
+\qquad
+\dot{\mathbf{d}}=\dot\theta\,\mathbf{d}_{\perp},
+\qquad
+\mathbf{d}_{\perp}=d\begin{bmatrix}-\sin\theta\\ \cos\theta\end{bmatrix},
+\label{eq:R0}
+\end{equation}
+donde $\mathbf{d}_{\perp}$ es $\mathbf{d}$ girado un cuarto de vuelta, que en el espacio será $\mathbf{v}_i\times\mathbf{d}_i$.
+
+Con $\mathbf{m}=\mathbf{r}-\mathbf{d}$ el vector de la barra, la restricción y su derivada son
+\begin{equation}
+\mathbf{m}\T\mathbf{m}=l^2,
+\qquad
+\mathbf{m}\T\dot{\mathbf{m}}=0,
+\qquad
+\dot{\mathbf{m}}=\dot{\mathbf{r}}-\dot\theta\,\mathbf{d}_{\perp},
+\label{eq:R1}
+\end{equation}
+y desarrollando el producto se obtiene una ecuación lineal en las velocidades,
+\begin{equation}
+-\big(\mathbf{m}\T\mathbf{d}_{\perp}\big)\dot\theta+m_x\dot r_x+m_y\dot r_y=0
+\quad\Longleftrightarrow\quad
+\mathbf{A}\dot{\mathbf{q}}=0,
+\qquad
+\mathbf{A}=\big[-\mathbf{m}\T\mathbf{d}_{\perp}\ \ \ m_x\ \ \ m_y\big].
+\label{eq:R2}
+\end{equation}
+
+Un desplazamiento virtual admisible es uno que respeta la restricción,
+\begin{equation}
+\mathbf{A}\,\delta\mathbf{q}=0 .
+\label{eq:R3}
+\end{equation}
+
+La barra ejerce fuerzas internas cuya fuerza generalizada $\mathbf{f}_c$ no trabaja en ningún desplazamiento admisible, porque no cambia la longitud de la barra,
+\begin{equation}
+\mathbf{f}_c\T\delta\mathbf{q}=0
+\qquad\text{para todo }\delta\mathbf{q}\text{ con }\mathbf{A}\delta\mathbf{q}=0 .
+\label{eq:R4}
+\end{equation}
+
+Un vector ortogonal a todos los vectores del espacio nulo de $\mathbf{A}$ es una combinación de las filas de $\mathbf{A}$, porque el espacio nulo y el espacio de filas son complementos ortogonales, luego
+\begin{equation}
+\boxed{\ \mathbf{f}_c=\mathbf{A}\T\lambda\ }
+\label{eq:R5}
+\end{equation}
+con un escalar $\lambda$, llamado multiplicador de Lagrange, por cada fila de restricción.
+
+Aquí $E_c=\tfrac12I_m\dot\theta^2+\tfrac12m_e(\dot r_x^2+\dot r_y^2)$ es diagonal y constante, sin términos de Coriolis, y $E_p=m_egr_y$, de modo que \eqref{eq:L12} con $\mathbf{f}_c$ añadido da
+\begin{equation}
+I_m\ddot\theta=\tau-\lambda\,\mathbf{m}\T\mathbf{d}_{\perp},
+\qquad
+m_e\ddot r_x=\lambda m_x,
+\qquad
+m_e\ddot r_y=-m_eg+\lambda m_y .
+\label{eq:R6}
+\end{equation}
+
+Se lee que $\lambda\mathbf{m}$ es la fuerza de la barra sobre la masa y $-\lambda\mathbf{m}$ la fuerza sobre el extremo de la manivela, cuyo momento alrededor del eje es $d_x(-\lambda m_y)-d_y(-\lambda m_x)=-\lambda\,\mathbf{m}\T\mathbf{d}_{\perp}$, y $\lambda l$ es la magnitud de la fuerza en la barra.
+
+El par del actuador es entonces
+\begin{equation}
+\tau=I_m\ddot\theta+\lambda\,\mathbf{m}\T\mathbf{d}_{\perp},
+\label{eq:R7}
+\end{equation}
+que tiene exactamente la forma que tendrá el par de cada actuador del robot, con $\mathbf{m}\T\mathbf{d}_{\perp}$ como brazo de palanca de la biela sobre la manivela.
+
+Se gana una energía trivial y un multiplicador con sentido físico a cambio de más coordenadas, y esta es la estrategia que se usa con las nueve coordenadas de $\cd$.
+
+\subsection{El problema de la orientación}
+
+La energía cinética de un cuerpo rígido es $E_c=\tfrac12M\mathbf{v}_C\T\mathbf{v}_C+\tfrac12\wv\T\mathbf{I}_C\wv$, y para usar \eqref{eq:L12} hay que escribir $\wv$ con las derivadas de tres ángulos.
+
+Con los ángulos ZYZ, $\mathbf{Q}=\mathbf{R}_z(\alpha)\mathbf{R}_y(\beta)\mathbf{R}_z(\gamma)$, cada velocidad angular parcial actúa alrededor de su eje en la posición actual,
+\begin{equation}
+\wv=\dot\alpha\,\mathbf{z}+\dot\beta\,\mathbf{R}_z(\alpha)\mathbf{y}+\dot\gamma\,\mathbf{R}_z(\alpha)\mathbf{R}_y(\beta)\mathbf{z},
+\label{eq:O1}
+\end{equation}
+con los dos ejes girados
+\begin{equation}
+\mathbf{R}_z(\alpha)\mathbf{y}=\begin{bmatrix}-\sin\alpha\\ \cos\alpha\\ 0\end{bmatrix},
+\qquad
+\mathbf{R}_z(\alpha)\mathbf{R}_y(\beta)\mathbf{z}=\begin{bmatrix}\cos\alpha\sin\beta\\ \sin\alpha\sin\beta\\ \cos\beta\end{bmatrix}.
+\label{eq:O2}
+\end{equation}
+
+Poniendo los tres ejes como columnas,
+\begin{equation}
+\wv=\mathbf{W}\begin{bmatrix}\dot\alpha\\ \dot\beta\\ \dot\gamma\end{bmatrix},
+\qquad
+\mathbf{W}=\begin{bmatrix}0 & -\sin\alpha & \cos\alpha\sin\beta\\ 0 & \cos\alpha & \sin\alpha\sin\beta\\ 1 & 0 & \cos\beta\end{bmatrix}.
+\label{eq:O3}
+\end{equation}
+
+Desarrollando el determinante por la primera columna, donde solo la entrada $(3,1)$ es distinta de cero y su cofactor tiene signo positivo,
+\begin{equation}
+\det\!\big(\mathbf{W}\big)
+=1\cdot\det\!\begin{bmatrix}-\sin\alpha & \cos\alpha\sin\beta\\ \cos\alpha & \sin\alpha\sin\beta\end{bmatrix}
+=-\sin^2\alpha\sin\beta-\cos^2\alpha\sin\beta
+=-\sin\beta .
+\label{eq:O4}
+\end{equation}
+
+Para $\beta=0$ la primera y la tercera columna coinciden, $\mathbf{W}$ es singular y solo $\alpha+\gamma$ está definido, que es una singularidad de la representación y no del robot.
+
+En un robot de rotación ilimitada, cuya configuración de referencia es precisamente $\beta=0$, esa singularidad artificial queda en medio del espacio de trabajo.
+
+Además, la matriz de masa en ángulos contiene $\mathbf{W}\T\mathbf{I}_C\mathbf{W}$, cuyas entradas son productos de senos y cosenos que hay que derivar respecto a $\alpha$, $\beta$ y $\gamma$ en \eqref{eq:L16}.
+
+Por eso en lo que sigue se conserva $\wv$ y se proyectan directamente las ecuaciones de Newton y de Euler, que es el paso \eqref{eq:L5} de la derivación de Lagrange sin pasar por la energía.
+
+El papel de $\partial\mathbf{r}/\partial q_j$ lo tomarán las matrices $\mathbf{T}_k$ que llevan $\cd$ al movimiento de cada centro de masa.
+
+\section{Hipótesis y notación del robot}
+
+Las tres arquitecturas son $5\barbelow{R}SS$-$S$-$4\barbelow{R}SS$, $4\barbelow{R}SS$-$U$-$4\barbelow{R}SS$ y $4\barbelow{R}SS$-$R$-$3\barbelow{R}SS$, con todos los actuadores rotativos en la base.
+
+Se conserva la cinemática del documento anterior, con $\cd=[\dot{\pvec}\T\ \wv_1\T\ \wv_2\T]\T\in\mathbb{R}^9$, $n_1$ patas en el cuerpo 1, $n_2$ patas en el cuerpo 2 y $n=n_1+n_2=6+d_p$.
+
+El cuerpo $k\in\{1,2\}$ tiene masa $M_k$, centro de masa $C_k$ en $O_p+\mathbf{s}_k$ y tensor de inercia $\IC{k}$ respecto a $C_k$, ambos en el marco fijo,
+\begin{equation}
+\mathbf{s}_k=\mathbf{Q}_k\mathbf{s}_k^{0},
+\qquad
+\IC{k}=\mathbf{Q}_k\,\IC{k}^{0}\,\mathbf{Q}_k\T ,
+\label{eq:datos}
+\end{equation}
+donde $\mathbf{s}_k^{0}$ e $\IC{k}^{0}$ son constantes medidas en el marco del propio cuerpo.
+
+La fórmula de $\IC{k}$ sale de que el momento angular $\IC{k}\wv_k$ se calcula en el marco del cuerpo como $\IC{k}^0(\mathbf{Q}_k\T\wv_k)$ y se vuelve al marco fijo multiplicando por $\mathbf{Q}_k$.
+
+El actuador $i$ gira una manivela alrededor de un eje fijo de vector unitario $\mathbf{v}_i$ que pasa por el punto fijo $\mathbf{c}_i$, con ángulo $\theta_i$, de modo que $\thv=[\theta_1\ \cdots\ \theta_n]\T$.
+
+El vector $\mathbf{d}_i$, perpendicular a $\mathbf{v}_i$ y de longitud constante, va del eje hasta la junta esférica de la manivela, que está en
+\begin{equation}
+\mathbf{b}_i=\mathbf{c}_i+\mathbf{d}_i .
+\label{eq:bi}
+\end{equation}
+
+La manivela y el rotor tienen momento de inercia $I_{mi}$ alrededor de $\mathbf{v}_i$, la manivela tiene masa $m_{mi}$ con centro de masa en $\mathbf{c}_i+\mathbf{d}_{ci}$, y el par del actuador es $\tau_i$, con $\tauv=[\tau_1\ \cdots\ \tau_n]\T$.
+
+La biela distal S-S se toma sin masa, y si se quiere considerar su masa $m_{bi}$ se pone $m_{bi}/2$ en la junta esférica de la manivela, lo que suma $(m_{bi}/2)\,\mathbf{d}_i\T\mathbf{d}_i$ a $I_{mi}$ y corrige $m_{mi}$ y $\mathbf{d}_{ci}$, y $m_{bi}/2$ como masa puntual en $O_p+\mathbf{Q}_k\mathbf{a}_i$, que se suma a $M_k$, $\mathbf{s}_k$ e $\IC{k}$.
+
+La articulación interna se toma sin fricción y sin masa, incluida la cruceta de la junta universal, y $\mathbf{g}$ es el vector de gravedad, por ejemplo $\mathbf{g}=[0\ \ 0\ \ -9.81]\T$.
+
+\section{Cinemática que interviene en la dinámica}
+
+\subsection{Velocidad angular y derivada de una matriz de rotación}
+
+Derivando la ortogonalidad $\mathbf{Q}_k\mathbf{Q}_k\T=\mathbf{I}_3$ se obtiene
+\begin{equation}
+\dot{\mathbf{Q}}_k\mathbf{Q}_k\T+\mathbf{Q}_k\dot{\mathbf{Q}}_k\T=\mathbf{0}.
+\label{eq:QQ}
+\end{equation}
+
+Se define $\Om_k=\dot{\mathbf{Q}}_k\mathbf{Q}_k\T$, y \eqref{eq:QQ} dice que $\Om_k+\Om_k\T=\mathbf{0}$, es decir que $\Om_k$ es antisimétrica y tiene solo tres entradas independientes,
+\begin{equation}
+\Om_k=\begin{bmatrix}0 & -\omega_{kz} & \omega_{ky}\\ \omega_{kz} & 0 & -\omega_{kx}\\ -\omega_{ky} & \omega_{kx} & 0\end{bmatrix},
+\qquad
+\Om_k\mathbf{v}=\wv_k\times\mathbf{v},
+\label{eq:Omega}
+\end{equation}
+que definen la velocidad angular $\wv_k=[\omega_{kx}\ \omega_{ky}\ \omega_{kz}]\T$.
+
+Multiplicando $\Om_k=\dot{\mathbf{Q}}_k\mathbf{Q}_k\T$ por $\mathbf{Q}_k$ a la derecha y usando $\mathbf{Q}_k\T\mathbf{Q}_k=\mathbf{I}_3$,
+\begin{equation}
+\boxed{\ \dot{\mathbf{Q}}_k=\Om_k\mathbf{Q}_k\ }
+\label{eq:Qdot}
+\end{equation}
+
+\subsection{Vectores fijos en un cuerpo}
+
+Todo vector $\mathbf{v}=\mathbf{Q}_k\mathbf{v}^0$ con $\mathbf{v}^0$ constante, como $\mathbf{s}_k$, $\mathbf{Q}_k\mathbf{a}_i$ o un eje de la articulación, tiene por \eqref{eq:Qdot} la derivada
+\begin{equation}
+\boxed{\ \dot{\mathbf{v}}=\dot{\mathbf{Q}}_k\mathbf{v}^0=\Om_k\mathbf{Q}_k\mathbf{v}^0=\wv_k\times\mathbf{v}\ }
+\label{eq:vfijo}
+\end{equation}
+
+\subsection{Derivada del tensor de inercia}
+
+Derivando \eqref{eq:datos} con la regla del producto, sustituyendo \eqref{eq:Qdot} y usando $\Om_k\T=-\Om_k$,
+\begin{equation}
+\dot{\mathbf{I}}_{Ck}
+=\dot{\mathbf{Q}}_k\IC{k}^0\mathbf{Q}_k\T+\mathbf{Q}_k\IC{k}^0\dot{\mathbf{Q}}_k\T
+=\Om_k\mathbf{Q}_k\IC{k}^0\mathbf{Q}_k\T+\mathbf{Q}_k\IC{k}^0\mathbf{Q}_k\T\Om_k\T
+=\Om_k\IC{k}-\IC{k}\Om_k .
+\label{eq:Idot}
+\end{equation}
+
+\subsection{Matriz de producto cruz de $\mathbf{s}_k$}
+
+De la misma forma que $\Om_k$, a partir de $\mathbf{s}_k=[s_{kx}\ s_{ky}\ s_{kz}]\T$ se define
+\begin{equation}
+\mathbf{S}_k=
+\begin{bmatrix}
+0 & -s_{kz} & s_{ky}\\
+s_{kz} & 0 & -s_{kx}\\
+-s_{ky} & s_{kx} & 0
+\end{bmatrix},
+\qquad
+\mathbf{S}_k\mathbf{v}=\mathbf{s}_k\times\mathbf{v},
+\qquad
+\mathbf{S}_k\T=-\mathbf{S}_k .
+\label{eq:Sk}
+\end{equation}
+
+\subsection{Ecuación de velocidad de una pata}
+
+El cierre de la pata $i$ fijada al cuerpo $k$ da el vector de la biela, cuya longitud es constante,
+\begin{equation}
+\mathbf{m}_i=\pvec-\mathbf{b}_i+\mathbf{Q}_k\mathbf{a}_i ,
+\qquad
+\mathbf{m}_i\T\mathbf{m}_i=l_i^2 .
+\label{eq:mi}
+\end{equation}
+
+Derivando la condición de longitud, los dos términos del producto son iguales,
+\begin{equation}
+\dot{\mathbf{m}}_i\T\mathbf{m}_i+\mathbf{m}_i\T\dot{\mathbf{m}}_i=2\,\mathbf{m}_i\T\dot{\mathbf{m}}_i=0 ,
+\label{eq:mm1}
+\end{equation}
+El vector $\mathbf{d}_i$ gira con la manivela, cuya velocidad angular es $\dot\theta_i\mathbf{v}_i$, y como $\mathbf{c}_i$ es fijo la regla \eqref{eq:vfijo} aplicada a \eqref{eq:bi} da
+\begin{equation}
+\dot{\mathbf{b}}_i=\dot{\mathbf{d}}_i=\dot\theta_i\,\mathbf{v}_i\times\mathbf{d}_i ,
+\label{eq:bdot}
+\end{equation}
+y derivando $\mathbf{m}_i$ con \eqref{eq:bdot} y \eqref{eq:vfijo},
+\begin{equation}
+\dot{\mathbf{m}}_i=\dot{\pvec}-\dot\theta_i\,\mathbf{v}_i\times\mathbf{d}_i+\wv_k\times\mathbf{Q}_k\mathbf{a}_i .
+\label{eq:mdot}
+\end{equation}
+
+Sustituyendo \eqref{eq:mdot} en \eqref{eq:mm1},
+\begin{equation}
+\mathbf{m}_i\T\dot{\pvec}-\dot\theta_i\,\mathbf{m}_i\T\big(\mathbf{v}_i\times\mathbf{d}_i\big)+\mathbf{m}_i\T\big(\wv_k\times\mathbf{Q}_k\mathbf{a}_i\big)=0 .
+\label{eq:paso1}
+\end{equation}
+
+El triple producto $\mathbf{x}\T(\mathbf{y}\times\mathbf{z})$ es el determinante de las tres columnas $[\mathbf{x}\ \mathbf{y}\ \mathbf{z}]$ y no cambia por permutación cíclica, luego
+\begin{equation}
+\mathbf{m}_i\T\big(\wv_k\times\mathbf{Q}_k\mathbf{a}_i\big)
+=\wv_k\T\big(\mathbf{Q}_k\mathbf{a}_i\times\mathbf{m}_i\big)
+=\mathbf{n}_i\T\wv_k ,
+\qquad
+\mathbf{n}_i=\mathbf{Q}_k\mathbf{a}_i\times\mathbf{m}_i ,
+\label{eq:triple}
+\end{equation}
+y \eqref{eq:paso1} se convierte en la ecuación de velocidad de la pata,
+\begin{equation}
+\boxed{\ \mathbf{m}_i\T\dot{\pvec}+\mathbf{n}_i\T\wv_k=K_{ii}\dot\theta_i ,
+\qquad
+K_{ii}=\mathbf{m}_i\T\big(\mathbf{v}_i\times\mathbf{d}_i\big)\ }
+\label{eq:legrow}
+\end{equation}
+
+Por el triple producto, $K_{ii}=\mathbf{v}_i\T(\mathbf{d}_i\times\mathbf{m}_i)$ es el momento alrededor del eje de la manivela de una fuerza unitaria dirigida a lo largo de la biela, y se anula cuando $\mathbf{v}_i$, $\mathbf{d}_i$ y $\mathbf{m}_i$ son coplanares, que es la singularidad de tipo I.
+
+\subsection{Filas de la articulación interna}
+
+La articulación permite $\wv_2-\wv_1=\mathbf{D}_p\dot{\boldsymbol{\phi}}$, y con $\mathbf{B}$ tal que $\mathbf{B}\T\mathbf{D}_p=\mathbf{0}$ y de rango $3-d_p$, multiplicar por $\mathbf{B}\T$ elimina $\dot{\boldsymbol{\phi}}$,
+\begin{equation}
+-\mathbf{B}\T\wv_1+\mathbf{B}\T\wv_2=\mathbf{0}.
+\label{eq:Brow}
+\end{equation}
+
+\subsection{La ecuación maestra}
+
+Apilando las $n_1$ ecuaciones \eqref{eq:legrow} del cuerpo 1, las $n_2$ del cuerpo 2 y las $3-d_p$ ecuaciones \eqref{eq:Brow},
+\begin{equation}
+\boxed{\ \mathbf{J}\cd=\mathbf{K}\dot{\thv},
+\qquad
+\mathbf{J}=
+\begin{bmatrix}
+\Fmat_1 & \Nmat_1 & \mathbf{0}\\
+\Fmat_2 & \mathbf{0} & \Nmat_2\\
+\mathbf{0} & -\mathbf{B}\T & \mathbf{B}\T
+\end{bmatrix}\in\mathbb{R}^{9\times9},
+\qquad
+\mathbf{K}=
+\begin{bmatrix}
+\mathbf{K}_l\\
+\mathbf{0}
+\end{bmatrix}\in\mathbb{R}^{9\times n}\ }
+\label{eq:maestra}
+\end{equation}
+donde $\Fmat_k$ y $\Nmat_k$ tienen como filas los $\mathbf{m}_i\T$ y $\mathbf{n}_i\T$ de las patas del cuerpo $k$, y la matriz diagonal $\mathbf{K}_l=\mathrm{diag}(K_{11},\dots,K_{nn})$.
+
+Se llaman $\mathbf{J}_l=\begin{bmatrix}\Fmat_1 & \Nmat_1 & \mathbf{0}\\ \Fmat_2 & \mathbf{0} & \Nmat_2\end{bmatrix}\in\mathbb{R}^{n\times9}$ las filas de las patas y $\mathbf{J}_b=\big[\mathbf{0}\ \ -\mathbf{B}\T\ \ \mathbf{B}\T\big]$ las filas de la articulación.
+
+\subsection{Velocidad de los centros de masa}
+
+Derivando la posición $O_p+\mathbf{s}_k$ del centro de masa con \eqref{eq:vfijo}, y usando $\wv\times\mathbf{s}=-\mathbf{s}\times\wv$,
+\begin{equation}
+\mathbf{v}_k=\dot{\pvec}+\wv_k\times\mathbf{s}_k=\dot{\pvec}-\mathbf{s}_k\times\wv_k=\dot{\pvec}-\mathbf{S}_k\wv_k .
+\label{eq:vk}
+\end{equation}
+
+Agrupando la velocidad lineal y la angular del centro de masa en el twist $\mathbf{t}_k=[\mathbf{v}_k\T\ \wv_k\T]\T$, y colocando $\wv_k$ en su lugar dentro de $\cd$,
+\begin{equation}
+\boxed{\ \mathbf{t}_1=\mathbf{T}_1\cd,
+\qquad
+\mathbf{T}_1=
+\begin{bmatrix}
+\mathbf{I}_3 & -\mathbf{S}_1 & \mathbf{0}\\
+\mathbf{0} & \mathbf{I}_3 & \mathbf{0}
+\end{bmatrix},
+\qquad
+\mathbf{t}_2=\mathbf{T}_2\cd,
+\qquad
+\mathbf{T}_2=
+\begin{bmatrix}
+\mathbf{I}_3 & \mathbf{0} & -\mathbf{S}_2\\
+\mathbf{0} & \mathbf{0} & \mathbf{I}_3
+\end{bmatrix}\ }
+\label{eq:Tk}
+\end{equation}
+donde $\mathbf{T}_k\in\mathbb{R}^{6\times9}$ es el equivalente de $\partial\mathbf{r}/\partial\mathbf{q}$ en la introducción.
+
+Transponiendo bloque por bloque, con la regla de que el bloque $(a,b)$ pasa a la posición $(b,a)$ transpuesto, y usando $(-\mathbf{S}_k)\T=\mathbf{S}_k$,
+\begin{equation}
+\mathbf{T}_1\T=
+\begin{bmatrix}
+\mathbf{I}_3 & \mathbf{0}\\
+\mathbf{S}_1 & \mathbf{I}_3\\
+\mathbf{0} & \mathbf{0}
+\end{bmatrix},
+\qquad
+\mathbf{T}_2\T=
+\begin{bmatrix}
+\mathbf{I}_3 & \mathbf{0}\\
+\mathbf{0} & \mathbf{0}\\
+\mathbf{S}_2 & \mathbf{I}_3
+\end{bmatrix}.
+\label{eq:TkT}
+\end{equation}
+
+\subsection{Aceleración de los centros de masa}
+
+Derivando \eqref{eq:vk} con la regla del producto y usando $\dot{\mathbf{s}}_k=\wv_k\times\mathbf{s}_k$ de \eqref{eq:vfijo},
+\begin{equation}
+\dot{\mathbf{v}}_k
+=\ddot{\pvec}+\dot{\wv}_k\times\mathbf{s}_k+\wv_k\times\dot{\mathbf{s}}_k
+=\ddot{\pvec}-\mathbf{S}_k\dot{\wv}_k+\wv_k\times\big(\wv_k\times\mathbf{s}_k\big),
+\label{eq:ak}
+\end{equation}
+donde los dos primeros términos son lineales en $\cdd$ y el tercero es la aceleración centrípeta.
+
+\section{Ecuaciones de Newton y de Euler de cada cuerpo}
+
+\subsection{Las dos leyes}
+
+La ley de Newton para el cuerpo $k$ iguala la derivada de la cantidad de movimiento $M_k\mathbf{v}_k$ con la fuerza total $\mathbf{f}_k$,
+\begin{equation}
+M_k\dot{\mathbf{v}}_k=\mathbf{f}_k .
+\label{eq:newtonk}
+\end{equation}
+
+La ley de Euler iguala la derivada del momento angular respecto al centro de masa, $\IC{k}\wv_k$, con el momento total $\mathbf{t}_{Ck}$ de las fuerzas respecto a $C_k$.
+
+Derivando con la regla del producto y sustituyendo \eqref{eq:Idot},
+\begin{equation}
+\frac{d}{dt}\big(\IC{k}\wv_k\big)
+=\IC{k}\dot{\wv}_k+\dot{\mathbf{I}}_{Ck}\wv_k
+=\IC{k}\dot{\wv}_k+\Om_k\IC{k}\wv_k-\IC{k}\Om_k\wv_k ,
+\label{eq:Ldot}
+\end{equation}
+y como $\Om_k\wv_k=\wv_k\times\wv_k=\mathbf{0}$ el último término desaparece,
+\begin{equation}
+\boxed{\ \IC{k}\dot{\wv}_k+\wv_k\times\IC{k}\wv_k=\mathbf{t}_{Ck}\ }
+\label{eq:eulerk}
+\end{equation}
+donde $\wv_k\times\IC{k}\wv_k$ es el término giroscópico, que nace únicamente de que $\IC{k}$ gira con el cuerpo.
+
+\subsection{Las fuerzas que actúan sobre cada cuerpo}
+
+Sobre el cuerpo $k$ actúan cuatro tipos de esfuerzos, que son su peso $M_k\mathbf{g}$ en $C_k$, las fuerzas de las bielas, la fuerza de la articulación interna y el momento de la articulación interna.
+
+Una biela S-S sin masa tiene dos rótulas que no transmiten momento, luego la única fuerza que puede transmitir está dirigida de una rótula a la otra, y se escribe $\sigma_i\mathbf{m}_i$ sobre el cuerpo en el punto $O_p+\mathbf{Q}_k\mathbf{a}_i$ y $-\sigma_i\mathbf{m}_i$ sobre la manivela en $\mathbf{b}_i$.
+
+Se llaman $\mathbf{f}_O$ y $\mathbf{m}_O$ la fuerza y el momento que el cuerpo 1 ejerce sobre el cuerpo 2 en $O_p$, de modo que el cuerpo 2 ejerce $-\mathbf{f}_O$ y $-\mathbf{m}_O$ sobre el cuerpo 1.
+
+La articulación sin fricción no puede frenar la rotación relativa que permite, luego la potencia de $\mathbf{m}_O$ en esa rotación es nula para todo $\dot{\boldsymbol{\phi}}$,
+\begin{equation}
+\mathbf{m}_O\T\big(\wv_2-\wv_1\big)=\mathbf{m}_O\T\mathbf{D}_p\dot{\boldsymbol{\phi}}=0
+\quad\Longrightarrow\quad
+\mathbf{D}_p\T\mathbf{m}_O=\mathbf{0}.
+\label{eq:mOperp}
+\end{equation}
+
+Los vectores ortogonales a las columnas de $\mathbf{D}_p$ forman un espacio de dimensión $3-d_p$ generado por las columnas de $\mathbf{B}$, luego
+\begin{equation}
+\boxed{\ \mathbf{m}_O=\mathbf{B}\muv,
+\qquad
+\muv\in\mathbb{R}^{3-d_p}\ }
+\label{eq:mOB}
+\end{equation}
+y en la junta esférica $\mathbf{m}_O=\mathbf{0}$, en la universal $\mathbf{m}_O=\mu\,\mathbf{b}$, y en la de revolución $\mathbf{m}_O=\mu_1\mathbf{b}_1+\mu_2\mathbf{b}_2$.
+
+\subsection{Ecuaciones del cuerpo 1 en su centro de masa}
+
+La fuerza total sobre el cuerpo 1 es la suma término a término de sus esfuerzos,
+\begin{equation}
+M_1\dot{\mathbf{v}}_1=M_1\mathbf{g}+\sigma_1\mathbf{m}_1+\sigma_2\mathbf{m}_2+\dots+\sigma_{n_1}\mathbf{m}_{n_1}-\mathbf{f}_O .
+\label{eq:N1C}
+\end{equation}
+
+El momento de una fuerza respecto a $C_1$ es el vector desde $C_1$ hasta su punto de aplicación por la fuerza, y el punto de la biela $i$ está en $\mathbf{Q}_1\mathbf{a}_i-\mathbf{s}_1$ respecto a $C_1$ y $O_p$ está en $-\mathbf{s}_1$,
+\begin{equation}
+\IC{1}\dot{\wv}_1+\wv_1\times\IC{1}\wv_1
+=\big(\mathbf{Q}_1\mathbf{a}_1-\mathbf{s}_1\big)\times\sigma_1\mathbf{m}_1+\dots+\big(\mathbf{Q}_1\mathbf{a}_{n_1}-\mathbf{s}_1\big)\times\sigma_{n_1}\mathbf{m}_{n_1}
++\big(-\mathbf{s}_1\big)\times\big(-\mathbf{f}_O\big)-\mathbf{m}_O ,
+\label{eq:E1C}
+\end{equation}
+y el peso no da momento porque actúa en $C_1$.
+
+\subsection{Traslado de los momentos a $O_p$}
+
+El momento respecto a $O_p$ de una fuerza $\mathbf{f}_r$ aplicada en un punto que está en $\mathbf{r}$ respecto a $C_1$ se obtiene sumando $\mathbf{s}_1$ al brazo,
+\begin{equation}
+\big(\mathbf{s}_1+\mathbf{r}\big)\times\mathbf{f}_r=\mathbf{r}\times\mathbf{f}_r+\mathbf{s}_1\times\mathbf{f}_r,
+\label{eq:traslado}
+\end{equation}
+es decir, el momento respecto a $O_p$ es el momento respecto a $C_1$ más $\mathbf{s}_1$ por la fuerza total.
+
+Se suma entonces $\mathbf{s}_1\times$\eqref{eq:N1C} a \eqref{eq:E1C}, y en el lado derecho cada brazo pierde su $-\mathbf{s}_1$, con lo que la biela da $\sigma_i\mathbf{Q}_1\mathbf{a}_i\times\mathbf{m}_i=\sigma_i\mathbf{n}_i$, la fuerza $\mathbf{f}_O$ da un momento nulo porque actúa en $O_p$, y el peso da $M_1\mathbf{s}_1\times\mathbf{g}$.
+
+En el lado izquierdo esta operación es exactamente la multiplicación por $\mathbf{T}_1\T$, porque con \eqref{eq:TkT}
+\begin{equation}
+\mathbf{T}_1\T
+\begin{bmatrix}\mathbf{a}\\ \mathbf{b}\end{bmatrix}
+=
+\begin{bmatrix}\mathbf{a}\\ \mathbf{S}_1\mathbf{a}+\mathbf{b}\\ \mathbf{0}\end{bmatrix}
+=
+\begin{bmatrix}\mathbf{a}\\ \mathbf{s}_1\times\mathbf{a}+\mathbf{b}\\ \mathbf{0}\end{bmatrix},
+\label{eq:T1ab}
+\end{equation}
+de modo que $\mathbf{T}_k$ traslada velocidades de $O_p$ a $C_k$ y $\mathbf{T}_k\T$ traslada fuerzas y momentos de $C_k$ a $O_p$.
+
+\subsection{Llave de inercia y su traslado}
+
+Se juntan en un solo vector la inercia menos el peso del cuerpo $k$,
+\begin{equation}
+\boxed{\ \mathbf{w}_k=
+\begin{bmatrix}
+M_k\big(\dot{\mathbf{v}}_k-\mathbf{g}\big)\\[2pt]
+\IC{k}\dot{\wv}_k+\wv_k\times\IC{k}\wv_k
+\end{bmatrix}\ }
+\label{eq:wk}
+\end{equation}
+
+Para el cuerpo 1 se toma $\mathbf{a}$ y $\mathbf{b}$ en \eqref{eq:T1ab} como las dos partes de $\mathbf{w}_1$, y con \eqref{eq:ak} la primera es
+\begin{equation}
+\mathbf{a}=M_1\ddot{\pvec}-M_1\mathbf{S}_1\dot{\wv}_1+M_1\wv_1\times\big(\wv_1\times\mathbf{s}_1\big)-M_1\mathbf{g} .
+\label{eq:a1}
+\end{equation}
+
+Multiplicando cada término de \eqref{eq:a1} por $\mathbf{S}_1$ y sumando $\mathbf{b}$,
+\begin{equation}
+\mathbf{S}_1\mathbf{a}+\mathbf{b}
+=M_1\mathbf{S}_1\ddot{\pvec}
++\big(\IC{1}-M_1\mathbf{S}_1\mathbf{S}_1\big)\dot{\wv}_1
++M_1\mathbf{s}_1\times\Big[\wv_1\times\big(\wv_1\times\mathbf{s}_1\big)\Big]
++\wv_1\times\IC{1}\wv_1
+-M_1\,\mathbf{s}_1\times\mathbf{g} .
+\label{eq:b1}
+\end{equation}
+
+\subsection{El tensor de inercia respecto a $O_p$}
+
+Se usa la fórmula del doble producto cruz,
+\begin{equation}
+\mathbf{x}\times\big(\mathbf{y}\times\mathbf{z}\big)=\mathbf{y}\big(\mathbf{x}\T\mathbf{z}\big)-\mathbf{z}\big(\mathbf{x}\T\mathbf{y}\big),
+\label{eq:bac}
+\end{equation}
+que se comprueba componente por componente.
+
+Con $\mathbf{x}=\mathbf{y}=\mathbf{s}_1$ y $\mathbf{z}=\mathbf{v}$ cualquiera,
+\begin{equation}
+-\mathbf{S}_1\mathbf{S}_1\mathbf{v}
+=-\mathbf{s}_1\times\big(\mathbf{s}_1\times\mathbf{v}\big)
+=\big(\mathbf{s}_1\T\mathbf{s}_1\big)\mathbf{v}-\mathbf{s}_1\big(\mathbf{s}_1\T\mathbf{v}\big)
+\quad\Longrightarrow\quad
+-\mathbf{S}_1\mathbf{S}_1=\big(\mathbf{s}_1\T\mathbf{s}_1\big)\mathbf{I}_3-\mathbf{s}_1\mathbf{s}_1\T ,
+\label{eq:SS}
+\end{equation}
+y el coeficiente de $\dot{\wv}_1$ en \eqref{eq:b1} es el tensor de inercia respecto a $O_p$, que es el teorema de Steiner,
+\begin{equation}
+\boxed{\ \IO{k}=\IC{k}-M_k\mathbf{S}_k\mathbf{S}_k
+=\IC{k}+M_k\Big[\big(\mathbf{s}_k\T\mathbf{s}_k\big)\mathbf{I}_3-\mathbf{s}_k\mathbf{s}_k\T\Big]\ }
+\label{eq:IO}
+\end{equation}
+
+\subsection{El término giroscópico respecto a $O_p$}
+
+Con \eqref{eq:bac}, el producto interior del término centrípeto de \eqref{eq:b1} es
+\begin{equation}
+\wv_1\times\big(\wv_1\times\mathbf{s}_1\big)
+=\wv_1\big(\wv_1\T\mathbf{s}_1\big)-\mathbf{s}_1\big(\wv_1\T\wv_1\big),
+\label{eq:cent1}
+\end{equation}
+y al multiplicarlo por $\mathbf{s}_1\times$ el segundo término desaparece porque $\mathbf{s}_1\times\mathbf{s}_1=\mathbf{0}$,
+\begin{equation}
+M_1\mathbf{s}_1\times\Big[\wv_1\times\big(\wv_1\times\mathbf{s}_1\big)\Big]
+=M_1\big(\wv_1\T\mathbf{s}_1\big)\,\mathbf{s}_1\times\wv_1 .
+\label{eq:cent2}
+\end{equation}
+
+Por otro lado, con \eqref{eq:IO} y \eqref{eq:SS}, la parte de Steiner del término giroscópico es
+\begin{equation}
+\wv_1\times\big(\IO{1}-\IC{1}\big)\wv_1
+=M_1\,\wv_1\times\Big[\big(\mathbf{s}_1\T\mathbf{s}_1\big)\wv_1-\mathbf{s}_1\big(\mathbf{s}_1\T\wv_1\big)\Big]
+=-M_1\big(\mathbf{s}_1\T\wv_1\big)\,\wv_1\times\mathbf{s}_1
+=M_1\big(\mathbf{s}_1\T\wv_1\big)\,\mathbf{s}_1\times\wv_1 ,
+\label{eq:gir}
+\end{equation}
+donde se usó $\wv_1\times\wv_1=\mathbf{0}$, y el resultado es exactamente \eqref{eq:cent2}.
+
+Luego los dos términos cuadráticos de \eqref{eq:b1} se juntan en uno solo,
+\begin{equation}
+\boxed{\ M_1\mathbf{s}_1\times\Big[\wv_1\times\big(\wv_1\times\mathbf{s}_1\big)\Big]+\wv_1\times\IC{1}\wv_1
+=\wv_1\times\IO{1}\wv_1\ }
+\label{eq:girO}
+\end{equation}
+y el momento de la llave de inercia trasladado a $O_p$ queda como una ecuación de Euler escrita en $O_p$,
+\begin{equation}
+\mathbf{S}_1\mathbf{a}+\mathbf{b}
+=M_1\mathbf{S}_1\ddot{\pvec}+\IO{1}\dot{\wv}_1+\wv_1\times\IO{1}\wv_1-M_1\,\mathbf{s}_1\times\mathbf{g} ,
+\label{eq:b1bis}
+\end{equation}
+donde $M_1\mathbf{S}_1\ddot{\pvec}$ aparece porque $O_p$ acelera y desaparece solo si $C_1$ coincide con $O_p$.
+
+\subsection{Las cuatro ecuaciones vectoriales en $O_p$}
+
+Para el cuerpo 1, la ecuación de fuerzas \eqref{eq:N1C} con \eqref{eq:a1}, y la de momentos en $O_p$ con \eqref{eq:b1bis},
+\begin{equation}
+M_1\ddot{\pvec}-M_1\mathbf{S}_1\dot{\wv}_1+M_1\wv_1\times\big(\wv_1\times\mathbf{s}_1\big)-M_1\mathbf{g}
+=\sigma_1\mathbf{m}_1+\dots+\sigma_{n_1}\mathbf{m}_{n_1}-\mathbf{f}_O ,
+\label{eq:F1}
+\end{equation}
+\begin{equation}
+M_1\mathbf{S}_1\ddot{\pvec}+\IO{1}\dot{\wv}_1+\wv_1\times\IO{1}\wv_1-M_1\,\mathbf{s}_1\times\mathbf{g}
+=\sigma_1\mathbf{n}_1+\dots+\sigma_{n_1}\mathbf{n}_{n_1}-\mathbf{B}\muv .
+\label{eq:M1}
+\end{equation}
+
+Para el cuerpo 2 se repite todo con el índice 2, sus patas $n_1+1,\dots,n$, y los signos de $\mathbf{f}_O$ y $\mathbf{m}_O$ cambiados,
+\begin{equation}
+M_2\ddot{\pvec}-M_2\mathbf{S}_2\dot{\wv}_2+M_2\wv_2\times\big(\wv_2\times\mathbf{s}_2\big)-M_2\mathbf{g}
+=\sigma_{n_1+1}\mathbf{m}_{n_1+1}+\dots+\sigma_n\mathbf{m}_n+\mathbf{f}_O ,
+\label{eq:F2}
+\end{equation}
+\begin{equation}
+M_2\mathbf{S}_2\ddot{\pvec}+\IO{2}\dot{\wv}_2+\wv_2\times\IO{2}\wv_2-M_2\,\mathbf{s}_2\times\mathbf{g}
+=\sigma_{n_1+1}\mathbf{n}_{n_1+1}+\dots+\sigma_n\mathbf{n}_n+\mathbf{B}\muv .
+\label{eq:M2}
+\end{equation}
+
+\subsection{Eliminación de $\mathbf{f}_O$}
+
+Sumando \eqref{eq:F1} y \eqref{eq:F2}, la fuerza interna se cancela,
+\begin{multline}
+(M_1+M_2)\ddot{\pvec}-M_1\mathbf{S}_1\dot{\wv}_1-M_2\mathbf{S}_2\dot{\wv}_2\\
++M_1\wv_1\times\big(\wv_1\times\mathbf{s}_1\big)+M_2\wv_2\times\big(\wv_2\times\mathbf{s}_2\big)
+-(M_1+M_2)\mathbf{g}
+=\sigma_1\mathbf{m}_1+\dots+\sigma_n\mathbf{m}_n ,
+\label{eq:Ftot}
+\end{multline}
+que es la ecuación de Newton de la plataforma completa.
+
+Quedan las nueve ecuaciones escalares \eqref{eq:Ftot}, \eqref{eq:M1} y \eqref{eq:M2}, con las $n$ incógnitas $\sigma_i$ y las $3-d_p$ incógnitas $\muv$, es decir nueve incógnitas.
+
+\subsection{Escritura matricial}
+
+El lado izquierdo de las nueve ecuaciones es lineal en $\cdd=[\ddot{\pvec}\T\ \dot{\wv}_1\T\ \dot{\wv}_2\T]\T$ más términos cuadráticos y de peso, y se escribe
+\begin{equation}
+\boxed{\ \mathbf{T}_1\T\mathbf{w}_1+\mathbf{T}_2\T\mathbf{w}_2=\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c\ }
+\label{eq:suma}
+\end{equation}
+leyendo los coeficientes de $\ddot{\pvec}$, $\dot{\wv}_1$ y $\dot{\wv}_2$ en cada una de las tres filas,
+\begin{equation}
+\boxed{\ \mathbf{M}_c=
+\begin{bmatrix}
+(M_1+M_2)\mathbf{I}_3 & -M_1\mathbf{S}_1 & -M_2\mathbf{S}_2\\
+M_1\mathbf{S}_1 & \IO{1} & \mathbf{0}\\
+M_2\mathbf{S}_2 & \mathbf{0} & \IO{2}
+\end{bmatrix}\in\mathbb{R}^{9\times9}\ }
+\label{eq:Mc}
+\end{equation}
+\begin{equation}
+\boxed{\ \mathbf{h}_c=
+\begin{bmatrix}
+M_1\wv_1\times\big(\wv_1\times\mathbf{s}_1\big)+M_2\wv_2\times\big(\wv_2\times\mathbf{s}_2\big)\\[2pt]
+\wv_1\times\IO{1}\wv_1\\[2pt]
+\wv_2\times\IO{2}\wv_2
+\end{bmatrix},
+\qquad
+\mathbf{g}_c=
+\begin{bmatrix}
+(M_1+M_2)\,\mathbf{g}\\[2pt]
+M_1\,\mathbf{s}_1\times\mathbf{g}\\[2pt]
+M_2\,\mathbf{s}_2\times\mathbf{g}
+\end{bmatrix}\ }
+\label{eq:hcgc}
+\end{equation}
+
+El lado derecho es una combinación de vectores de nueve componentes, uno por cada incógnita,
+\begin{equation}
+\sigma_1\begin{bmatrix}\mathbf{m}_1\\ \mathbf{n}_1\\ \mathbf{0}\end{bmatrix}
++\dots+
+\sigma_{n_1}\begin{bmatrix}\mathbf{m}_{n_1}\\ \mathbf{n}_{n_1}\\ \mathbf{0}\end{bmatrix}
++\sigma_{n_1+1}\begin{bmatrix}\mathbf{m}_{n_1+1}\\ \mathbf{0}\\ \mathbf{n}_{n_1+1}\end{bmatrix}
++\dots+
+\sigma_{n}\begin{bmatrix}\mathbf{m}_{n}\\ \mathbf{0}\\ \mathbf{n}_{n}\end{bmatrix}
++\begin{bmatrix}\mathbf{0}\\ -\mathbf{B}\\ \mathbf{B}\end{bmatrix}\muv ,
+\label{eq:JTcol}
+\end{equation}
+y cada uno de esos vectores es una fila de $\mathbf{J}$ en \eqref{eq:maestra} puesta de pie.
+
+Poniendo los vectores como columnas se obtiene la transpuesta de $\mathbf{J}$, y con $\sig=[\sigma_1\ \cdots\ \sigma_n]\T$ las nueve ecuaciones son
+\begin{equation}
+\boxed{\ \mathbf{J}\T\begin{bmatrix}\sig\\ \muv\end{bmatrix}=\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c,
+\qquad
+\mathbf{J}\T=
+\begin{bmatrix}
+\Fmat_1\T & \Fmat_2\T & \mathbf{0}\\
+\Nmat_1\T & \mathbf{0} & -\mathbf{B}\\
+\mathbf{0} & \Nmat_2\T & \mathbf{B}
+\end{bmatrix}\ }
+\label{eq:NEmat}
+\end{equation}
+
+La matriz $\mathbf{J}\T$ no se introdujo, salió sola al escribir el equilibrio, porque cada fila de $\mathbf{J}$ describe la misma recta que la fuerza de la biela correspondiente.
+
+\subsection{Ecuación de las manivelas}
+
+Sobre la manivela $i$ actúan el par del actuador $\tau_i\mathbf{v}_i$, su peso $m_{mi}\mathbf{g}$ en $\mathbf{c}_i+\mathbf{d}_{ci}$, la fuerza $-\sigma_i\mathbf{m}_i$ de la biela en $\mathbf{c}_i+\mathbf{d}_i$ y las reacciones de los rodamientos, que no dan momento alrededor de $\mathbf{v}_i$.
+
+Para un punto fijo del eje, como $\mathbf{c}_i$, la ley de Euler tiene la forma \eqref{eq:eulerk} con el tensor de inercia respecto a ese punto, y con $\wv=\dot\theta_i\mathbf{v}_i$ el término giroscópico proyectado sobre el eje es nulo,
+\begin{equation}
+\mathbf{v}_i\T\big(\wv\times\mathbf{I}\wv\big)=\dot\theta_i^2\,\mathbf{v}_i\T\big(\mathbf{v}_i\times\mathbf{I}\mathbf{v}_i\big)=0 ,
+\label{eq:girmani}
+\end{equation}
+porque $\mathbf{v}_i\times\mathbf{I}\mathbf{v}_i$ es perpendicular a $\mathbf{v}_i$.
+
+Proyectando la ley de Euler sobre $\mathbf{v}_i$ con $\mathbf{v}_i\T\mathbf{I}\mathbf{v}_i=I_{mi}$, y con los momentos de las fuerzas respecto a $\mathbf{c}_i$,
+\begin{equation}
+I_{mi}\ddot\theta_i=\tau_i+\mathbf{v}_i\T\big(\mathbf{d}_{ci}\times m_{mi}\mathbf{g}\big)+\mathbf{v}_i\T\big(\mathbf{d}_i\times(-\sigma_i\mathbf{m}_i)\big).
+\label{eq:manivela}
+\end{equation}
+
+Por el triple producto, $\mathbf{v}_i\T(\mathbf{d}_{ci}\times\mathbf{g})=\mathbf{g}\T(\mathbf{v}_i\times\mathbf{d}_{ci})$ y $\mathbf{v}_i\T(\mathbf{d}_i\times\mathbf{m}_i)=\mathbf{m}_i\T(\mathbf{v}_i\times\mathbf{d}_i)=K_{ii}$, luego el par de cada actuador es
+\begin{equation}
+\boxed{\ \tau_i=I_{mi}\ddot\theta_i-m_{mi}\,\mathbf{g}\T\big(\mathbf{v}_i\times\mathbf{d}_{ci}\big)+K_{ii}\sigma_i\ }
+\label{eq:fi}
+\end{equation}
+que reproduce \eqref{eq:R7} de la manivela con péndulo.
+
+En forma vectorial, con $\mathbf{I}_m=\mathrm{diag}(I_{m1},\dots,I_{mn})$ y $\mathbf{g}_m=\big[m_{m1}\mathbf{g}\T(\mathbf{v}_1\times\mathbf{d}_{c1})\ \ \cdots\ \ m_{mn}\mathbf{g}\T(\mathbf{v}_n\times\mathbf{d}_{cn})\big]\T$,
+\begin{equation}
+\tauv=\mathbf{I}_m\ddot{\thv}-\mathbf{g}_m+\mathbf{K}_l\sig .
+\label{eq:fvec}
+\end{equation}
+
+\section{La misma matriz de masa desde la energía}
+
+\subsection{Energía cinética de un cuerpo}
+
+La energía cinética del cuerpo $k$ es la de traslación de su centro de masa más la de rotación,
+\begin{equation}
+E_{ck}=\tfrac12M_k\mathbf{v}_k\T\mathbf{v}_k+\tfrac12\wv_k\T\IC{k}\wv_k
+=\tfrac12\,\mathbf{t}_k\T\mathbf{H}_k\mathbf{t}_k ,
+\qquad
+\mathbf{H}_k=\begin{bmatrix}M_k\mathbf{I}_3 & \mathbf{0}\\ \mathbf{0} & \IC{k}\end{bmatrix},
+\label{eq:Eck}
+\end{equation}
+y con $\mathbf{t}_k=\mathbf{T}_k\cd$,
+\begin{equation}
+E_{ck}=\tfrac12\,\cd\T\mathbf{T}_k\T\mathbf{H}_k\mathbf{T}_k\cd .
+\label{eq:Eck2}
+\end{equation}
+
+\subsection{Producto por bloques}
+
+Para el cuerpo 1, primero
+\begin{equation}
+\mathbf{H}_1\mathbf{T}_1=
+\begin{bmatrix}M_1\mathbf{I}_3 & \mathbf{0}\\ \mathbf{0} & \IC{1}\end{bmatrix}
+\begin{bmatrix}\mathbf{I}_3 & -\mathbf{S}_1 & \mathbf{0}\\ \mathbf{0} & \mathbf{I}_3 & \mathbf{0}\end{bmatrix}
+=\begin{bmatrix}M_1\mathbf{I}_3 & -M_1\mathbf{S}_1 & \mathbf{0}\\ \mathbf{0} & \IC{1} & \mathbf{0}\end{bmatrix},
+\label{eq:DT}
+\end{equation}
+y después, con \eqref{eq:TkT},
+\begin{equation}
+\mathbf{T}_1\T\mathbf{H}_1\mathbf{T}_1=
+\begin{bmatrix}\mathbf{I}_3 & \mathbf{0}\\ \mathbf{S}_1 & \mathbf{I}_3\\ \mathbf{0} & \mathbf{0}\end{bmatrix}
+\begin{bmatrix}M_1\mathbf{I}_3 & -M_1\mathbf{S}_1 & \mathbf{0}\\ \mathbf{0} & \IC{1} & \mathbf{0}\end{bmatrix}
+=\begin{bmatrix}M_1\mathbf{I}_3 & -M_1\mathbf{S}_1 & \mathbf{0}\\ M_1\mathbf{S}_1 & \IC{1}-M_1\mathbf{S}_1\mathbf{S}_1 & \mathbf{0}\\ \mathbf{0} & \mathbf{0} & \mathbf{0}\end{bmatrix}.
+\label{eq:TDT1}
+\end{equation}
+
+El bloque central es $\IO{1}$ por \eqref{eq:IO}, y el cuerpo 2 da el mismo resultado en las posiciones de $\wv_2$,
+\begin{equation}
+\mathbf{T}_2\T\mathbf{H}_2\mathbf{T}_2=
+\begin{bmatrix}M_2\mathbf{I}_3 & \mathbf{0} & -M_2\mathbf{S}_2\\ \mathbf{0} & \mathbf{0} & \mathbf{0}\\ M_2\mathbf{S}_2 & \mathbf{0} & \IO{2}\end{bmatrix}.
+\label{eq:TDT2}
+\end{equation}
+
+Sumando \eqref{eq:TDT1} y \eqref{eq:TDT2} se recupera \eqref{eq:Mc}, luego la energía cinética total del robot es
+\begin{equation}
+\boxed{\ E_c=\tfrac12\,\cd\T\mathbf{M}_c\cd+\tfrac12\,\dot{\thv}\T\mathbf{I}_m\dot{\thv}\ }
+\label{eq:Ec}
+\end{equation}
+y $\mathbf{M}_c$ es simétrica y definida positiva.
+
+El bloque nulo entre $\wv_1$ y $\wv_2$ es el análogo inercial de los bloques nulos de $\mathbf{J}$, ya que ningún cuerpo tiene inercia en la rotación del otro.
+
+\subsection{Energía potencial y peso generalizado}
+
+La energía potencial de los dos cuerpos y de las manivelas es
+\begin{equation}
+E_p=-M_1\mathbf{g}\T\big(\pvec+\mathbf{s}_1\big)-M_2\mathbf{g}\T\big(\pvec+\mathbf{s}_2\big)-m_{m1}\mathbf{g}\T\big(\mathbf{c}_1+\mathbf{d}_{c1}\big)-\dots-m_{mn}\mathbf{g}\T\big(\mathbf{c}_n+\mathbf{d}_{cn}\big).
+\label{eq:Ep}
+\end{equation}
+
+Para una traslación pequeña $\delta\pvec$ y rotaciones pequeñas $\dth_1$ y $\dth_2$ de los cuerpos, de vector igual al eje por el ángulo, un vector fijo en el cuerpo $k$ cambia en $\dth_k\times\mathbf{s}_k$, igual que en \eqref{eq:vfijo}, y $\mathbf{d}_{ci}$ cambia en $\delta\theta_i\,\mathbf{v}_i\times\mathbf{d}_{ci}$.
+
+Con $\mathbf{g}\T(\dth_1\times\mathbf{s}_1)=\dth_1\T(\mathbf{s}_1\times\mathbf{g})$ y $\mathbf{g}\T(\mathbf{v}_i\times\mathbf{d}_{ci})\delta\theta_i$ para cada manivela, la variación de $E_p$ es
+\begin{equation}
+\delta E_p=-\delta\pvec\T(M_1+M_2)\mathbf{g}-\dth_1\T M_1\,\mathbf{s}_1\times\mathbf{g}-\dth_2\T M_2\,\mathbf{s}_2\times\mathbf{g}-\delta\thv\T\mathbf{g}_m
+=-\delta\mathbf{c}\T\mathbf{g}_c-\delta\thv\T\mathbf{g}_m ,
+\label{eq:dEp}
+\end{equation}
+con $\delta\mathbf{c}=[\delta\pvec\T\ \dth_1\T\ \dth_2\T]\T$, lo que confirma el $\mathbf{g}_c$ de \eqref{eq:hcgc}.
+
+\subsection{Balance de potencias}
+
+Multiplicando \eqref{eq:suma} por $\cd\T$ y usando $\mathbf{t}_k=\mathbf{T}_k\cd$, la parte inercial de cada cuerpo da
+\begin{equation}
+\mathbf{t}_k\T
+\begin{bmatrix}M_k\dot{\mathbf{v}}_k\\ \IC{k}\dot{\wv}_k+\wv_k\times\IC{k}\wv_k\end{bmatrix}
+=M_k\mathbf{v}_k\T\dot{\mathbf{v}}_k+\wv_k\T\IC{k}\dot{\wv}_k ,
+\label{eq:pot1}
+\end{equation}
+porque $\wv_k\T(\wv_k\times\IC{k}\wv_k)=0$.
+
+Derivando \eqref{eq:Eck} con \eqref{eq:Idot}, el término $\tfrac12\wv_k\T\dot{\mathbf{I}}_{Ck}\wv_k=\tfrac12\wv_k\T(\Om_k\IC{k}-\IC{k}\Om_k)\wv_k$ es nulo porque $\Om_k\wv_k=\mathbf{0}$ y $\wv_k\T\Om_k=-(\Om_k\wv_k)\T=\mathbf{0}\T$, luego
+\begin{equation}
+\dot E_{ck}=M_k\mathbf{v}_k\T\dot{\mathbf{v}}_k+\wv_k\T\IC{k}\dot{\wv}_k ,
+\label{eq:pot2}
+\end{equation}
+que coincide con \eqref{eq:pot1}.
+
+Por lo tanto $\cd\T(\mathbf{M}_c\cdd+\mathbf{h}_c)$ es la derivada de la energía cinética de los dos cuerpos, y $\mathbf{h}_c$ es exactamente lo que en Lagrange sería el vector $\mathbf{c}$ de \eqref{eq:L16}, obtenido aquí sin derivar ninguna matriz respecto a ángulos.
+
+\section{El mismo modelo por trabajo virtual}
+
+\subsection{Desplazamientos virtuales admisibles}
+
+Un desplazamiento virtual es un par $(\delta\mathbf{c},\delta\thv)$ pequeño e imaginado que respeta todas las restricciones, es decir la ecuación maestra,
+\begin{equation}
+\boxed{\ \mathbf{J}\,\delta\mathbf{c}=\mathbf{K}\,\delta\thv\ }
+\label{eq:compat}
+\end{equation}
+que contiene las $n$ filas de las patas y las $3-d_p$ filas $\mathbf{B}\T(\dth_2-\dth_1)=\mathbf{0}$ de la articulación.
+
+Cada centro de masa se desplaza entonces según $\delta\mathbf{t}_k=\mathbf{T}_k\delta\mathbf{c}$, igual que las velocidades en \eqref{eq:Tk}.
+
+\subsection{Multiplicar y sumar}
+
+Se multiplica \eqref{eq:F1} por $\delta\pvec\T$, \eqref{eq:M1} por $\dth_1\T$, \eqref{eq:F2} por $\delta\pvec\T$, \eqref{eq:M2} por $\dth_2\T$ y cada ecuación de manivela \eqref{eq:manivela} por $\delta\theta_i$, y se suma todo.
+
+Los lados izquierdos de los cuerpos dan $\delta\mathbf{c}\T(\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c)$, y los de las manivelas, pasando $\tau_i$ y el peso a la izquierda, dan $\delta\thv\T(\mathbf{I}_m\ddot{\thv}-\mathbf{g}_m-\tauv)$.
+
+En los lados derechos se agrupan los términos de cada esfuerzo interno, y para la biela $i$ fijada al cuerpo $k$ aparece la fila $i$ de \eqref{eq:compat},
+\begin{equation}
+\sigma_i\big(\mathbf{m}_i\T\delta\pvec+\mathbf{n}_i\T\dth_k-K_{ii}\delta\theta_i\big)=0 .
+\label{eq:biela}
+\end{equation}
+
+La fuerza $\mathbf{f}_O$ aparece con signos opuestos en las dos ecuaciones de fuerza, multiplicada por el mismo $\delta\pvec$,
+\begin{equation}
+-\delta\pvec\T\mathbf{f}_O+\delta\pvec\T\mathbf{f}_O=0 ,
+\label{eq:fO}
+\end{equation}
+y esta es la ventaja de haber puesto $\dot{\pvec}$ una sola vez en $\cd$.
+
+El momento $\mathbf{B}\muv$ aparece en las dos ecuaciones de momentos y da las filas de la articulación,
+\begin{equation}
+-\dth_1\T\mathbf{B}\muv+\dth_2\T\mathbf{B}\muv=\muv\T\mathbf{B}\T\big(\dth_2-\dth_1\big)=0 .
+\label{eq:mO}
+\end{equation}
+
+\subsection{El enunciado}
+
+Todos los esfuerzos internos desaparecen y queda el principio del trabajo virtual del robot,
+\begin{equation}
+\boxed{\ \delta\mathbf{c}\T\big(\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c\big)
+=\delta\thv\T\big(\tauv+\mathbf{g}_m-\mathbf{I}_m\ddot{\thv}\big)
+\qquad\text{para todo }(\delta\mathbf{c},\delta\thv)\text{ que cumple \eqref{eq:compat}}\ }
+\label{eq:tv}
+\end{equation}
+que se podía haber escrito directamente sin nombrar $\sigma_i$, $\mathbf{f}_O$ ni $\muv$, sabiendo que los esfuerzos internos ideales no trabajan.
+
+Si en lugar de desplazamientos virtuales se ponen las velocidades reales, \eqref{eq:tv} con \eqref{eq:pot2} y \eqref{eq:dEp} se convierte en el balance de potencias $\tauv\T\dot{\thv}=\dot E_c+\dot E_p$.
+
+\subsection{Recuperar los esfuerzos internos}
+
+Fuera de las singularidades de tipo II, $\mathbf{J}$ es invertible y \eqref{eq:compat} da $\delta\mathbf{c}=\mathbf{J}^{-1}\mathbf{K}\delta\thv$ con $\delta\thv$ completamente libre.
+
+Se define $\lam\in\mathbb{R}^9$ como la solución del sistema lineal
+\begin{equation}
+\mathbf{J}\T\lam=\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c .
+\label{eq:deflam}
+\end{equation}
+
+El lado izquierdo de \eqref{eq:tv} se transforma paso a paso, primero con \eqref{eq:deflam}, después con la regla $(\mathbf{X}\mathbf{y})\T=\mathbf{y}\T\mathbf{X}\T$, y finalmente con \eqref{eq:compat},
+\begin{equation}
+\delta\mathbf{c}\T\big(\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c\big)
+=\delta\mathbf{c}\T\mathbf{J}\T\lam
+=\big(\mathbf{J}\delta\mathbf{c}\big)\T\lam
+=\big(\mathbf{K}\delta\thv\big)\T\lam
+=\delta\thv\T\mathbf{K}\T\lam ,
+\label{eq:paso}
+\end{equation}
+y \eqref{eq:tv} queda
+\begin{equation}
+\delta\thv\T\big(\tauv+\mathbf{g}_m-\mathbf{I}_m\ddot{\thv}-\mathbf{K}\T\lam\big)=0
+\qquad\text{para todo }\delta\thv,
+\label{eq:paso2}
+\end{equation}
+lo que obliga a que el paréntesis sea nulo, porque se puede elegir $\delta\thv$ igual al propio paréntesis.
+
+El modelo dinámico es entonces
+\begin{equation}
+\boxed{\ \mathbf{J}\T\lam=\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c,
+\qquad
+\tauv=\mathbf{I}_m\ddot{\thv}-\mathbf{g}_m+\mathbf{K}\T\lam\ }
+\label{eq:aumentada}
+\end{equation}
+y comparando con \eqref{eq:NEmat} y \eqref{eq:fvec}, que tienen la misma matriz $\mathbf{J}\T$, se identifica $\lam=[\sig\T\ \ \muv\T]\T$.
+
+Como las últimas $3-d_p$ filas de $\mathbf{K}$ son nulas, $\mathbf{K}\T\lam=\mathbf{K}_l\sig$, y $\muv$ no entra en los pares de los actuadores aunque se obtiene gratis.
+
+\subsection{Relación con los multiplicadores de Lagrange}
+
+Escribiendo la ecuación maestra como una restricción sobre todas las coordenadas, $[\mathbf{J}\ \ -\mathbf{K}][\cd\T\ \ \dot{\thv}\T]\T=\mathbf{0}$, se tiene la forma de \eqref{eq:R2} con $\mathbf{A}=[\mathbf{J}\ \ -\mathbf{K}]$.
+
+La regla \eqref{eq:R5} dice que los esfuerzos internos generalizados son $\mathbf{A}\T\lam$, y el modelo con multiplicadores es
+\begin{equation}
+\begin{bmatrix}\mathbf{M}_c & \mathbf{0}\\ \mathbf{0} & \mathbf{I}_m\end{bmatrix}
+\begin{bmatrix}\cdd\\ \ddot{\thv}\end{bmatrix}
++\begin{bmatrix}\mathbf{h}_c\\ \mathbf{0}\end{bmatrix}
+-\begin{bmatrix}\mathbf{g}_c\\ \mathbf{g}_m+\tauv\end{bmatrix}
+=\begin{bmatrix}\mathbf{J}\T\\ -\mathbf{K}\T\end{bmatrix}\lam ,
+\label{eq:lagmult}
+\end{equation}
+cuya primera fila de bloques es \eqref{eq:deflam} y cuya segunda es la segunda ecuación de \eqref{eq:aumentada}.
+
+Los multiplicadores de Lagrange del robot son, por tanto, las fuerzas de las bielas y el momento de la articulación, igual que $\lambda$ era la fuerza de la barra de la manivela con péndulo.
+
+\section{Ecuación de aceleración}
+
+\subsection{Filas de las patas}
+
+La dinámica inversa necesita $\ddot{\thv}$, que se obtiene derivando una segunda vez la condición de longitud a partir de \eqref{eq:mm1},
+\begin{equation}
+\frac{d}{dt}\big(\mathbf{m}_i\T\dot{\mathbf{m}}_i\big)=\dot{\mathbf{m}}_i\T\dot{\mathbf{m}}_i+\mathbf{m}_i\T\ddot{\mathbf{m}}_i=0 .
+\label{eq:mm2}
+\end{equation}
+
+Derivando \eqref{eq:mdot}, y usando para $\wv_k\times\mathbf{Q}_k\mathbf{a}_i$ la regla del producto con \eqref{eq:vfijo},
+\begin{equation}
+\ddot{\mathbf{m}}_i=\ddot{\pvec}-\ddot{\mathbf{b}}_i+\dot{\wv}_k\times\mathbf{Q}_k\mathbf{a}_i+\wv_k\times\big(\wv_k\times\mathbf{Q}_k\mathbf{a}_i\big).
+\label{eq:mddot}
+\end{equation}
+
+Derivando \eqref{eq:bdot} con la regla del producto y usando otra vez $\dot{\mathbf{d}}_i=\dot\theta_i\,\mathbf{v}_i\times\mathbf{d}_i$, con $\mathbf{v}_i$ fijo,
+\begin{equation}
+\ddot{\mathbf{b}}_i=\ddot\theta_i\,\mathbf{v}_i\times\mathbf{d}_i+\dot\theta_i\,\mathbf{v}_i\times\dot{\mathbf{d}}_i
+=\ddot\theta_i\,\mathbf{v}_i\times\mathbf{d}_i+\dot\theta_i^2\,\mathbf{v}_i\times\big(\mathbf{v}_i\times\mathbf{d}_i\big),
+\label{eq:bdd0}
+\end{equation}
+y con \eqref{eq:bac}, $\mathbf{v}_i\T\mathbf{v}_i=1$ y $\mathbf{v}_i\T\mathbf{d}_i=0$, el doble producto vale $\mathbf{v}_i(\mathbf{v}_i\T\mathbf{d}_i)-\mathbf{d}_i(\mathbf{v}_i\T\mathbf{v}_i)=-\mathbf{d}_i$, que es la aceleración centrípeta de la junta esférica dirigida hacia el eje,
+\begin{equation}
+\ddot{\mathbf{b}}_i=\ddot\theta_i\,\mathbf{v}_i\times\mathbf{d}_i-\dot\theta_i^2\,\mathbf{d}_i .
+\label{eq:bdd}
+\end{equation}
+
+Sustituyendo \eqref{eq:mddot} y \eqref{eq:bdd} en \eqref{eq:mm2}, con $\mathbf{m}_i\T(\mathbf{v}_i\times\mathbf{d}_i)=K_{ii}$ y aplicando el triple producto \eqref{eq:triple} al término en $\dot{\wv}_k$,
+\begin{equation}
+\dot{\mathbf{m}}_i\T\dot{\mathbf{m}}_i+\mathbf{m}_i\T\ddot{\pvec}-K_{ii}\ddot\theta_i+\dot\theta_i^2\,\mathbf{m}_i\T\mathbf{d}_i+\mathbf{n}_i\T\dot{\wv}_k+\mathbf{m}_i\T\Big[\wv_k\times\big(\wv_k\times\mathbf{Q}_k\mathbf{a}_i\big)\Big]=0 ,
+\label{eq:qdd0}
+\end{equation}
+y despejando el término del actuador,
+\begin{equation}
+\boxed{\ K_{ii}\ddot\theta_i=\mathbf{m}_i\T\ddot{\pvec}+\mathbf{n}_i\T\dot{\wv}_k+u_i ,
+\qquad
+u_i=\dot{\mathbf{m}}_i\T\dot{\mathbf{m}}_i+\mathbf{m}_i\T\Big[\wv_k\times\big(\wv_k\times\mathbf{Q}_k\mathbf{a}_i\big)\Big]+\dot\theta_i^2\,\mathbf{m}_i\T\mathbf{d}_i\ }
+\label{eq:qdd}
+\end{equation}
+con la misma fila de $\mathbf{J}$ que en velocidad más un término $u_i$ cuadrático en las velocidades.
+
+\subsection{Filas de la articulación}
+
+Derivando \eqref{eq:Brow} con la regla del producto, porque $\mathbf{B}$ cambia con la configuración,
+\begin{equation}
+\mathbf{B}\T\big(\dot{\wv}_2-\dot{\wv}_1\big)+\mathbf{u}_b=\mathbf{0},
+\qquad
+\mathbf{u}_b=\dot{\mathbf{B}}\T\big(\wv_2-\wv_1\big).
+\label{eq:ub}
+\end{equation}
+
+Apilando \eqref{eq:qdd} y \eqref{eq:ub} en el mismo orden que la ecuación maestra,
+\begin{equation}
+\boxed{\ \mathbf{J}\cdd+\mathbf{u}=\mathbf{K}\ddot{\thv},
+\qquad
+\mathbf{u}=\big[u_1\ \ u_2\ \ \cdots\ \ u_n\ \ \mathbf{u}_b\T\big]\T\in\mathbb{R}^9\ }
+\label{eq:maestraacc}
+\end{equation}
+
+\section{Dinámica inversa}
+
+Dada una trayectoria $\cd(t)$ y $\cdd(t)$ compatible con la articulación, la velocidad y la aceleración de cada actuador salen de \eqref{eq:legrow} y \eqref{eq:qdd} dividiendo por el escalar $K_{ii}$, sin invertir ninguna matriz,
+\begin{equation}
+\dot\theta_i=\frac{\mathbf{m}_i\T\dot{\pvec}+\mathbf{n}_i\T\wv_k}{K_{ii}},
+\qquad
+\ddot\theta_i=\frac{\mathbf{m}_i\T\ddot{\pvec}+\mathbf{n}_i\T\dot{\wv}_k+u_i}{K_{ii}} .
+\label{eq:qinv}
+\end{equation}
+
+Se resuelve después el sistema \eqref{eq:deflam} de $9\times9$ con la misma $\mathbf{J}$ que la cinemática,
+\begin{equation}
+\lam=\mathbf{J}^{-\mathrm{T}}\big(\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c\big),
+\label{eq:laminv}
+\end{equation}
+y se obtiene $\tau_i$ con \eqref{eq:fi}, mientras que las últimas $3-d_p$ componentes dan el momento $\mathbf{B}\muv$ que carga la articulación interna y $\sigma_il_i$ da la fuerza en cada biela.
+
+\section{Forma en el espacio de los actuadores}
+
+De la ecuación maestra y de \eqref{eq:maestraacc}, multiplicando por $\mathbf{J}^{-1}$ a la izquierda,
+\begin{equation}
+\cd=\mathbf{G}\dot{\thv},
+\qquad
+\cdd=\mathbf{J}^{-1}\big(\mathbf{K}\ddot{\thv}-\mathbf{u}\big)=\mathbf{G}\ddot{\thv}-\mathbf{J}^{-1}\mathbf{u},
+\qquad
+\mathbf{G}=\mathbf{J}^{-1}\mathbf{K}\in\mathbb{R}^{9\times n},
+\label{eq:Gacc}
+\end{equation}
+donde no hace falta derivar $\mathbf{G}$ porque $\mathbf{u}$ ya contiene todos los términos cuadráticos.
+
+Por la regla de la transpuesta de un producto, $\mathbf{K}\T\lam=\mathbf{K}\T\mathbf{J}^{-\mathrm{T}}(\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c)=\mathbf{G}\T(\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c)$, y la segunda ecuación de \eqref{eq:aumentada} da
+\begin{equation}
+\tauv=\mathbf{I}_m\ddot{\thv}-\mathbf{g}_m
++\mathbf{G}\T\mathbf{M}_c\big(\mathbf{G}\ddot{\thv}-\mathbf{J}^{-1}\mathbf{u}\big)
++\mathbf{G}\T\mathbf{h}_c-\mathbf{G}\T\mathbf{g}_c .
+\label{eq:fq0}
+\end{equation}
+
+Agrupando los términos en $\ddot{\thv}$, los cuadráticos y los de peso,
+\begin{equation}
+\boxed{\ \tauv=\mathbf{M}_a\ddot{\thv}+\mathbf{c}_a-\mathbf{g}_a,
+\quad
+\mathbf{M}_a=\mathbf{I}_m+\mathbf{G}\T\mathbf{M}_c\mathbf{G},
+\quad
+\mathbf{c}_a=\mathbf{G}\T\big(\mathbf{h}_c-\mathbf{M}_c\mathbf{J}^{-1}\mathbf{u}\big),
+\quad
+\mathbf{g}_a=\mathbf{g}_m+\mathbf{G}\T\mathbf{g}_c\ }
+\label{eq:fq}
+\end{equation}
+que tiene la forma \eqref{eq:L16} de Lagrange en las coordenadas de los actuadores, con $\mathbf{M}_a\in\mathbb{R}^{n\times n}$ simétrica y definida positiva fuera de las singularidades.
+
+\section{Forma mínima}
+
+\subsection{Velocidades que respetan la articulación}
+
+En lugar de dejar que $\muv$ aparezca, se pueden usar desde el principio velocidades que ya cumplen la articulación, sustituyendo $\wv_2=\wv_1+\mathbf{D}_p\dot{\boldsymbol{\phi}}$ en $\cd$,
+\begin{equation}
+\boxed{\ \cd=\mathbf{E}\xd,
+\qquad
+\xd=\begin{bmatrix}\dot{\pvec}\\ \wv_1\\ \dot{\boldsymbol{\phi}}\end{bmatrix}\in\mathbb{R}^{n},
+\qquad
+\mathbf{E}=
+\begin{bmatrix}
+\mathbf{I}_3 & \mathbf{0} & \mathbf{0}\\
+\mathbf{0} & \mathbf{I}_3 & \mathbf{0}\\
+\mathbf{0} & \mathbf{I}_3 & \mathbf{D}_p
+\end{bmatrix}\in\mathbb{R}^{9\times n}\ }
+\label{eq:E}
+\end{equation}
+cuyas tres filas de bloques dicen $\dot{\pvec}=\dot{\pvec}$, $\wv_1=\wv_1$ y $\wv_2=\wv_1+\mathbf{D}_p\dot{\boldsymbol{\phi}}$.
+
+Multiplicando las filas de la articulación por $\mathbf{E}$ columna de bloques por columna de bloques,
+\begin{equation}
+\mathbf{J}_b\mathbf{E}
+=\big[\ \mathbf{0}\ \ \ -\mathbf{B}\T+\mathbf{B}\T\ \ \ \mathbf{B}\T\mathbf{D}_p\ \big]
+=\big[\ \mathbf{0}\ \ \ \mathbf{0}\ \ \ \mathbf{0}\ \big],
+\label{eq:JbE}
+\end{equation}
+porque $\mathbf{B}\T\mathbf{D}_p=\mathbf{0}$ por construcción.
+
+\subsection{El jacobiano cuadrado de las patas}
+
+Multiplicando las filas de las patas por $\mathbf{E}$ de la misma manera,
+\begin{equation}
+\mathbf{J}_l\mathbf{E}=
+\begin{bmatrix}
+\Fmat_1 & \Nmat_1 & \mathbf{0}\\
+\Fmat_2 & \mathbf{0} & \Nmat_2
+\end{bmatrix}
+\begin{bmatrix}
+\mathbf{I}_3 & \mathbf{0} & \mathbf{0}\\
+\mathbf{0} & \mathbf{I}_3 & \mathbf{0}\\
+\mathbf{0} & \mathbf{I}_3 & \mathbf{D}_p
+\end{bmatrix}
+=
+\begin{bmatrix}
+\Fmat_1 & \Nmat_1 & \mathbf{0}\\
+\Fmat_2 & \Nmat_2 & \Nmat_2\mathbf{D}_p
+\end{bmatrix},
+\label{eq:JlE}
+\end{equation}
+y se obtiene una matriz cuadrada,
+\begin{equation}
+\boxed{\ \mathbf{J}_x=\mathbf{J}_l\mathbf{E}\in\mathbb{R}^{n\times n},
+\qquad
+\mathbf{J}_x\xd=\mathbf{K}_l\dot{\thv}\ }
+\label{eq:Jx}
+\end{equation}
+donde cada pata del cuerpo 2 ve la rotación del cuerpo 1 más la rotación relativa proyectada sobre los ejes de la articulación.
+
+\subsection{Mismas singularidades}
+
+Se completa $\mathbf{E}$ con $3-d_p$ columnas para formar una matriz cuadrada,
+\begin{equation}
+\mathbf{P}=\begin{bmatrix}
+\mathbf{I}_3 & \mathbf{0} & \mathbf{0} & \mathbf{0}\\
+\mathbf{0} & \mathbf{I}_3 & \mathbf{0} & \mathbf{0}\\
+\mathbf{0} & \mathbf{I}_3 & \mathbf{D}_p & \mathbf{B}
+\end{bmatrix}\in\mathbb{R}^{9\times9},
+\qquad
+\det\!\big(\mathbf{P}\big)=\det\!\big([\mathbf{D}_p\ \ \mathbf{B}]\big),
+\label{eq:P}
+\end{equation}
+cuyo determinante sale de su forma triangular por bloques.
+
+Con \eqref{eq:JbE}, \eqref{eq:JlE}, $\mathbf{J}_b$ por la última columna igual a $\mathbf{B}\T\mathbf{B}$ y $\mathbf{J}_l$ por la última columna igual a $[\mathbf{0}\ \ (\Nmat_2\mathbf{B})\T]\T$,
+\begin{equation}
+\mathbf{J}\mathbf{P}=
+\begin{bmatrix}
+\mathbf{J}_x & \begin{matrix}\mathbf{0}\\ \Nmat_2\mathbf{B}\end{matrix}\\
+\mathbf{0} & \mathbf{B}\T\mathbf{B}
+\end{bmatrix},
+\label{eq:JP}
+\end{equation}
+que también es triangular por bloques, y tomando determinantes en los dos lados,
+\begin{equation}
+\boxed{\ \det\!\big(\mathbf{J}\big)\,\det\!\big([\mathbf{D}_p\ \ \mathbf{B}]\big)=\det\!\big(\mathbf{J}_x\big)\,\det\!\big(\mathbf{B}\T\mathbf{B}\big)\ }
+\label{eq:detJx}
+\end{equation}
+luego, como $[\mathbf{D}_p\ \ \mathbf{B}]$ y $\mathbf{B}\T\mathbf{B}$ son invertibles, $\mathbf{J}$ y $\mathbf{J}_x$ tienen las mismas singularidades de tipo II.
+
+\subsection{La ecuación mínima}
+
+Con $\delta\mathbf{c}=\mathbf{E}\delta\mathbf{x}$, el lado izquierdo de \eqref{eq:tv} pasa a ser $\delta\mathbf{x}\T\mathbf{E}\T(\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c)$ y, por \eqref{eq:JbE} y \eqref{eq:Jx}, la restricción se reduce a $\mathbf{J}_x\delta\mathbf{x}=\mathbf{K}_l\delta\thv$.
+
+Repitiendo los pasos \eqref{eq:paso} y \eqref{eq:paso2} con $\mathbf{J}_x$ en lugar de $\mathbf{J}$,
+\begin{equation}
+\boxed{\ \mathbf{J}_x\T\sig=\mathbf{E}\T\big(\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c\big),
+\qquad
+\tauv=\mathbf{I}_m\ddot{\thv}-\mathbf{g}_m+\mathbf{K}_l\sig\ }
+\label{eq:minima}
+\end{equation}
+que es un sistema de $n\times n$ en el que $\muv$ ya no aparece.
+
+El $\sig$ es el mismo de \eqref{eq:aumentada}, porque multiplicando \eqref{eq:deflam} por $\mathbf{E}\T$, $\mathbf{E}\T\mathbf{J}\T\lam=(\mathbf{J}\mathbf{E})\T\lam=\mathbf{J}_x\T\sig+(\mathbf{J}_b\mathbf{E})\T\muv=\mathbf{J}_x\T\sig$.
+
+\subsection{Qué hace $\mathbf{E}\T$}
+
+Aplicar $\mathbf{E}\T$ a un vector $[\mathbf{y}_1\T\ \mathbf{y}_2\T\ \mathbf{y}_3\T]\T$ de nueve componentes da
+\begin{equation}
+\mathbf{E}\T\begin{bmatrix}\mathbf{y}_1\\ \mathbf{y}_2\\ \mathbf{y}_3\end{bmatrix}
+=\begin{bmatrix}\mathbf{I}_3 & \mathbf{0} & \mathbf{0}\\ \mathbf{0} & \mathbf{I}_3 & \mathbf{I}_3\\ \mathbf{0} & \mathbf{0} & \mathbf{D}_p\T\end{bmatrix}
+\begin{bmatrix}\mathbf{y}_1\\ \mathbf{y}_2\\ \mathbf{y}_3\end{bmatrix}
+=\begin{bmatrix}\mathbf{y}_1\\ \mathbf{y}_2+\mathbf{y}_3\\ \mathbf{D}_p\T\mathbf{y}_3\end{bmatrix}.
+\label{eq:ETv}
+\end{equation}
+
+Aplicado a las ecuaciones de Newton y de Euler, conserva la de Newton \eqref{eq:Ftot}, suma las dos de Euler \eqref{eq:M1} y \eqref{eq:M2}, lo que cancela $\mp\mathbf{B}\muv$, y proyecta la de Euler del cuerpo 2 sobre los ejes libres, lo que anula $\mathbf{D}_p\T\mathbf{B}\muv$.
+
+\subsection{Matriz de masa mínima}
+
+Derivando $\cd=\mathbf{E}\xd$ con la regla del producto, y como dentro de $\mathbf{E}$ solo cambia $\mathbf{D}_p$,
+\begin{equation}
+\cdd=\mathbf{E}\xdd+\dot{\mathbf{E}}\xd,
+\qquad
+\dot{\mathbf{E}}\xd=\begin{bmatrix}\mathbf{0}\\ \mathbf{0}\\ \dot{\mathbf{D}}_p\dot{\boldsymbol{\phi}}\end{bmatrix}.
+\label{eq:cddx}
+\end{equation}
+
+Sustituyendo en el lado derecho de \eqref{eq:minima},
+\begin{equation}
+\boxed{\ \mathbf{J}_x\T\sig=\mathbf{M}_x\xdd+\mathbf{c}_x-\mathbf{g}_x,
+\qquad
+\mathbf{M}_x=\mathbf{E}\T\mathbf{M}_c\mathbf{E},
+\qquad
+\mathbf{c}_x=\mathbf{E}\T\big(\mathbf{M}_c\dot{\mathbf{E}}\xd+\mathbf{h}_c\big),
+\qquad
+\mathbf{g}_x=\mathbf{E}\T\mathbf{g}_c\ }
+\label{eq:minx}
+\end{equation}
+
+Primero se multiplica $\mathbf{M}_c$ por las tres columnas de bloques de $\mathbf{E}$, donde la segunda es la suma de la segunda y la tercera de $\mathbf{M}_c$ y la tercera es la tercera de $\mathbf{M}_c$ por $\mathbf{D}_p$,
+\begin{equation}
+\mathbf{M}_c\mathbf{E}=
+\begin{bmatrix}
+(M_1+M_2)\mathbf{I}_3 & -M_1\mathbf{S}_1-M_2\mathbf{S}_2 & -M_2\mathbf{S}_2\mathbf{D}_p\\
+M_1\mathbf{S}_1 & \IO{1} & \mathbf{0}\\
+M_2\mathbf{S}_2 & \IO{2} & \IO{2}\mathbf{D}_p
+\end{bmatrix}.
+\label{eq:McE}
+\end{equation}
+
+Después se aplica \eqref{eq:ETv} a cada columna de bloques, que conserva la primera fila, suma la segunda y la tercera, y multiplica la tercera por $\mathbf{D}_p\T$,
+\begin{equation}
+\boxed{\ \mathbf{M}_x=
+\begin{bmatrix}
+(M_1+M_2)\mathbf{I}_3 & -M_1\mathbf{S}_1-M_2\mathbf{S}_2 & -M_2\mathbf{S}_2\mathbf{D}_p\\
+M_1\mathbf{S}_1+M_2\mathbf{S}_2 & \IO{1}+\IO{2} & \IO{2}\mathbf{D}_p\\
+M_2\mathbf{D}_p\T\mathbf{S}_2 & \mathbf{D}_p\T\IO{2} & \mathbf{D}_p\T\IO{2}\mathbf{D}_p
+\end{bmatrix}\in\mathbb{R}^{n\times n}\ }
+\label{eq:Mx}
+\end{equation}
+que es simétrica porque $(-M_2\mathbf{S}_2\mathbf{D}_p)\T=M_2\mathbf{D}_p\T\mathbf{S}_2$.
+
+El bloque central $\IO{1}+\IO{2}$ es la inercia de la plataforma completa respecto a $O_p$ con la articulación bloqueada, y $\mathbf{D}_p\T\IO{2}\mathbf{D}_p$ es la inercia del cuerpo 2 vista desde los ejes libres.
+
+Para $\mathbf{c}_x$ se calcula primero $\mathbf{M}_c\dot{\mathbf{E}}\xd$, que solo usa la tercera columna de $\mathbf{M}_c$,
+\begin{equation}
+\mathbf{M}_c\dot{\mathbf{E}}\xd=\begin{bmatrix}-M_2\mathbf{S}_2\dot{\mathbf{D}}_p\dot{\boldsymbol{\phi}}\\ \mathbf{0}\\ \IO{2}\dot{\mathbf{D}}_p\dot{\boldsymbol{\phi}}\end{bmatrix},
+\label{eq:McEd}
+\end{equation}
+y aplicando \eqref{eq:ETv} a su suma con $\mathbf{h}_c$, y también a $\mathbf{g}_c$,
+\begin{equation}
+\mathbf{c}_x=
+\begin{bmatrix}
+M_1\wv_1\times\big(\wv_1\times\mathbf{s}_1\big)+M_2\wv_2\times\big(\wv_2\times\mathbf{s}_2\big)-M_2\mathbf{S}_2\dot{\mathbf{D}}_p\dot{\boldsymbol{\phi}}\\[2pt]
+\wv_1\times\IO{1}\wv_1+\wv_2\times\IO{2}\wv_2+\IO{2}\dot{\mathbf{D}}_p\dot{\boldsymbol{\phi}}\\[2pt]
+\mathbf{D}_p\T\big(\wv_2\times\IO{2}\wv_2+\IO{2}\dot{\mathbf{D}}_p\dot{\boldsymbol{\phi}}\big)
+\end{bmatrix},
+\qquad
+\mathbf{g}_x=
+\begin{bmatrix}
+(M_1+M_2)\,\mathbf{g}\\[2pt]
+M_1\,\mathbf{s}_1\times\mathbf{g}+M_2\,\mathbf{s}_2\times\mathbf{g}\\[2pt]
+\mathbf{D}_p\T\big(M_2\,\mathbf{s}_2\times\mathbf{g}\big)
+\end{bmatrix}.
+\label{eq:cxgx}
+\end{equation}
+
+\section{Las tres arquitecturas}
+
+\subsection{Nueve grados de libertad, junta esférica}
+
+Con $\mathbf{D}_p=\mathbf{I}_3$ no hay filas de articulación, $\lam=\sig$, $\mathbf{K}=\mathbf{K}_l$ es cuadrada y $\mathbf{J}_x=\mathbf{J}$ salvo el cambio de variable $\dot{\boldsymbol{\phi}}=\wv_2-\wv_1$.
+
+Despejando $\sig$ de la ecuación de los actuadores y sustituyendo en \eqref{eq:deflam},
+\begin{equation}
+\sig=\mathbf{K}_l^{-1}\big(\tauv-\mathbf{I}_m\ddot{\thv}+\mathbf{g}_m\big),
+\qquad
+\mathbf{J}\T\mathbf{K}_l^{-1}\big(\tauv-\mathbf{I}_m\ddot{\thv}+\mathbf{g}_m\big)=\mathbf{M}_c\cdd+\mathbf{h}_c-\mathbf{g}_c ,
+\label{eq:caso9}
+\end{equation}
+donde $\mathbf{K}_l^{-1}=\mathrm{diag}(1/K_{11},\dots,1/K_{99})$.
+
+En la forma mínima $\dot{\mathbf{D}}_p=\mathbf{0}$, $\mathbf{c}_x=\mathbf{E}\T\mathbf{h}_c$, y con $\mathbf{D}_p=\mathbf{I}_3$ en \eqref{eq:Mx},
+\begin{equation}
+\mathbf{M}_x=
+\begin{bmatrix}
+(M_1+M_2)\mathbf{I}_3 & -M_1\mathbf{S}_1-M_2\mathbf{S}_2 & -M_2\mathbf{S}_2\\
+M_1\mathbf{S}_1+M_2\mathbf{S}_2 & \IO{1}+\IO{2} & \IO{2}\\
+M_2\mathbf{S}_2 & \IO{2} & \IO{2}
+\end{bmatrix}.
+\label{eq:Mx9}
+\end{equation}
+
+\subsection{Ocho grados de libertad, junta universal}
+
+Con $\mathbf{D}_p=[\mathbf{e}_1\ \ \mathbf{e}_2]$, $\mathbf{e}_1=\mathbf{Q}_1\mathbf{e}_1^0$ fijo en el cuerpo 1 y $\mathbf{e}_2=\mathbf{Q}_2\mathbf{e}_2^0$ fijo en el cuerpo 2, la regla \eqref{eq:vfijo} da
+\begin{equation}
+\dot{\mathbf{e}}_1=\wv_1\times\mathbf{e}_1,
+\qquad
+\dot{\mathbf{e}}_2=\wv_2\times\mathbf{e}_2,
+\qquad
+\dot{\mathbf{D}}_p\dot{\boldsymbol{\phi}}=\dot\phi_1\,\wv_1\times\mathbf{e}_1+\dot\phi_2\,\wv_2\times\mathbf{e}_2 .
+\label{eq:Ddotu}
+\end{equation}
+
+Derivando $\mathbf{b}=\mathbf{e}_1\times\mathbf{e}_2$ con la regla del producto, que vale para el producto cruz conservando el orden de los factores,
+\begin{equation}
+\dot{\mathbf{b}}=\dot{\mathbf{e}}_1\times\mathbf{e}_2+\mathbf{e}_1\times\dot{\mathbf{e}}_2
+=\big(\wv_1\times\mathbf{e}_1\big)\times\mathbf{e}_2+\mathbf{e}_1\times\big(\wv_2\times\mathbf{e}_2\big),
+\qquad
+u_9=\dot{\mathbf{b}}\T\big(\wv_2-\wv_1\big),
+\label{eq:u9}
+\end{equation}
+donde no hay simplificación porque cada eje gira con un cuerpo distinto.
+
+El multiplicador $\mu$ es escalar y $\mu\mathbf{b}$ es el momento que la cruceta transmite alrededor de la normal al plano de sus ejes.
+
+Con \eqref{eq:JlE}, las filas de $\mathbf{J}_x$ para el cuerpo 2 añaden las proyecciones $\mathbf{n}_i\T\mathbf{e}_1$ y $\mathbf{n}_i\T\mathbf{e}_2$,
+\begin{equation}
+\mathbf{J}_x=
+\begin{bmatrix}
+\mathbf{m}_1\T & \mathbf{n}_1\T & 0 & 0\\
+\mathbf{m}_2\T & \mathbf{n}_2\T & 0 & 0\\
+\mathbf{m}_3\T & \mathbf{n}_3\T & 0 & 0\\
+\mathbf{m}_4\T & \mathbf{n}_4\T & 0 & 0\\
+\mathbf{m}_5\T & \mathbf{n}_5\T & \mathbf{n}_5\T\mathbf{e}_1 & \mathbf{n}_5\T\mathbf{e}_2\\
+\mathbf{m}_6\T & \mathbf{n}_6\T & \mathbf{n}_6\T\mathbf{e}_1 & \mathbf{n}_6\T\mathbf{e}_2\\
+\mathbf{m}_7\T & \mathbf{n}_7\T & \mathbf{n}_7\T\mathbf{e}_1 & \mathbf{n}_7\T\mathbf{e}_2\\
+\mathbf{m}_8\T & \mathbf{n}_8\T & \mathbf{n}_8\T\mathbf{e}_1 & \mathbf{n}_8\T\mathbf{e}_2
+\end{bmatrix}\in\mathbb{R}^{8\times8}.
+\label{eq:Jx8}
+\end{equation}
+
+Usando $\mathbf{e}\T(\mathbf{s}_2\times\mathbf{v})=(\mathbf{e}\times\mathbf{s}_2)\T\mathbf{v}$, que es otra vez el triple producto, los bloques de $\mathbf{M}_x$ que contienen $\mathbf{D}_p$ son
+\begin{equation}
+\mathbf{D}_p\T\IO{2}\mathbf{D}_p=
+\begin{bmatrix}
+\mathbf{e}_1\T\IO{2}\mathbf{e}_1 & \mathbf{e}_1\T\IO{2}\mathbf{e}_2\\
+\mathbf{e}_2\T\IO{2}\mathbf{e}_1 & \mathbf{e}_2\T\IO{2}\mathbf{e}_2
+\end{bmatrix},
+\qquad
+M_2\mathbf{D}_p\T\mathbf{S}_2=M_2
+\begin{bmatrix}
+\big(\mathbf{e}_1\times\mathbf{s}_2\big)\T\\
+\big(\mathbf{e}_2\times\mathbf{s}_2\big)\T
+\end{bmatrix},
+\qquad
+\mathbf{D}_p\T\IO{2}=
+\begin{bmatrix}
+\mathbf{e}_1\T\IO{2}\\
+\mathbf{e}_2\T\IO{2}
+\end{bmatrix}.
+\label{eq:Mx8}
+\end{equation}
+
+\subsection{Siete grados de libertad, junta de revolución}
+
+El eje $\mathbf{e}_r$ es fijo en los dos cuerpos, y eligiendo el vector auxiliar $\mathbf{w}$ fijo en el cuerpo 1, todos los vectores de la articulación giran con el cuerpo 1,
+\begin{equation}
+\dot{\mathbf{e}}_r=\wv_1\times\mathbf{e}_r,
+\qquad
+\dot{\mathbf{w}}=\wv_1\times\mathbf{w},
+\qquad
+\dot{\mathbf{D}}_p\dot{\boldsymbol{\phi}}=\dot\phi\,\wv_1\times\mathbf{e}_r .
+\label{eq:Ddotr}
+\end{equation}
+
+Derivando $\mathbf{b}_1=\mathbf{e}_r\times\mathbf{w}$ con la regla del producto,
+\begin{equation}
+\dot{\mathbf{b}}_1=\big(\wv_1\times\mathbf{e}_r\big)\times\mathbf{w}+\mathbf{e}_r\times\big(\wv_1\times\mathbf{w}\big).
+\label{eq:b1dot0}
+\end{equation}
+
+La identidad de Jacobi, $\mathbf{x}\times(\mathbf{y}\times\mathbf{z})+\mathbf{y}\times(\mathbf{z}\times\mathbf{x})+\mathbf{z}\times(\mathbf{x}\times\mathbf{y})=\mathbf{0}$, que sale de aplicar \eqref{eq:bac} a los tres términos, da con $\mathbf{x}=\wv_1$, $\mathbf{y}=\mathbf{e}_r$, $\mathbf{z}=\mathbf{w}$
+\begin{equation}
+\wv_1\times\big(\mathbf{e}_r\times\mathbf{w}\big)
+=-\mathbf{e}_r\times\big(\mathbf{w}\times\wv_1\big)-\mathbf{w}\times\big(\wv_1\times\mathbf{e}_r\big)
+=\mathbf{e}_r\times\big(\wv_1\times\mathbf{w}\big)+\big(\wv_1\times\mathbf{e}_r\big)\times\mathbf{w},
+\label{eq:jacobi}
+\end{equation}
+que es \eqref{eq:b1dot0}, y lo mismo vale para $\mathbf{b}_2=\mathbf{e}_r\times\mathbf{b}_1$,
+\begin{equation}
+\dot{\mathbf{b}}_1=\wv_1\times\mathbf{b}_1,
+\qquad
+\dot{\mathbf{b}}_2=\wv_1\times\mathbf{b}_2 .
+\label{eq:bdotr}
+\end{equation}
+
+Como $\wv_2-\wv_1=\dot\phi\,\mathbf{e}_r$, los términos de aceleración de las filas ocho y nueve son
+\begin{equation}
+u_8=\dot\phi\,\big(\wv_1\times\mathbf{b}_1\big)\T\mathbf{e}_r,
+\qquad
+u_9=\dot\phi\,\big(\wv_1\times\mathbf{b}_2\big)\T\mathbf{e}_r ,
+\label{eq:u89}
+\end{equation}
+y el momento de reacción $\mu_1\mathbf{b}_1+\mu_2\mathbf{b}_2$ es perpendicular al eje, que es el momento flector que soporta el rodamiento.
+
+El jacobiano cuadrado y la matriz de masa mínima, con $-M_2\mathbf{S}_2\mathbf{e}_r=-M_2\,\mathbf{s}_2\times\mathbf{e}_r=M_2\,\mathbf{e}_r\times\mathbf{s}_2$, son
+\begin{equation}
+\mathbf{J}_x=
+\begin{bmatrix}
+\mathbf{m}_1\T & \mathbf{n}_1\T & 0\\
+\mathbf{m}_2\T & \mathbf{n}_2\T & 0\\
+\mathbf{m}_3\T & \mathbf{n}_3\T & 0\\
+\mathbf{m}_4\T & \mathbf{n}_4\T & 0\\
+\mathbf{m}_5\T & \mathbf{n}_5\T & \mathbf{n}_5\T\mathbf{e}_r\\
+\mathbf{m}_6\T & \mathbf{n}_6\T & \mathbf{n}_6\T\mathbf{e}_r\\
+\mathbf{m}_7\T & \mathbf{n}_7\T & \mathbf{n}_7\T\mathbf{e}_r
+\end{bmatrix},
+\qquad
+\mathbf{M}_x=
+\begin{bmatrix}
+(M_1+M_2)\mathbf{I}_3 & -M_1\mathbf{S}_1-M_2\mathbf{S}_2 & M_2\,\mathbf{e}_r\times\mathbf{s}_2\\
+M_1\mathbf{S}_1+M_2\mathbf{S}_2 & \IO{1}+\IO{2} & \IO{2}\mathbf{e}_r\\
+M_2\big(\mathbf{e}_r\times\mathbf{s}_2\big)\T & \mathbf{e}_r\T\IO{2} & \mathbf{e}_r\T\IO{2}\mathbf{e}_r
+\end{bmatrix},
+\label{eq:Jx7}
+\end{equation}
+donde el escalar $\mathbf{e}_r\T\IO{2}\mathbf{e}_r$ es el momento de inercia del cuerpo 2 alrededor del eje que pasa por $O_p$.
+
+La última fila de \eqref{eq:minx}, con $\dot{\wv}_2=\dot{\wv}_1+\ddot\phi\,\mathbf{e}_r+\dot\phi\,\wv_1\times\mathbf{e}_r$, es la ecuación de un péndulo físico,
+\begin{equation}
+\mathbf{e}_r\T\Nmat_2\T\sig_2
+=M_2\big(\mathbf{e}_r\times\mathbf{s}_2\big)\T\ddot{\pvec}
++\mathbf{e}_r\T\IO{2}\big(\dot{\wv}_1+\ddot\phi\,\mathbf{e}_r+\dot\phi\,\wv_1\times\mathbf{e}_r\big)
++\mathbf{e}_r\T\big(\wv_2\times\IO{2}\wv_2\big)
+-M_2\,\mathbf{e}_r\T\big(\mathbf{s}_2\times\mathbf{g}\big),
+\label{eq:pendulo}
+\end{equation}
+con $\sig_2=[\sigma_5\ \sigma_6\ \sigma_7]\T$, que dice que el cuerpo 2 gira alrededor de $\mathbf{e}_r$ solo por el momento axial de sus patas y es el análogo espacial de \eqref{eq:E8}.
+
+\section{Dinámica directa}
+
+Para simular se integran las coordenadas mínimas, lo que evita resolver la cinemática directa en cada paso de integración.
+
+Derivando $\mathbf{J}_l\cd=\mathbf{K}_l\dot{\thv}$, que son las filas de las patas de \eqref{eq:maestraacc}, y sustituyendo \eqref{eq:cddx},
+\begin{equation}
+\mathbf{K}_l\ddot{\thv}=\mathbf{J}_l\cdd+\mathbf{u}_l=\mathbf{J}_x\xdd+\mathbf{J}_l\dot{\mathbf{E}}\xd+\mathbf{u}_l,
+\qquad
+\mathbf{u}_l=\big[u_1\ \ u_2\ \ \cdots\ \ u_n\big]\T .
+\label{eq:qddx}
+\end{equation}
+
+De la segunda ecuación de \eqref{eq:minima}, $\sig=\mathbf{K}_l^{-1}(\tauv+\mathbf{g}_m-\mathbf{I}_m\ddot{\thv})$, y sustituyendo $\ddot{\thv}=\mathbf{K}_l^{-1}(\mathbf{J}_x\xdd+\mathbf{J}_l\dot{\mathbf{E}}\xd+\mathbf{u}_l)$ de \eqref{eq:qddx},
+\begin{equation}
+\sig=\mathbf{K}_l^{-1}\big(\tauv+\mathbf{g}_m\big)-\mathbf{K}_l^{-1}\mathbf{I}_m\mathbf{K}_l^{-1}\big(\mathbf{J}_x\xdd+\mathbf{J}_l\dot{\mathbf{E}}\xd+\mathbf{u}_l\big).
+\label{eq:sigdd}
+\end{equation}
+
+Llevando este $\sig$ a la primera ecuación de \eqref{eq:minx} y pasando a la izquierda todos los términos en $\xdd$,
+\begin{equation}
+\boxed{\ \Big(\mathbf{M}_x+\mathbf{J}_x\T\mathbf{W}_m\mathbf{J}_x\Big)\xdd
+=\mathbf{J}_x\T\mathbf{K}_l^{-1}\big(\tauv+\mathbf{g}_m\big)
+-\mathbf{J}_x\T\mathbf{W}_m\big(\mathbf{J}_l\dot{\mathbf{E}}\xd+\mathbf{u}_l\big)
+-\mathbf{c}_x+\mathbf{g}_x\ }
+\label{eq:directa}
+\end{equation}
+con la inercia de las manivelas reflejada sobre las bielas
+\begin{equation}
+\mathbf{W}_m=\mathbf{K}_l^{-1}\mathbf{I}_m\mathbf{K}_l^{-1}
+=\mathrm{diag}\Big(\frac{I_{m1}}{K_{11}^2},\ \frac{I_{m2}}{K_{22}^2},\ \dots,\ \frac{I_{mn}}{K_{nn}^2}\Big).
+\label{eq:Ws}
+\end{equation}
+
+La matriz de la izquierda es la suma de dos matrices simétricas, una definida positiva y otra semidefinida positiva, luego es invertible y $\xdd$ siempre existe.
+
+El estado se avanza con $\dot{\pvec}$, con $\dot{\boldsymbol{\phi}}$ y con $\dot{\mathbf{Q}}_1=\Om_1\mathbf{Q}_1$ de \eqref{eq:Qdot}, sin ningún ángulo de Euler.
+
+\end{document}
