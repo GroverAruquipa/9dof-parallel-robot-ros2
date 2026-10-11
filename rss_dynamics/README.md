@@ -281,3 +281,19 @@ Conclusiones:
   la azul (4 patas) 2 GDL. El observador de momento lo detecta como un salto de
   fuerza, y el control tiene que pasar a un modo seguro hasta recapturar la
   bola.
+
+### Orientación de una rótula magnética comercial (bola con vástago + copa con imán)
+
+`magnetic_joint_orientation.py`. Copa en la plataforma roja, bola con vástago en la azul.
+
+| eje de la copa (marco de la plataforma roja) | atracción necesaria, 37 mm / 100 mm | cono del vástago necesario |
+|---|---|---|
+| óptimo de carga (0.22, 0.89, −0.40) | 7.6 / 8.1 N | 16° |
+| **x, el eje de apertura de la pinza** | **9.0 / 13.6 N** | **< 2°** |
+| vertical (±z) | 14 / 14 N | 16° |
+
+La rotación relativa de la pinza es siempre alrededor de x
+(Q<sub>1</sub><sup>T</sup>Q<sub>2</sub> = R<sub>x</sub>(−2·apertura)). Con el vástago
+a lo largo de x, abrir la pinza hace girar la bola sobre su propio vástago y
+no consume el cono. Así todo el cono del componente queda libre para las otras
+rotaciones relativas.
