@@ -1,0 +1,45 @@
+{
+ "design": "d70_s26667_core_R150",
+ "platform_scale": 2.6667,
+ "showcase": {
+  "max_force_N": 3.138568229687727,
+  "cup_axis_body1": [
+   0.266,
+   0.447,
+   -0.854
+  ],
+  "magnet_pull_needed_N": 0.0,
+  "axial_compression_max_N": 1.8552242570402415,
+  "lateral_max_N": 2.531551597043725
+ },
+ "todo": {
+  "max_force_N": 17.69728603531273,
+  "cup_axis_body1": [
+   0.276,
+   0.874,
+   -0.399
+  ],
+  "magnet_pull_needed_N": 8.02216214547205,
+  "axial_compression_max_N": 9.221131665548134,
+  "lateral_max_N": 16.49630670328851
+ },
+ "per_case": {
+  "agarre 10 N": {
+   "max_force_N": 14.949017662370483,
+   "min_along_axis_N": -6.593216107213201
+  },
+  "agarre 5 N": {
+   "max_force_N": 7.73956871937358,
+   "min_along_axis_N": -3.1108786753498485
+  },
+  "humano 10 N": {
+   "max_force_N": 17.69728603531273,
+   "min_along_axis_N": -8.022876175963379
+  },
+  "showcase": {
+   "max_force_N": 3.138568229687727,
+   "min_along_axis_N": 0.33179623602904584
+  }
+ },
+ "relative_rotation_max_deg": 29.999999999999996
+}

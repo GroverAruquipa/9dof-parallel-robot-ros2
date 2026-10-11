@@ -1,0 +1,45 @@
+{
+ "design": "d35_core_R100",
+ "platform_scale": 1.0,
+ "showcase": {
+  "max_force_N": 0.9186456081170108,
+  "cup_axis_body1": [
+   0.66,
+   0.337,
+   -0.672
+  ],
+  "magnet_pull_needed_N": 0.0,
+  "axial_compression_max_N": 0.7458048341260637,
+  "lateral_max_N": 0.5363626596873305
+ },
+ "todo": {
+  "max_force_N": 14.725052058317731,
+  "cup_axis_body1": [
+   0.222,
+   0.887,
+   -0.404
+  ],
+  "magnet_pull_needed_N": 7.637247122121389,
+  "axial_compression_max_N": 8.078638881007759,
+  "lateral_max_N": 13.107811932965598
+ },
+ "per_case": {
+  "agarre 10 N": {
+   "max_force_N": 11.584896921997167,
+   "min_along_axis_N": -5.347719199291054
+  },
+  "agarre 5 N": {
+   "max_force_N": 5.92752450569753,
+   "min_along_axis_N": -2.5212071424456823
+  },
+  "humano 10 N": {
+   "max_force_N": 14.725052058317731,
+   "min_along_axis_N": -7.633813565511388
+  },
+  "showcase": {
+   "max_force_N": 0.9186456081170108,
+   "min_along_axis_N": 0.12543201715727698
+  }
+ },
+ "relative_rotation_max_deg": 29.999999999999996
+}

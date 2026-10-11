@@ -243,3 +243,41 @@ ponerlos **verticales**, en dos anillos de 5 y 4 a distintas alturas
 (radio ~60 mm, brida de 67 mm), con una de estas dos transmisiones:
 - **correa GT2 con media torsión de 90°**: necesita una distancia entre centros de unas 20 veces el ancho de la correa (≥ 120 mm con 6 mm), y la correa dura menos;
 - **par cónico 1:1 en la manivela** más una correa vertical normal.
+
+## 7. Rótula central magnética (idea de Clément)
+
+`magnetic_joint.py` recupera la fuerza f<sub>O</sub> que pasa por la rótula
+central: la ecuación de Newton del cuerpo 2 (F2 del documento) la da a partir
+de σ. Contra MuJoCo (fuerzas de lazo + Newton de la plataforma azul) coincide a
+3·10<sup>-8</sup> N. Una bola de acero en una copa con imán aguanta mientras
+f<sub>O</sub>·n + P ≥ 0, donde n es el eje de la copa (fijo en el cuerpo 1) y P la
+atracción del imán.
+
+| caso | plataforma de 37 mm (d = 35) | plataforma de 100 mm (d = 70), maciza / aligerada |
+|---|---|---|
+| showcase ×2 con 50 g: \|f<sub>O</sub>\| máx. | 0.9 N, siempre compresión | 5.9 / 3.1 N, siempre compresión |
+| humano 10 N en las puntas de los dedos | 14.7 N | 18.5 / 17.7 N |
+| agarre de 10 N | 11.6 N | 15.4 / 14.9 N |
+| tracción que debe aguantar el imán (eje de copa óptimo) | 7.6 N | 7.6 / 8.0 N |
+| rotación relativa máxima entre plataformas | 30° | 30° |
+
+Conclusiones:
+- El movimiento propio del robot nunca separa la rótula. Lo que tira de ella
+  son las fuerzas externas: el humano y el objeto agarrado.
+- Un imán de unos **15–25 N** de atracción sobre la bola (factor de seguridad
+  2–3 sobre 8 N) bastaría. Por encima de esa carga la rótula se separa y actúa
+  como fusible para pHRI.
+- **Dos esferas en contacto, cada una fija a una plataforma, no son una
+  rótula esférica:** sólo imponen la distancia entre centros (1 restricción en
+  vez de 3). El robot quedaría con 11 GDL y 9 motores. La variante válida de
+  "dos esferas" es una bola libre entre dos copas magnéticas, una en cada
+  plataforma: el centro sigue siendo común (rótula S) y el rango angular se
+  duplica.
+- El imán aprieta la bola y añade fricción a la rotación relativa
+  (≈ μ (P + |f<sub>O</sub>|) r<sub>bola</sub>; unos 0.02–0.03 N·m con P = 20 N y
+  bola de 12.7 mm). Es del orden de los momentos de la pinza, así que conviene
+  un contacto pulido y lubricado o un forro de PTFE.
+- Si la rótula se separa, la plataforma roja (5 patas) conserva 1 GDL libre y
+  la azul (4 patas) 2 GDL. El observador de momento lo detecta como un salto de
+  fuerza, y el control tiene que pasar a un modo seguro hasta recapturar la
+  bola.
