@@ -1,0 +1,5 @@
+__pycache__/
+*.usdc
+compare.png
+ninedof_cctomm_mujoco.xml
+results/isaac_*.npz

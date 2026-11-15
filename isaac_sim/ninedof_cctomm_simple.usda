@@ -1,0 +1,1483 @@
+#usda 1.0
+(
+    defaultPrim = "World"
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Xform "World"
+{
+    def PhysicsScene "physicsScene" (
+        prepend apiSchemas = ["PhysxSceneAPI"]
+    )
+    {
+        vector3f physics:gravityDirection = (0, 0, -1)
+        float physics:gravityMagnitude = 9.81
+        custom bool physxScene:enableGPUDynamics = 0
+        custom token physxScene:solverType = "TGS"
+        custom uint physxScene:timeStepsPerSecond = 2000
+    }
+
+    def Xform "ninedof" (
+        prepend apiSchemas = ["PhysicsArticulationRootAPI", "PhysxArticulationAPI"]
+    )
+    {
+        custom bool physxArticulation:enabledSelfCollisions = 0
+        custom int physxArticulation:solverPositionIterationCount = 64
+        custom int physxArticulation:solverVelocityIterationCount = 4
+
+        def "Looks"
+        {
+            def Material "white"
+            {
+                token outputs:surface.connect = </World/ninedof/Looks/white/shader.outputs:surface>
+
+                def Shader "shader"
+                {
+                    uniform token info:id = "UsdPreviewSurface"
+                    color3f inputs:diffuseColor = (0.95, 0.95, 0.94)
+                    float inputs:metallic = 0
+                    float inputs:roughness = 0.6
+                    token outputs:surface
+                }
+            }
+
+            def Material "light"
+            {
+                token outputs:surface.connect = </World/ninedof/Looks/light/shader.outputs:surface>
+
+                def Shader "shader"
+                {
+                    uniform token info:id = "UsdPreviewSurface"
+                    color3f inputs:diffuseColor = (0.8, 0.8, 0.8)
+                    float inputs:metallic = 0
+                    float inputs:roughness = 0.6
+                    token outputs:surface
+                }
+            }
+
+            def Material "mid"
+            {
+                token outputs:surface.connect = </World/ninedof/Looks/mid/shader.outputs:surface>
+
+                def Shader "shader"
+                {
+                    uniform token info:id = "UsdPreviewSurface"
+                    color3f inputs:diffuseColor = (0.5, 0.5, 0.52)
+                    float inputs:metallic = 0
+                    float inputs:roughness = 0.6
+                    token outputs:surface
+                }
+            }
+
+            def Material "dark"
+            {
+                token outputs:surface.connect = </World/ninedof/Looks/dark/shader.outputs:surface>
+
+                def Shader "shader"
+                {
+                    uniform token info:id = "UsdPreviewSurface"
+                    color3f inputs:diffuseColor = (0.33, 0.33, 0.35)
+                    float inputs:metallic = 0
+                    float inputs:roughness = 0.6
+                    token outputs:surface
+                }
+            }
+
+            def Material "carbon"
+            {
+                token outputs:surface.connect = </World/ninedof/Looks/carbon/shader.outputs:surface>
+
+                def Shader "shader"
+                {
+                    uniform token info:id = "UsdPreviewSurface"
+                    color3f inputs:diffuseColor = (0.27, 0.27, 0.29)
+                    float inputs:metallic = 0.3
+                    float inputs:roughness = 0.35
+                    token outputs:surface
+                }
+            }
+
+            def Material "metal"
+            {
+                token outputs:surface.connect = </World/ninedof/Looks/metal/shader.outputs:surface>
+
+                def Shader "shader"
+                {
+                    uniform token info:id = "UsdPreviewSurface"
+                    color3f inputs:diffuseColor = (0.7, 0.71, 0.73)
+                    float inputs:metallic = 0.9
+                    float inputs:roughness = 0.35
+                    token outputs:surface
+                }
+            }
+
+            def Material "ruby"
+            {
+                token outputs:surface.connect = </World/ninedof/Looks/ruby/shader.outputs:surface>
+
+                def Shader "shader"
+                {
+                    uniform token info:id = "UsdPreviewSurface"
+                    color3f inputs:diffuseColor = (0.8, 0.07, 0.1)
+                    float inputs:metallic = 0.1
+                    float inputs:roughness = 0.35
+                    token outputs:surface
+                }
+            }
+
+            def Material "plat1"
+            {
+                token outputs:surface.connect = </World/ninedof/Looks/plat1/shader.outputs:surface>
+
+                def Shader "shader"
+                {
+                    uniform token info:id = "UsdPreviewSurface"
+                    color3f inputs:diffuseColor = (0.8, 0.25, 0.2)
+                    float inputs:metallic = 0
+                    float inputs:roughness = 0.6
+                    token outputs:surface
+                }
+            }
+
+            def Material "plat2"
+            {
+                token outputs:surface.connect = </World/ninedof/Looks/plat2/shader.outputs:surface>
+
+                def Shader "shader"
+                {
+                    uniform token info:id = "UsdPreviewSurface"
+                    color3f inputs:diffuseColor = (0.2, 0.4, 0.8)
+                    float inputs:metallic = 0
+                    float inputs:roughness = 0.6
+                    token outputs:surface
+                }
+            }
+        }
+
+        def Scope "joints"
+        {
+            def PhysicsFixedJoint "fixed_base"
+            {
+                rel physics:body1 = </World/ninedof/base>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsPrismaticJoint "q1" (
+                prepend apiSchemas = ["PhysicsDriveAPI:linear", "PhysxJointAPI"]
+            )
+            {
+                float drive:linear:physics:damping = 44.7
+                float drive:linear:physics:maxForce = 20
+                float drive:linear:physics:stiffness = 50000
+                float drive:linear:physics:targetPosition = 0
+                uniform token drive:linear:physics:type = "force"
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/base>
+                rel physics:body1 = </World/ninedof/carriage_NAUO7>
+                point3f physics:localPos0 = (-0.00417, 0.00974, 0.04281)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+                float physics:lowerLimit = -0.018
+                float physics:upperLimit = 0.0209
+                custom float physxJoint:armature = 0.01
+            }
+
+            def PhysicsSphericalJoint "leg1_lower"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/carriage_NAUO7>
+                rel physics:body1 = </World/ninedof/leg_NAUO7>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsSphericalJoint "leg1_upper"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/leg_NAUO7>
+                rel physics:body1 = </World/ninedof/plat1>
+                point3f physics:localPos0 = (-0.01415, -0.03801, 0.07523)
+                point3f physics:localPos1 = (0.010358, 0.017865, -0.003681)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsPrismaticJoint "q2" (
+                prepend apiSchemas = ["PhysicsDriveAPI:linear", "PhysxJointAPI"]
+            )
+            {
+                float drive:linear:physics:damping = 44.7
+                float drive:linear:physics:maxForce = 20
+                float drive:linear:physics:stiffness = 50000
+                float drive:linear:physics:targetPosition = 0
+                uniform token drive:linear:physics:type = "force"
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/base>
+                rel physics:body1 = </World/ninedof/carriage_NAUO8>
+                point3f physics:localPos0 = (0.00063, 0.00494, 0.05154)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+                float physics:lowerLimit = -0.018
+                float physics:upperLimit = 0.0209
+                custom float physxJoint:armature = 0.01
+            }
+
+            def PhysicsSphericalJoint "leg2_lower"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/carriage_NAUO8>
+                rel physics:body1 = </World/ninedof/leg_NAUO8>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsSphericalJoint "leg2_upper"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/leg_NAUO8>
+                rel physics:body1 = </World/ninedof/plat1>
+                uniform bool physics:excludeFromArticulation = 1
+                point3f physics:localPos0 = (-0.00339, -0.05229, 0.06752)
+                point3f physics:localPos1 = (0.025918, -0.001215, -0.002661)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsPrismaticJoint "q3" (
+                prepend apiSchemas = ["PhysicsDriveAPI:linear", "PhysxJointAPI"]
+            )
+            {
+                float drive:linear:physics:damping = 44.7
+                float drive:linear:physics:maxForce = 20
+                float drive:linear:physics:stiffness = 50000
+                float drive:linear:physics:targetPosition = 0
+                uniform token drive:linear:physics:type = "force"
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/base>
+                rel physics:body1 = </World/ninedof/carriage_NAUO9>
+                point3f physics:localPos0 = (0.00063, -0.07246, 0.03691)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+                float physics:lowerLimit = -0.018
+                float physics:upperLimit = 0.0209
+                custom float physxJoint:armature = 0.01
+            }
+
+            def PhysicsSphericalJoint "leg3_lower"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/carriage_NAUO9>
+                rel physics:body1 = </World/ninedof/leg_NAUO9>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsSphericalJoint "leg3_upper"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/leg_NAUO9>
+                rel physics:body1 = </World/ninedof/plat1>
+                uniform bool physics:excludeFromArticulation = 1
+                point3f physics:localPos0 = (-0.0037, 0.02158, 0.08262)
+                point3f physics:localPos1 = (0.025608, -0.004745, -0.002191)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsPrismaticJoint "q4" (
+                prepend apiSchemas = ["PhysicsDriveAPI:linear", "PhysxJointAPI"]
+            )
+            {
+                float drive:linear:physics:damping = 44.7
+                float drive:linear:physics:maxForce = 20
+                float drive:linear:physics:stiffness = 50000
+                float drive:linear:physics:targetPosition = 0
+                uniform token drive:linear:physics:type = "force"
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/base>
+                rel physics:body1 = </World/ninedof/carriage_NAUO10>
+                point3f physics:localPos0 = (-0.00417, -0.07726, 0.0402)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+                float physics:lowerLimit = -0.018
+                float physics:upperLimit = 0.0209
+                custom float physxJoint:armature = 0.01
+            }
+
+            def PhysicsSphericalJoint "leg4_lower"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/carriage_NAUO10>
+                rel physics:body1 = </World/ninedof/leg_NAUO10>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsSphericalJoint "leg4_upper"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/leg_NAUO10>
+                rel physics:body1 = </World/ninedof/plat1>
+                uniform bool physics:excludeFromArticulation = 1
+                point3f physics:localPos0 = (-0.01741, 0.01147, 0.08289)
+                point3f physics:localPos1 = (0.007098, -0.019655, 0.001369)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsPrismaticJoint "q5" (
+                prepend apiSchemas = ["PhysicsDriveAPI:linear", "PhysxJointAPI"]
+            )
+            {
+                float drive:linear:physics:damping = 44.7
+                float drive:linear:physics:maxForce = 20
+                float drive:linear:physics:stiffness = 50000
+                float drive:linear:physics:targetPosition = 0
+                uniform token drive:linear:physics:type = "force"
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/base>
+                rel physics:body1 = </World/ninedof/carriage_NAUO14>
+                point3f physics:localPos0 = (-0.00037, -0.03386, 0.03579)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+                float physics:lowerLimit = -0.018
+                float physics:upperLimit = 0.0209
+                custom float physxJoint:armature = 0.01
+            }
+
+            def PhysicsSphericalJoint "leg5_lower"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/carriage_NAUO14>
+                rel physics:body1 = </World/ninedof/leg_NAUO14>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsSphericalJoint "leg5_upper"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/leg_NAUO14>
+                rel physics:body1 = </World/ninedof/plat1>
+                uniform bool physics:excludeFromArticulation = 1
+                point3f physics:localPos0 = (-0.00445, -0.01458, 0.0841)
+                point3f physics:localPos1 = (0.023858, -0.002305, -0.001831)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsPrismaticJoint "q6" (
+                prepend apiSchemas = ["PhysicsDriveAPI:linear", "PhysxJointAPI"]
+            )
+            {
+                float drive:linear:physics:damping = 44.7
+                float drive:linear:physics:maxForce = 20
+                float drive:linear:physics:stiffness = 50000
+                float drive:linear:physics:targetPosition = 0
+                uniform token drive:linear:physics:type = "force"
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/base>
+                rel physics:body1 = </World/ninedof/carriage_NAUO3>
+                point3f physics:localPos0 = (-0.08437, -0.07246, 0.04788)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+                float physics:lowerLimit = -0.018
+                float physics:upperLimit = 0.0209
+                custom float physxJoint:armature = 0.01
+            }
+
+            def PhysicsSphericalJoint "leg6_lower"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/carriage_NAUO3>
+                rel physics:body1 = </World/ninedof/leg_NAUO3>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsSphericalJoint "leg6_upper"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/leg_NAUO3>
+                rel physics:body1 = </World/ninedof/plat2>
+                uniform bool physics:excludeFromArticulation = 1
+                point3f physics:localPos0 = (0.02554, 0.02807, 0.07659)
+                point3f physics:localPos1 = (-0.030152, 0.001745, 0.002749)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsPrismaticJoint "q7" (
+                prepend apiSchemas = ["PhysicsDriveAPI:linear", "PhysxJointAPI"]
+            )
+            {
+                float drive:linear:physics:damping = 44.7
+                float drive:linear:physics:maxForce = 20
+                float drive:linear:physics:stiffness = 50000
+                float drive:linear:physics:targetPosition = 0
+                uniform token drive:linear:physics:type = "force"
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/base>
+                rel physics:body1 = </World/ninedof/carriage_NAUO4>
+                point3f physics:localPos0 = (-0.08437, 0.00494, 0.05661)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+                float physics:lowerLimit = -0.018
+                float physics:upperLimit = 0.0209
+                custom float physxJoint:armature = 0.01
+            }
+
+            def PhysicsSphericalJoint "leg7_lower"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/carriage_NAUO4>
+                rel physics:body1 = </World/ninedof/leg_NAUO4>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsSphericalJoint "leg7_upper"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/leg_NAUO4>
+                rel physics:body1 = </World/ninedof/plat2>
+                uniform bool physics:excludeFromArticulation = 1
+                point3f physics:localPos0 = (0.02584, -0.0458, 0.06738)
+                point3f physics:localPos1 = (-0.029852, 0.005275, 0.002269)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsPrismaticJoint "q8" (
+                prepend apiSchemas = ["PhysicsDriveAPI:linear", "PhysxJointAPI"]
+            )
+            {
+                float drive:linear:physics:damping = 44.7
+                float drive:linear:physics:maxForce = 20
+                float drive:linear:physics:stiffness = 50000
+                float drive:linear:physics:targetPosition = 0
+                uniform token drive:linear:physics:type = "force"
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/base>
+                rel physics:body1 = </World/ninedof/carriage_NAUO5>
+                point3f physics:localPos0 = (-0.08157, 0.00974, 0.05435)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+                float physics:lowerLimit = -0.018
+                float physics:upperLimit = 0.0209
+                custom float physxJoint:armature = 0.01
+            }
+
+            def PhysicsSphericalJoint "leg8_lower"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/carriage_NAUO5>
+                rel physics:body1 = </World/ninedof/leg_NAUO5>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsSphericalJoint "leg8_upper"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/leg_NAUO5>
+                rel physics:body1 = </World/ninedof/plat2>
+                uniform bool physics:excludeFromArticulation = 1
+                point3f physics:localPos0 = (0.0415, -0.03576, 0.06561)
+                point3f physics:localPos1 = (-0.011392, 0.020115, -0.001761)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsPrismaticJoint "q9" (
+                prepend apiSchemas = ["PhysicsDriveAPI:linear", "PhysxJointAPI"]
+            )
+            {
+                float drive:linear:physics:damping = 44.7
+                float drive:linear:physics:maxForce = 20
+                float drive:linear:physics:stiffness = 50000
+                float drive:linear:physics:targetPosition = 0
+                uniform token drive:linear:physics:type = "force"
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/base>
+                rel physics:body1 = </World/ninedof/carriage_NAUO6>
+                point3f physics:localPos0 = (-0.08157, -0.07726, 0.04981)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+                float physics:lowerLimit = -0.018
+                float physics:upperLimit = 0.0209
+                custom float physxJoint:armature = 0.01
+            }
+
+            def PhysicsSphericalJoint "leg9_lower"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/carriage_NAUO6>
+                rel physics:body1 = </World/ninedof/leg_NAUO6>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsSphericalJoint "leg9_upper"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/leg_NAUO6>
+                rel physics:body1 = </World/ninedof/plat2>
+                uniform bool physics:excludeFromArticulation = 1
+                point3f physics:localPos0 = (0.03824, 0.01372, 0.0752)
+                point3f physics:localPos1 = (-0.014652, -0.017405, 0.003289)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsSphericalJoint "central"
+            {
+                uniform token physics:axis = "Z"
+                rel physics:body0 = </World/ninedof/plat1>
+                rel physics:body1 = </World/ninedof/plat2>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+        }
+
+        def Xform "base" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (-0.04095047, -0.033165257, -0.002512772)
+            float3 physics:diagonalInertia = (0.0001334821, 0.00013486535, 0.0001778108)
+            float physics:mass = 0.13750777
+            quatf physics:principalAxes = (0.996688, -0.02487494, -0.017997738, -0.07530124)
+            double3 xformOp:translate = (0, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cylinder "plate" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    double height = 0.006
+                    rel material:binding = </World/ninedof/Looks/light>
+                    double radius = 0.076785930717016
+                    double3 xformOp:translate = (-0.03770333333333334, -0.03377111111111111, -0.009209999999999996)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+
+                def Cube "rail_leg1" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/white>
+                    double size = 1
+                    float3 xformOp:scale = (0.008, 0.008, 0.00702)
+                    double3 xformOp:translate = (-0.00417, 0.00974, -0.002700000000000001)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "rail_leg2" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/white>
+                    double size = 1
+                    float3 xformOp:scale = (0.008, 0.008, 0.01575)
+                    double3 xformOp:translate = (0.00063, 0.00494, 0.0016649999999999998)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "rail_leg3" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/white>
+                    double size = 1
+                    float3 xformOp:scale = (0.008, 0.008, 0.004)
+                    double3 xformOp:translate = (0.00063, -0.07246, -0.005650000000000002)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "rail_leg4" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/white>
+                    double size = 1
+                    float3 xformOp:scale = (0.008, 0.008, 0.00441)
+                    double3 xformOp:translate = (-0.00417, -0.07726, -0.004005000000000002)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "rail_leg5" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/white>
+                    double size = 1
+                    float3 xformOp:scale = (0.008, 0.008, 0.004)
+                    double3 xformOp:translate = (-0.00037, -0.03386, -0.00621)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "rail_leg6" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/white>
+                    double size = 1
+                    float3 xformOp:scale = (0.008, 0.008, 0.01209)
+                    double3 xformOp:translate = (-0.08437, -0.07246, -0.00016500000000000195)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "rail_leg7" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/white>
+                    double size = 1
+                    float3 xformOp:scale = (0.008, 0.008, 0.02082)
+                    double3 xformOp:translate = (-0.08437, 0.00494, 0.004199999999999999)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "rail_leg8" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/white>
+                    double size = 1
+                    float3 xformOp:scale = (0.008, 0.008, 0.01856)
+                    double3 xformOp:translate = (-0.08157, 0.00974, 0.00307)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Cube "rail_leg9" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/white>
+                    double size = 1
+                    float3 xformOp:scale = (0.008, 0.008, 0.01402)
+                    double3 xformOp:translate = (-0.08157, -0.07726, 0.0007999999999999986)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+            }
+        }
+
+        def Xform "plat1" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (0.02003337, 0.000066482884, 0.012528684)
+            float3 physics:diagonalInertia = (0.0000018296727, 0.0000072851362, 0.000008170878)
+            float physics:mass = 0.022551358
+            quatf physics:principalAxes = (0.7181865, -0.02442466, 0.6904987, -0.082601935)
+            double3 xformOp:translate = (-0.028678, -0.046135, 0.121721)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cylinder "disc" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    double height = 0.004
+                    rel material:binding = </World/ninedof/Looks/plat1>
+                    double radius = 0.0255048709831052
+                    double3 xformOp:translate = (0.018568, -0.002010999999999998, -0.001798999999999995)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+
+                def Cylinder "arm" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    uniform token axis = "Z"
+                    double height = 0.01876302603526414
+                    rel material:binding = </World/ninedof/Looks/plat1>
+                    double radius = 0.002
+                    quatf xformOp:orient = (0.7402297, -0.07239568, -0.6684451, 0)
+                    double3 xformOp:translate = (0.009284, -0.001005499999999999, -0.0008994999999999975)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+                }
+
+                def Cylinder "finger" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    uniform token axis = "Z"
+                    double height = 0.045
+                    rel material:binding = </World/ninedof/Looks/dark>
+                    double radius = 0.0015
+                    quatf xformOp:orient = (1, 0, 0, 0)
+                    double3 xformOp:translate = (0, 0, 0.0225)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+                }
+
+                def Sphere "central" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/white>
+                    double radius = 0.004
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "plat2" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (-0.02125212, 0.004063151, 0.016308049)
+            float3 physics:diagonalInertia = (0.0000018132143, 0.0000072610032, 0.000008162956)
+            float physics:mass = 0.022483898
+            quatf physics:principalAxes = (-0.0013294674, -0.6163759, 0.07341815, 0.7840209)
+            double3 xformOp:translate = (-0.028678, -0.046135, 0.121721)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cylinder "disc" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    double height = 0.004
+                    rel material:binding = </World/ninedof/Looks/plat2>
+                    double radius = 0.02499014069152468
+                    double3 xformOp:translate = (-0.021512, 0.0024325000000000024, 0.001636500000000006)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+
+                def Cylinder "arm" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    uniform token axis = "Z"
+                    double height = 0.02171085747961144
+                    rel material:binding = </World/ninedof/Looks/plat2>
+                    double radius = 0.002
+                    quatf xformOp:orient = (0.6799349, 0.08239076, 0.72862905, -0)
+                    double3 xformOp:translate = (-0.010756, 0.0012162500000000012, 0.000818250000000003)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+                }
+
+                def Cylinder "finger" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    uniform token axis = "Z"
+                    double height = 0.045
+                    rel material:binding = </World/ninedof/Looks/dark>
+                    double radius = 0.0015
+                    quatf xformOp:orient = (1, 0, 0, 0)
+                    double3 xformOp:translate = (0, 0, 0.0225)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+                }
+            }
+        }
+
+        def Xform "carriage_NAUO7" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (-0.012861994, -0.0024562597, -0.036339086)
+            float3 physics:diagonalInertia = (4.6730207e-7, 0.000002437749, 0.0000027012863)
+            float physics:mass = 0.011698349
+            quatf physics:principalAxes = (0.5754741, -0.5810616, -0.4460207, -0.36367923)
+            double3 xformOp:translate = (-0.00417, 0.00974, 0.04281)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cube "stage" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/light>
+                    double size = 1
+                    float3 xformOp:scale = (0.012, 0.012, 0.04)
+                    double3 xformOp:translate = (0, 0, -0.022)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "leg_NAUO7" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (-0.008030654, -0.021581521, 0.042715807)
+            float3 physics:diagonalInertia = (1e-8, 0.0000020340153, 0.0000020341342)
+            float physics:mass = 0.0031246005
+            quatf physics:principalAxes = (0.45504475, 0.6129592, 0.5775167, -0.28929186)
+            double3 xformOp:translate = (-0.00417, 0.00974, 0.04281)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cylinder "tube" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    uniform token axis = "Z"
+                    double height = 0.08546657533796473
+                    rel material:binding = </World/ninedof/Looks/carbon>
+                    double radius = 0.0025
+                    quatf xformOp:orient = (0.96959454, 0.22934085, -0.08537682, 0)
+                    double3 xformOp:translate = (-0.007075, -0.019005, 0.037615)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (-0.01415, -0.03801, 0.07523)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "carriage_NAUO8" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (-0.0024526513, -0.012865602, -0.03633706)
+            float3 physics:diagonalInertia = (4.6730426e-7, 0.0000024377573, 0.0000027012757)
+            float physics:mass = 0.011698349
+            quatf physics:principalAxes = (-0.095512725, -0.6640793, 0.14973326, 0.7262616)
+            double3 xformOp:translate = (0.00063, 0.00494, 0.05154)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cube "stage" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/light>
+                    double size = 1
+                    float3 xformOp:scale = (0.012, 0.012, 0.04)
+                    double3 xformOp:translate = (0, 0, -0.022)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "leg_NAUO8" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (-0.0019254992, -0.029692708, 0.03833749)
+            float3 physics:diagonalInertia = (1e-8, 0.0000020340153, 0.000002034134)
+            float physics:mass = 0.0031246003
+            quatf physics:principalAxes = (0.5719047, 0.43910384, 0.69289565, 0.00291072)
+            double3 xformOp:translate = (0.00063, 0.00494, 0.05154)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cylinder "tube" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    uniform token axis = "Z"
+                    double height = 0.08546745930469678
+                    rel material:binding = </World/ninedof/Looks/carbon>
+                    double radius = 0.0025
+                    quatf xformOp:orient = (0.9460466, 0.32335183, -0.020963142, 0)
+                    double3 xformOp:translate = (-0.001695, -0.026145, 0.03376)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (-0.00339, -0.05229, 0.06752)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "carriage_NAUO9" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (-0.0024526515, 0.012868086, -0.036331397)
+            float3 physics:diagonalInertia = (4.672913e-7, 0.0000024376645, 0.000002701381)
+            float physics:mass = 0.011698349
+            quatf physics:principalAxes = (0.66408163, 0.09549519, 0.7262551, 0.14976563)
+            double3 xformOp:translate = (0.00063, -0.07246, 0.03691)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cube "stage" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/light>
+                    double size = 1
+                    float3 xformOp:scale = (0.012, 0.012, 0.04)
+                    double3 xformOp:translate = (0, 0, -0.022)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "leg_NAUO9" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (-0.0020998435, 0.01225231, 0.046916842)
+            float3 physics:diagonalInertia = (1e-8, 0.0000020340156, 0.0000020341342)
+            float physics:mass = 0.0031246007
+            quatf physics:principalAxes = (0.7091885, -0.13687555, 0.6901539, -0.044769082)
+            double3 xformOp:translate = (0.00063, -0.07246, 0.03691)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cylinder "tube" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    uniform token axis = "Z"
+                    double height = 0.0854719298951416
+                    rel material:binding = </World/ninedof/Looks/carbon>
+                    double radius = 0.0025
+                    quatf xformOp:orient = (0.9916232, -0.1273067, -0.021827377, 0)
+                    double3 xformOp:translate = (-0.0018499999999999999, 0.010789999999999998, 0.04131)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (-0.0036999999999999997, 0.021579999999999995, 0.08262)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "carriage_NAUO10" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (-0.01250276, 0.0045256945, -0.024737448)
+            float3 physics:diagonalInertia = (3.136109e-7, 8.043606e-7, 0.0000010849689)
+            float physics:mass = 0.006354076
+            quatf physics:principalAxes = (0.57950634, -0.63965815, -0.26898193, -0.42738575)
+            double3 xformOp:translate = (-0.00417, -0.07726, 0.0402)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cube "stage" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/light>
+                    double size = 1
+                    float3 xformOp:scale = (0.012, 0.012, 0.04)
+                    double3 xformOp:translate = (0, 0, -0.022)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "leg_NAUO10" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (-0.00988431, 0.006513381, 0.047069766)
+            float3 physics:diagonalInertia = (1e-8, 0.0000020340153, 0.0000020341342)
+            float physics:mass = 0.0031246005
+            quatf physics:principalAxes = (0.70650864, -0.32051098, 0.60490733, 0.1794586)
+            double3 xformOp:translate = (-0.00417, -0.07726, 0.0402)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cylinder "tube" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    uniform token axis = "Z"
+                    double height = 0.08547175615371432
+                    rel material:binding = </World/ninedof/Looks/carbon>
+                    double radius = 0.0025
+                    quatf xformOp:orient = (0.9924198, -0.067610696, -0.102624424, 0)
+                    double3 xformOp:translate = (-0.008705, 0.005734999999999997, 0.041445)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (-0.01741, 0.011469999999999994, 0.08289)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "carriage_NAUO14" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (-0.002504947, 0.0000012412025, -0.03780923)
+            float3 physics:diagonalInertia = (2.5383386e-7, 0.0000019713907, 0.000002060981)
+            float physics:mass = 0.010315523
+            quatf physics:principalAxes = (0.6780814, -0.00021820926, 0.7349868, 0.00023851106)
+            double3 xformOp:translate = (-0.00037, -0.03386, 0.03579)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cube "stage" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/light>
+                    double size = 1
+                    float3 xformOp:scale = (0.012, 0.012, 0.04)
+                    double3 xformOp:translate = (0, 0, -0.022)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "leg_NAUO14" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (-0.002525458, -0.008276583, 0.04775056)
+            float3 physics:diagonalInertia = (1e-8, 0.000002034015, 0.0000020341338)
+            float physics:mass = 0.0031246003
+            quatf physics:principalAxes = (0.63706326, 0.3467255, 0.65199465, -0.22098595)
+            double3 xformOp:translate = (-0.00037, -0.03386, 0.03579)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cylinder "tube" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    uniform token axis = "Z"
+                    double height = 0.08547039779947206
+                    rel material:binding = </World/ninedof/Looks/carbon>
+                    double radius = 0.0025
+                    quatf xformOp:orient = (0.99598354, 0.085636646, -0.026137386, 0)
+                    double3 xformOp:translate = (-0.002225, -0.007289999999999998, 0.04205)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (-0.00445, -0.014579999999999996, 0.0841)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "carriage_NAUO3" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (0.0024623503, 0.012868085, -0.036337484)
+            float3 physics:diagonalInertia = (4.6730372e-7, 0.0000024377557, 0.0000027012777)
+            float physics:mass = 0.011698349
+            quatf physics:principalAxes = (0.66408, 0.09550525, -0.7262602, -0.14974181)
+            double3 xformOp:translate = (-0.08437, -0.07246, 0.04788)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cube "stage" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/light>
+                    double size = 1
+                    float3 xformOp:scale = (0.012, 0.012, 0.04)
+                    double3 xformOp:translate = (0, 0, -0.022)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "leg_NAUO3" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (0.014501499, 0.015937015, 0.04348626)
+            float3 physics:diagonalInertia = (1e-8, 0.000002034015, 0.000002034134)
+            float physics:mass = 0.0031246
+            quatf physics:principalAxes = (-0.44585747, 0.6712383, 0.47734487, 0.35041705)
+            double3 xformOp:translate = (-0.08437, -0.07246, 0.04788)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cylinder "tube" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    uniform token axis = "Z"
+                    double height = 0.0854765733987974
+                    rel material:binding = </World/ninedof/Looks/carbon>
+                    double radius = 0.0025
+                    quatf xformOp:orient = (0.9736619, -0.16863866, 0.15343896, 0)
+                    double3 xformOp:translate = (0.01277, 0.014034999999999999, 0.038294999999999996)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (0.02554, 0.028069999999999998, 0.07658999999999999)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "carriage_NAUO4" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (0.0024623505, -0.012865602, -0.036330175)
+            float3 physics:diagonalInertia = (4.6729158e-7, 0.0000024376538, 0.0000027013912)
+            float physics:mass = 0.011698348
+            quatf physics:principalAxes = (0.09553274, 0.6640781, 0.14972533, 0.7262617)
+            double3 xformOp:translate = (-0.08437, 0.00494, 0.05661)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cube "stage" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/light>
+                    double size = 1
+                    float3 xformOp:scale = (0.012, 0.012, 0.04)
+                    double3 xformOp:translate = (0, 0, -0.022)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "leg_NAUO4" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (0.014675845, -0.026007999, 0.03826262)
+            float3 physics:diagonalInertia = (1e-8, 0.0000020340156, 0.0000020341345)
+            float physics:mass = 0.0031246003
+            quatf physics:principalAxes = (0.5891568, 0.041813314, 0.697771, 0.40529186)
+            double3 xformOp:translate = (-0.08437, 0.00494, 0.05661)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cylinder "tube" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    uniform token axis = "Z"
+                    double height = 0.0854716912199589
+                    rel material:binding = </World/ninedof/Looks/carbon>
+                    double radius = 0.0025
+                    quatf xformOp:orient = (0.9456033, 0.2833376, 0.15985684, -0)
+                    double3 xformOp:translate = (0.012920000000000001, -0.0229, 0.03369)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (0.025840000000000002, -0.0458, 0.06738)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "carriage_NAUO5" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (0.012871694, -0.0024562594, -0.036335696)
+            float3 physics:diagonalInertia = (4.6730005e-7, 0.0000024377384, 0.0000027012993)
+            float physics:mass = 0.01169835
+            quatf physics:principalAxes = (-0.36366844, 0.4460283, 0.5810499, 0.5754868)
+            double3 xformOp:translate = (-0.08157, 0.00974, 0.05435)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cube "stage" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/light>
+                    double size = 1
+                    float3 xformOp:scale = (0.012, 0.012, 0.04)
+                    double3 xformOp:translate = (0, 0, -0.022)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "leg_NAUO5" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (0.023567913, -0.020302823, 0.037253913)
+            float3 physics:diagonalInertia = (1e-8, 0.0000020340158, 0.0000020341345)
+            float physics:mass = 0.0031246012
+            quatf physics:principalAxes = (0.77487856, -0.37725103, -0.29417032, -0.4131691)
+            double3 xformOp:translate = (-0.08157, 0.00974, 0.05435)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cylinder "tube" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    uniform token axis = "Z"
+                    double height = 0.085473385916319
+                    rel material:binding = </World/ninedof/Looks/carbon>
+                    double radius = 0.0025
+                    quatf xformOp:orient = (0.94010836, 0.2225147, 0.25823155, -0)
+                    double3 xformOp:translate = (0.02075, -0.01788, 0.032805)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (0.0415, -0.03576, 0.06561)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "carriage_NAUO6" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (0.012871693, 0.0024587433, -0.036335997)
+            float3 physics:diagonalInertia = (4.6730577e-7, 0.000002437748, 0.0000027012843)
+            float physics:mass = 0.011698351
+            quatf physics:principalAxes = (-0.44597247, 0.36373922, 0.5754029, 0.5811315)
+            double3 xformOp:translate = (-0.08157, -0.07726, 0.04981)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cube "stage" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/light>
+                    double size = 1
+                    float3 xformOp:scale = (0.012, 0.012, 0.04)
+                    double3 xformOp:translate = (0, 0, -0.022)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+
+        def Xform "leg_NAUO6" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (0.021714255, 0.0077920808, 0.04270004)
+            float3 physics:diagonalInertia = (1e-8, 0.0000020340156, 0.0000020341342)
+            float physics:mass = 0.0031246007
+            quatf physics:principalAxes = (0.025568077, 0.8502967, 0.07876669, 0.51974773)
+            double3 xformOp:translate = (-0.08157, -0.07726, 0.04981)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def "visual"
+            {
+                def Cylinder "tube" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    uniform token axis = "Z"
+                    double height = 0.08547266229619856
+                    rel material:binding = </World/ninedof/Looks/carbon>
+                    double radius = 0.0025
+                    quatf xformOp:orient = (0.96948785, -0.08278555, 0.23073755, 0)
+                    double3 xformOp:translate = (0.01912, 0.006859999999999998, 0.03760000000000001)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+                }
+
+                def Sphere "ball" (
+                    prepend apiSchemas = ["MaterialBindingAPI"]
+                )
+                {
+                    rel material:binding = </World/ninedof/Looks/ruby>
+                    double radius = 0.0025
+                    double3 xformOp:translate = (0.03824, 0.013719999999999996, 0.07520000000000002)
+                    uniform token[] xformOpOrder = ["xformOp:translate"]
+                }
+            }
+        }
+    }
+}
+
