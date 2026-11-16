@@ -20,6 +20,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--usd', default=os.path.join(HERE, 'ninedof_cctomm_simple.usda'))
 ap.add_argument('--no-gravity', action='store_true')
 ap.add_argument('--kp', type=float, help='stiffer servo (critical damping with the same armature)')
+ap.add_argument('--samples', type=int, help='only the first N samples (quick check, e.g. 600)')
 ap.add_argument('-o', '--out', default=os.path.join(HERE, 'results', 'isaac_gravity.npz'))
 args = ap.parse_args()
 
@@ -31,7 +32,14 @@ import omni.physx                                      # noqa: E402
 import omni.usd                                        # noqa: E402
 from pxr import Gf, Usd, UsdGeom, UsdPhysics           # noqa: E402
 
-carb.settings.get_settings().set('/physics/updateToUsd', True)
+settings = carb.settings.get_settings()
+settings.set('/physics/updateToUsd', True)
+settings.set('/physics/fabricEnabled', False)            # first run: poses never reached USD (Fabric)
+try:
+    import omni.kit.app
+    omni.kit.app.get_app().get_extension_manager().set_extension_enabled_immediate('omni.physx.fabric', False)
+except Exception as e:                                   # noqa: BLE001
+    print('note: could not disable omni.physx.fabric:', e)
 ctx = omni.usd.get_context()
 ctx.open_stage(os.path.abspath(args.usd))
 for _ in range(10):
@@ -58,6 +66,10 @@ car_names = [p.GetName() for p in stage.Traverse() if p.GetName().startswith('ca
 car_b0z = [c.ComputeLocalToWorldTransform(Usd.TimeCode.Default()).ExtractTranslation()[2] for c in car]
 
 physx = omni.physx.get_physx_interface()
+try:
+    physx.force_load_physics_from_usd()
+except Exception as e:                                   # noqa: BLE001
+    print('note: force_load_physics_from_usd:', e)
 physx.start_simulation()
 t_sim = 0.0
 
@@ -69,10 +81,21 @@ def step(n):
         t_sim += DT
 
 
+def mat_xyzw(q):
+    x, y, z, w = q
+    return np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+                     [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+                     [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)]])
+
+
 def pose(x):
-    M = x.ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-    R = np.array(M.ExtractRotationMatrix()).T              # Gf row-vector convention -> column convention
-    return np.array(M.ExtractTranslation()), R
+    """World pose read from PhysX itself (independent of the USD and Fabric write-back)."""
+    path = str(x.GetPath())
+    r = physx.get_rigidbody_transformation(path)
+    if r and r.get('ret_val', True) and 'position' in r:
+        return np.array(r['position'], float), mat_xyzw(np.array(r['rotation'], float))
+    M = x.ComputeLocalToWorldTransform(Usd.TimeCode.Default())  # fallback: USD
+    return np.array(M.ExtractTranslation()), np.array(M.ExtractRotationMatrix()).T
 
 
 ref = np.load(os.path.join(HERE, 'reference_trajectory.npz'))
@@ -86,9 +109,20 @@ def set_q(q):
         targets[i].Set(float(q[i]))
 
 
+print('DIAG raw PhysX pose of plat1 before stepping:', physx.get_rigidbody_transformation(f'{ROBOT}/plat1'), flush=True)
+p_start = pose(plat[0])[0]
 set_q(ref['q'][0]); step(int(0.5 / DT))
+p_settle = pose(plat[0])[0]
+print(f'DIAG after 0.5 s settling: plat1 moved {np.linalg.norm(p_settle - p_start) * 1000:.3f} mm '
+      f'(MuJoCo: ~6 mm with gravity, ~0 without); t_sim = {t_sim:.3f} s', flush=True)
+# actuator check: push q1 by +2 mm for 0.1 s and read the carriage back
+k1 = idx[0]; z0 = pose(car[k1])[0][2]
+targets[0].Set(float(ref['q'][0][0]) + 0.002); step(200)
+print(f'DIAG actuator check: target +2.000 mm, carriage 1 moved {(pose(car[k1])[0][2] - z0) * 1000:.3f} mm', flush=True)
+set_q(ref['q'][0]); step(200)
+
 out = {k: [] for k in ('p1', 'R1', 'p2', 'R2', 'q')}
-n = len(ref['t'])
+n = min(len(ref['t']), args.samples) if args.samples else len(ref['t'])
 for j in range(n):
     set_q(ref['q'][j]); step(sub)
     p1, R1 = pose(plat[0]); p2, R2 = pose(plat[1])
@@ -96,7 +130,9 @@ for j in range(n):
     zs = [pose(car[i])[0][2] - car_b0z[i] for i in idx]
     out['q'].append(zs)
     if j % 500 == 0:
-        print(f'  sample {j}/{n}  t = {ref["t"][j]:.2f} s', flush=True)
+        e = np.max(np.abs(np.array(zs) - ref['q'][j])) * 1000
+        print(f'  sample {j}/{n}  t = {ref["t"][j]:.2f} s  q tracking {e:.3f} mm  '
+              f'p - p_ref {np.linalg.norm(p1 - ref["p"][j]) * 1000:.3f} mm', flush=True)
 np.savez_compressed(args.out, t=ref['t'], **{k: np.array(v) for k, v in out.items()})
 print('wrote', args.out)
 app.close()

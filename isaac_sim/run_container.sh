@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Start the Isaac Sim container on the VM with this repository mounted at /work.
 #   ./run_container.sh            interactive shell in the container (then ./runheadless.sh or ./python.sh ...)
+#   ./run_container.sh quick      diagnostic run (6 s, prints only DIAG lines)
 #   ./run_container.sh validate   headless validation runs (gravity and no gravity), results in isaac_sim/results
 set -e
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -14,7 +15,11 @@ ARGS=(--gpus all -e ACCEPT_EULA=Y -e PRIVACY_CONSENT=Y --rm --network=host -u 12
   -v $C/logs:/isaac-sim/.nvidia-omniverse/logs:rw -v $C/config:/isaac-sim/.nvidia-omniverse/config:rw
   -v $C/data:/isaac-sim/.local/share/ov/data:rw -v $C/pkg:/isaac-sim/.local/share/ov/pkg:rw
   -v "$REPO":/work:rw)
-if [ "$1" = "validate" ]; then
+if [ "$1" = "quick" ]; then              # diagnostic: 6 s of trajectory, no gravity, only the useful lines
+  sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
+    cd /isaac-sim && ./python.sh /work/isaac_sim/run_validation.py --no-gravity --samples 600 \
+      -o /work/isaac_sim/results/isaac_quick.npz 2>&1 | grep -E 'DIAG|sample|note:|Error|error|Traceback|wrote' "
+elif [ "$1" = "validate" ]; then
   sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
     cd /isaac-sim &&
     ./python.sh /work/isaac_sim/run_validation.py --no-gravity -o /work/isaac_sim/results/isaac_nogravity.npz &&
