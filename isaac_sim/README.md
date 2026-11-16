@@ -50,6 +50,34 @@ git clone -b isaac-sim https://github.com/GroverAruquipa/9dof-parallel-robot-ros
 ~/ninedof/isaac_sim/run_container.sh               # shell; then ./runheadless.sh and open /work/isaac_sim/*.usda
 ```
 
+## Cross-simulator validation (Isaac Sim 6.1, PhysX, against MuJoCo)
+
+Same model, same servos (5·10⁴ N/m), same 56 s showcase, 100 Hz targets, PhysX at 2000 Hz and MuJoCo at
+10 kHz with stiff loop closures. Loop closures stay closed within 0.001 mm in PhysX and within 0.0001 mm in
+MuJoCo during the whole run. Largest difference between the two simulators, per segment, with gravity:
+
+| Segment | platform 1 centre (mm) | Q1 (deg) | Q2 (deg) |
+|---|---|---|---|
+| translation x | 0.705 | 1.678 | 1.596 |
+| translation y | 0.091 | 0.215 | 0.205 |
+| translation z | 0.064 | 0.153 | 0.146 |
+| rigid rotation x | 0.051 | 0.120 | 0.116 |
+| rigid rotation y | 0.058 | 0.134 | 0.166 |
+| rigid rotation z | 0.056 | 0.123 | 0.132 |
+| cone | 0.148 | 0.465 | 0.290 |
+| relative rotation y (grasp) | 0.115 | 0.352 | 0.339 |
+| relative rotation x | 0.118 | 0.283 | 0.280 |
+| relative rotation z | 0.065 | 0.156 | 0.147 |
+
+The initial settling differs by 1.9 mm (transient) and both simulators converge to the same sagged pose. In both,
+gravity sags the platforms by about 5 mm away from the inverse kinematics while the actuators deflect only
+0.1 mm: the amplification predicted by the conditioning below, reproduced by two independent physics engines.
+
+Without gravity the two simulators drift apart (up to 15 mm in the cone segment) although each keeps its
+actuators within 0.024 mm and its loops closed: with no load on the soft direction the forward problem is
+nearly indeterminate, so numerical details of each solver decide where the platforms go. Gravity preloads
+that direction and makes the response repeatable.
+
 ## Conditioning of the geometry
 
 Simulating the robot showed that the CAD geometry lies close to the coupled translational Type II singularity.
