@@ -9,7 +9,8 @@ IMAGE="${ISAAC_IMAGE:-nvcr.io/nvidia/isaac-sim:6.1.0}"
 C=~/docker/isaac-sim
 mkdir -p $C/{cache/main,cache/computecache,config,data,logs,pkg}
 sudo chown -R 1234:1234 $C
-chmod -R a+rwX "$REPO/isaac_sim"                     # the container user (1234) writes the results
+sudo chmod -R a+rwX "$REPO/isaac_sim"                # the container user (1234) writes the results
+trap 'sudo chown -R "$(id -u):$(id -g)" "$REPO/isaac_sim"' EXIT   # give the results back to the VM user
 ARGS=(--gpus all -e ACCEPT_EULA=Y -e PRIVACY_CONSENT=Y --rm --network=host -u 1234:1234
   -v $C/cache/main:/isaac-sim/.cache:rw -v $C/cache/computecache:/isaac-sim/.nv/ComputeCache:rw
   -v $C/logs:/isaac-sim/.nvidia-omniverse/logs:rw -v $C/config:/isaac-sim/.nvidia-omniverse/config:rw
