@@ -49,7 +49,7 @@ def mjcf(geo, dr, gravity=True, dt=0.0005):
         eqs.append(f'<connect body1="leg_{k}" body2="{plat}" anchor="{f3(a - b)}"/>')
     return f'''<mujoco model="ninedof_cctomm">
   <option timestep="{dt}" integrator="implicitfast" gravity="0 0 {-9.81 if gravity else 0}"/>
-  <default><geom contype="0" conaffinity="0"/><equality solref="0.001 1" solimp="0.99 0.999 0.0001"/></default>
+  <default><geom contype="0" conaffinity="0"/><equality solref="{2 * dt:.6g} 1" solimp="0.9999 0.99999 0.0001"/></default>
   <worldbody>
     <body name="base">{''.join(legs)}
     </body>
@@ -96,7 +96,7 @@ def main():
     qadr = [m.jnt_qposadr[m.joint(f'q{i}').id] for i in range(1, 10)]
     for _ in range(int(0.5 / m.opt.timestep)):                                    # 0.5 s settling at the reference pose
         d.ctrl[:] = ref['q'][0]; mujoco.mj_step(m, d)
-    out = {k: [] for k in ('p1', 'R1', 'p2', 'R2', 'q', 'f')}
+    out = {k: [] for k in ('p1', 'R1', 'p2', 'R2', 'q', 'f', 'gap_loop')}
     for j in range(len(ref['t'])):
         d.ctrl[:] = ref['q'][j]
         for _ in range(sub):
@@ -105,6 +105,8 @@ def main():
         out['p1'].append(d.xpos[i1].copy()); out['R1'].append(R1)
         out['p2'].append(d.xpos[i2] + R2 @ np.zeros(3)); out['R2'].append(R2)
         out['q'].append(d.qpos[qadr].copy()); out['f'].append(d.actuator_force.copy())
+        eq = d.efc_pos[d.efc_type == mujoco.mjtConstraint.mjCNSTR_EQUALITY]
+        out['gap_loop'].append(float(np.max(np.abs(eq))) * 1000 if eq.size else 0.0)
     res = {k: np.array(v) for k, v in out.items()}
     np.savez_compressed(a.out, t=ref['t'], **res)
     print('wrote', a.out)
