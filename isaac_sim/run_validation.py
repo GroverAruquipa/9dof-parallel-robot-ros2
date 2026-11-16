@@ -109,19 +109,36 @@ def set_q(q):
         targets[i].Set(float(q[i]))
 
 
+# every spherical joint: anchor on body 0 and on body 1, to measure how far the joint opens
+anchors = []
+for p in stage.Traverse():
+    if p.IsA(UsdPhysics.SphericalJoint):
+        jt = UsdPhysics.Joint(p)
+        b0 = UsdGeom.Xformable(stage.GetPrimAtPath(jt.GetBody0Rel().GetTargets()[0]))
+        b1 = UsdGeom.Xformable(stage.GetPrimAtPath(jt.GetBody1Rel().GetTargets()[0]))
+        anchors.append((p.GetName(), bool(jt.GetExcludeFromArticulationAttr().Get()), b0, b1,
+                        np.array(jt.GetLocalPos0Attr().Get(), float), np.array(jt.GetLocalPos1Attr().Get(), float)))
+
+
+def joint_gaps():
+    """Opening of the loop closures (excluded joints) and of the tree joints, in mm."""
+    loop, tree = [], []
+    for name, excl, b0, b1, l0, l1 in anchors:
+        pa, Ra = pose(b0); pb, Rb = pose(b1)
+        g = np.linalg.norm((pa + Ra @ l0) - (pb + Rb @ l1)) * 1000
+        (loop if excl else tree).append(g)
+    return max(loop), max(tree)
+
+
 print('DIAG raw PhysX pose of plat1 before stepping:', physx.get_rigidbody_transformation(f'{ROBOT}/plat1'), flush=True)
 p_start = pose(plat[0])[0]
 set_q(ref['q'][0]); step(int(0.5 / DT))
 p_settle = pose(plat[0])[0]
-print(f'DIAG after 0.5 s settling: plat1 moved {np.linalg.norm(p_settle - p_start) * 1000:.3f} mm '
-      f'(MuJoCo: ~6 mm with gravity, ~0 without); t_sim = {t_sim:.3f} s', flush=True)
-# actuator check: push q1 by +2 mm for 0.1 s and read the carriage back
-k1 = idx[0]; z0 = pose(car[k1])[0][2]
-targets[0].Set(float(ref['q'][0][0]) + 0.002); step(200)
-print(f'DIAG actuator check: target +2.000 mm, carriage 1 moved {(pose(car[k1])[0][2] - z0) * 1000:.3f} mm', flush=True)
-set_q(ref['q'][0]); step(200)
+gl, gt = joint_gaps()
+print(f'DIAG after 0.5 s settling: plat1 moved {np.linalg.norm(p_settle - p_start) * 1000:.3f} mm, '
+      f'loop closures open {gl:.4f} mm, tree joints {gt:.4f} mm', flush=True)
 
-out = {k: [] for k in ('p1', 'R1', 'p2', 'R2', 'q')}
+out = {k: [] for k in ('p1', 'R1', 'p2', 'R2', 'q', 'gap_loop', 'gap_tree')}
 n = min(len(ref['t']), args.samples) if args.samples else len(ref['t'])
 for j in range(n):
     set_q(ref['q'][j]); step(sub)
@@ -129,10 +146,18 @@ for j in range(n):
     out['p1'].append(p1); out['R1'].append(R1); out['p2'].append(p2); out['R2'].append(R2)
     zs = [pose(car[i])[0][2] - car_b0z[i] for i in idx]
     out['q'].append(zs)
-    if j % 500 == 0:
+    gl, gt = joint_gaps(); out['gap_loop'].append(gl); out['gap_tree'].append(gt)
+    if j % 100 == 0:
         e = np.max(np.abs(np.array(zs) - ref['q'][j])) * 1000
         print(f'  sample {j}/{n}  t = {ref["t"][j]:.2f} s  q tracking {e:.3f} mm  '
-              f'p - p_ref {np.linalg.norm(p1 - ref["p"][j]) * 1000:.3f} mm', flush=True)
-np.savez_compressed(args.out, t=ref['t'], **{k: np.array(v) for k, v in out.items()})
+              f'p - p_ref {np.linalg.norm(p1 - ref["p"][j]) * 1000:.3f} mm  '
+              f'loops open {gl:.4f} mm', flush=True)
+print(f'DIAG loop closures over the run: max {max(out["gap_loop"]):.4f} mm, '
+      f'tree joints max {max(out["gap_tree"]):.4f} mm', flush=True)
+# actuator check at the end, so it does not disturb the run: q1 + 2 mm for 0.1 s
+k1 = idx[0]; z0 = pose(car[k1])[0][2]
+targets[0].Set(float(ref['q'][n - 1][0]) + 0.002); step(200)
+print(f'DIAG actuator check: target +2.000 mm, carriage 1 moved {(pose(car[k1])[0][2] - z0) * 1000:.3f} mm', flush=True)
+np.savez_compressed(args.out, t=ref['t'][:n], **{k: np.array(v) for k, v in out.items()})
 print('wrote', args.out)
 app.close()
