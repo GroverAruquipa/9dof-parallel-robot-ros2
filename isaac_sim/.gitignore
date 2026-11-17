@@ -5,3 +5,5 @@ ninedof_cctomm_mujoco.xml
 results/isaac_*.npz
 results/frames/
 results/*.mp4
+results/grid_*
+results/*.usda

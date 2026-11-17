@@ -28,6 +28,8 @@ roll) is a single spherical joint in the physics; its CAD parts are visual only.
 | `mujoco_cctomm.py` | MuJoCo twin of the same model, runs the reference |
 | `run_validation.py` | the same run in Isaac Sim (PhysX at 2000 Hz) |
 | `compare.py` | errors against the inverse kinematics, and simulator against simulator |
+| `render_video.py` | RTX video of the showcase (inverse kinematics or a PhysX run) |
+| `make_grid.py`, `grid_sim.py`, `grid_place.py`, `render_grid.py` | N copies of the robot with different servo stiffness: grid stage, PhysX run, placement, RTX video |
 | `run_container.sh` | starts the Isaac Sim container with this repository mounted at `/work` |
 
 ## Offline checks (no GPU)
@@ -77,6 +79,19 @@ Without gravity the two simulators drift apart (up to 15 mm in the cone segment)
 actuators within 0.024 mm and its loops closed: with no load on the soft direction the forward problem is
 nearly indeterminate, so numerical details of each solver decide where the platforms go. Gravity preloads
 that direction and makes the response repeatable.
+
+## Videos
+
+| Command (on the VM) | Result |
+|---|---|
+| `run_container.sh video-test --kinematic` | 4 still frames to check the look |
+| `run_container.sh video --kinematic` | `results/ninedof_isaac_sim.mp4`: the showcase with the CAD, RTX render of the paper inverse kinematics |
+| `run_container.sh grid-test` | 4 robots for 3 s: checks the pipeline and prints how long the full grid would take |
+| `run_container.sh grid` | `results/ninedof_grid.mp4`: 16 robots simulated at once in PhysX, servo stiffness from 2·10⁴ (front) to 2·10⁶ N/m (back) |
+
+Rendering is a separate pass: the poses are computed first (inverse kinematics, or a PhysX run with `grid_sim.py`),
+then every body is placed from them with all physics removed from the render stage (`grid_place.py`). Leaving the
+rigid bodies in the stage let the renderer advance PhysX and the platforms spun freely on their ball joints.
 
 ## Conditioning of the geometry
 

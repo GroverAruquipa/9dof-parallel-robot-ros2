@@ -3,6 +3,7 @@
 #   ./run_container.sh            interactive shell in the container (then ./runheadless.sh or ./python.sh ...)
 #   ./run_container.sh quick      diagnostic run (6 s, prints only DIAG lines)
 #   ./run_container.sh video-test 4 still frames;  ./run_container.sh video  full MP4 (results/ninedof_isaac_sim.mp4)
+#   ./run_container.sh grid-test  4 robots, 3 s, 4 frames;  ./run_container.sh grid  16-robot video (results/ninedof_grid.mp4)
 #   ./run_container.sh validate   headless validation runs (gravity and no gravity), results in isaac_sim/results
 set -e
 EXTRA="${*:2}"                                       # extra options for render_video.py, e.g. --key 1200
@@ -34,6 +35,20 @@ elif [ "$1" = "video" ]; then            # full video: frames in the container, 
     -y -loglevel error -framerate 30 -i /r/frames/%05d.png \
     -c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p /r/ninedof_isaac_sim.mp4   # ffmpeg in Docker: apt mirror unreliable
   echo "video: $REPO/isaac_sim/results/ninedof_isaac_sim.mp4"
+elif [ "$1" = "grid-test" ]; then        # 4 robots, 3 s: checks the pipeline and estimates the time of the full grid
+  sudo rm -rf "$REPO/isaac_sim/results/grid_frames"
+  sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
+    cd /isaac-sim && ./python.sh /work/isaac_sim/grid_sim.py --n 4 --t-end 3 2>&1 | grep -E 'sample|wrote|DIAG|kp|  [0-9]|note:|Error|error|Traceback' | grep -v -E 'OmniHub|hub-isaac' &&
+    ./python.sh /work/isaac_sim/render_grid.py --frames 4 $EXTRA 2>&1 | grep -E 'frame|wrote|DIAG|Error|error|Traceback' | grep -v -E 'OmniHub|hub-isaac' "
+elif [ "$1" = "grid" ]; then             # 16 robots, servo stiffness sweep: PhysX run, RTX frames, MP4
+  sudo rm -rf "$REPO/isaac_sim/results/grid_frames"
+  sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
+    cd /isaac-sim && ./python.sh /work/isaac_sim/grid_sim.py 2>&1 | grep -E 'sample|wrote|DIAG|kp|  [0-9]|note:|Error|error|Traceback' | grep -v -E 'OmniHub|hub-isaac' &&
+    ./python.sh /work/isaac_sim/render_grid.py $EXTRA 2>&1 | grep -E 'frame|wrote|DIAG|Error|error|Traceback' | grep -v -E 'OmniHub|hub-isaac' "
+  sudo docker run --rm -v "$REPO/isaac_sim/results":/r jrottenberg/ffmpeg:4.4-ubuntu \
+    -y -loglevel error -framerate 30 -i /r/grid_frames/%05d.png \
+    -c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p /r/ninedof_grid.mp4
+  echo "video: $REPO/isaac_sim/results/ninedof_grid.mp4"
 elif [ "$1" = "validate" ]; then
   sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
     cd /isaac-sim &&
