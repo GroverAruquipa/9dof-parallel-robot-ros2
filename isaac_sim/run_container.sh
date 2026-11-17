@@ -30,7 +30,7 @@ elif [ "$1" = "video" ]; then            # full video: frames in the container, 
   sudo rm -rf "$REPO/isaac_sim/results/frames"
   sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
     cd /isaac-sim && ./python.sh /work/isaac_sim/render_video.py $EXTRA 2>&1 | grep -E 'frame|wrote|Error|error|Traceback' | grep -v -E 'OmniHub|hub-isaac' "
-  command -v ffmpeg > /dev/null || sudo apt-get install -y ffmpeg
+  command -v ffmpeg > /dev/null || { sudo apt-get update -q && sudo apt-get install -y ffmpeg; }
   ffmpeg -y -loglevel error -framerate 30 -i "$REPO/isaac_sim/results/frames/%05d.png" \
     -c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p "$REPO/isaac_sim/results/ninedof_isaac_sim.mp4"
   echo "video: $REPO/isaac_sim/results/ninedof_isaac_sim.mp4"
