@@ -5,6 +5,7 @@
 #   ./run_container.sh video-test 4 still frames;  ./run_container.sh video  full MP4 (results/ninedof_isaac_sim.mp4)
 #   ./run_container.sh validate   headless validation runs (gravity and no gravity), results in isaac_sim/results
 set -e
+EXTRA="${*:2}"                                       # extra options for render_video.py, e.g. --key 1200
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 IMAGE="${ISAAC_IMAGE:-nvcr.io/nvidia/isaac-sim:6.1.0}"
 C=~/docker/isaac-sim
@@ -24,11 +25,11 @@ if [ "$1" = "quick" ]; then              # diagnostic: 6 s of trajectory, no gra
 elif [ "$1" = "video-test" ]; then       # 4 still frames to check the look (results/frames/0000*.png)
   sudo rm -rf "$REPO/isaac_sim/results/frames"
   sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
-    cd /isaac-sim && ./python.sh /work/isaac_sim/render_video.py --frames 4 2>&1 | grep -E 'frame|wrote|Error|error|Traceback' | grep -v -E 'OmniHub|hub-isaac' "
+    cd /isaac-sim && ./python.sh /work/isaac_sim/render_video.py --frames 4 $EXTRA 2>&1 | grep -E 'frame|wrote|Error|error|Traceback' | grep -v -E 'OmniHub|hub-isaac' "
 elif [ "$1" = "video" ]; then            # full video: frames in the container, H.264 on the VM
   sudo rm -rf "$REPO/isaac_sim/results/frames"
   sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
-    cd /isaac-sim && ./python.sh /work/isaac_sim/render_video.py 2>&1 | grep -E 'frame|wrote|Error|error|Traceback' | grep -v -E 'OmniHub|hub-isaac' "
+    cd /isaac-sim && ./python.sh /work/isaac_sim/render_video.py $EXTRA 2>&1 | grep -E 'frame|wrote|Error|error|Traceback' | grep -v -E 'OmniHub|hub-isaac' "
   command -v ffmpeg > /dev/null || sudo apt-get install -y ffmpeg
   ffmpeg -y -loglevel error -framerate 30 -i "$REPO/isaac_sim/results/frames/%05d.png" \
     -c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p "$REPO/isaac_sim/results/ninedof_isaac_sim.mp4"

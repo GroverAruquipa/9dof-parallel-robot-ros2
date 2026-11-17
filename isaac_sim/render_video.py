@@ -30,6 +30,9 @@ ap.add_argument('--usd', default=cad if os.path.exists(cad) else os.path.join(HE
 ap.add_argument('--run', default=os.path.join(HERE, 'results', 'isaac_gravity.npz'))
 ap.add_argument('--subtitle', default='Isaac Sim 6.1, PhysX simulation with gravity, RTX render')
 ap.add_argument('--frames', type=int, help='only N frames spread over the run (look check)')
+ap.add_argument('--sky', type=float, default=250.0, help='dome (ambient) intensity')
+ap.add_argument('--key', type=float, default=900.0, help='key light intensity')
+ap.add_argument('--fill', type=float, default=350.0, help='fill light intensity')
 ap.add_argument('--out', default=os.path.join(HERE, 'results', 'frames'))
 args = ap.parse_args()
 
@@ -38,7 +41,7 @@ app = SimulationApp({'headless': True, 'width': W, 'height': H})
 
 import omni.replicator.core as rep                         # noqa: E402
 import omni.usd                                            # noqa: E402
-from PIL import Image, ImageDraw, ImageFont                 # noqa: E402
+from PIL import Image, ImageDraw, ImageFilter, ImageFont                # noqa: E402
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics  # noqa: E402
 
 ctx = omni.usd.get_context()
@@ -107,16 +110,18 @@ def pose_at(j):
         L['car'].set(b); L['leg'].set(b, rot_between(L['ab'], a - b))
 
 
-# scene: white floor under the base, white sky, no shadows
-lo = UsdGeom.BBoxCache(Usd.TimeCode.Default(), ['default', 'render']).ComputeWorldBound(
-    stage.GetPrimAtPath(f'{ROBOT}/base')).ComputeAlignedRange().GetMin()
-floor = UsdGeom.Cube.Define(stage, '/World/floor'); floor.CreateSizeAttr(1.0)
-floor.AddTranslateOp().Set(Gf.Vec3d(0, 0, lo[2] - 0.0025)); floor.AddScaleOp().Set(Gf.Vec3f(4, 4, 0.005))
-floor.CreateDisplayColorAttr([(0.97, 0.97, 0.97)])
-dome = UsdLux.DomeLight.Define(stage, '/World/sky'); dome.CreateIntensityAttr(900); dome.CreateColorAttr((1, 1, 1))
-key = UsdLux.DistantLight.Define(stage, '/World/key'); key.CreateIntensityAttr(1800); key.CreateAngleAttr(2.0)
-key.AddRotateXYZOp().Set(Gf.Vec3f(-40, 25, 30))
-for lt in (dome, key):
+# lights as in the MuJoCo videos: soft ambient sky, key (-.5 .7 -.8) and fill (.7 -.3 -.4), no shadows;
+# no floor: the robot is cut out with the depth map and laid on a flat white background
+def distant(path, direction, intensity):
+    lt = UsdLux.DistantLight.Define(stage, path); lt.CreateIntensityAttr(intensity); lt.CreateAngleAttr(1.0)
+    q = Gf.Rotation(Gf.Vec3d(0, 0, -1), Gf.Vec3d(*np.asarray(direction, float))).GetQuat()   # light shines along -z
+    lt.AddOrientOp().Set(Gf.Quatf(float(q.GetReal()), *[float(c) for c in q.GetImaginary()]))
+    return lt
+
+
+dome = UsdLux.DomeLight.Define(stage, '/World/sky'); dome.CreateIntensityAttr(args.sky); dome.CreateColorAttr((1, 1, 1))
+lights = [dome, distant('/World/key', (-.5, .7, -.8), args.key), distant('/World/fill', (.7, -.3, -.4), args.fill)]
+for lt in lights:
     UsdLux.ShadowAPI.Apply(lt.GetPrim()).CreateShadowEnableAttr(False)
 
 # camera: MuJoCo free-camera convention, vertical field of view 45 deg
@@ -129,6 +134,15 @@ cam = rep.create.camera(position=tuple(pos), look_at=tuple(la), focal_length=foc
                         clipping_range=(0.01, 100.0))
 rp = rep.create.render_product(cam, (W, H))
 rgb = rep.AnnotatorRegistry.get_annotator('rgb'); rgb.attach([rp])
+depth = rep.AnnotatorRegistry.get_annotator('distance_to_image_plane'); depth.attach([rp])
+
+
+def on_white(color, d):
+    """Robot pixels kept, background set to white; the mask edge is softened over one pixel."""
+    d = np.squeeze(np.asarray(d, float))
+    mask = Image.fromarray(((np.isfinite(d) & (d > 0) & (d < 50)) * 255).astype(np.uint8))
+    m = np.asarray(mask.filter(ImageFilter.GaussianBlur(0.8)), float)[:, :, None] / 255.0
+    return Image.fromarray((color * m + 255.0 * (1 - m)).astype(np.uint8))
 
 
 def font(size):
@@ -154,7 +168,7 @@ for i, f in enumerate(frames):
     j = min(int(round(f / FPS * 100)), n_run - 1)
     pose_at(j)
     rep.orchestrator.step(rt_subframes=4)
-    img = Image.fromarray(np.asarray(rgb.get_data())[:, :, :3])
+    img = on_white(np.asarray(rgb.get_data())[:, :, :3].astype(float), depth.get_data())
     dr = ImageDraw.Draw(img)
     dr.text((70, 58), TITLES.get(seg_names[ref['segment'][j]], ''), fill=(20, 20, 20), font=F[0])
     dr.text((70, 112), args.subtitle, fill=(90, 90, 90), font=F[1])
