@@ -2,6 +2,7 @@
 # Start the Isaac Sim container on the VM with this repository mounted at /work.
 #   ./run_container.sh            interactive shell in the container (then ./runheadless.sh or ./python.sh ...)
 #   ./run_container.sh quick      diagnostic run (6 s, prints only DIAG lines)
+#   ./run_container.sh video-test 4 still frames;  ./run_container.sh video  full MP4 (results/ninedof_isaac_sim.mp4)
 #   ./run_container.sh validate   headless validation runs (gravity and no gravity), results in isaac_sim/results
 set -e
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -20,6 +21,18 @@ if [ "$1" = "quick" ]; then              # diagnostic: 6 s of trajectory, no gra
   sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
     cd /isaac-sim && ./python.sh /work/isaac_sim/run_validation.py --no-gravity --samples 600 \
       -o /work/isaac_sim/results/isaac_quick.npz 2>&1 | grep -E 'DIAG|sample|note:|Error|error|Traceback|wrote' "
+elif [ "$1" = "video-test" ]; then       # 4 still frames to check the look (results/frames/0000*.png)
+  sudo rm -rf "$REPO/isaac_sim/results/frames"
+  sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
+    cd /isaac-sim && ./python.sh /work/isaac_sim/render_video.py --frames 4 2>&1 | grep -E 'frame|wrote|Error|error|Traceback' "
+elif [ "$1" = "video" ]; then            # full video: frames in the container, H.264 on the VM
+  sudo rm -rf "$REPO/isaac_sim/results/frames"
+  sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
+    cd /isaac-sim && ./python.sh /work/isaac_sim/render_video.py 2>&1 | grep -E 'frame|wrote|Error|error|Traceback' "
+  command -v ffmpeg > /dev/null || sudo apt-get install -y ffmpeg
+  ffmpeg -y -loglevel error -framerate 30 -i "$REPO/isaac_sim/results/frames/%05d.png" \
+    -c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p "$REPO/isaac_sim/results/ninedof_isaac_sim.mp4"
+  echo "video: $REPO/isaac_sim/results/ninedof_isaac_sim.mp4"
 elif [ "$1" = "validate" ]; then
   sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
     cd /isaac-sim &&

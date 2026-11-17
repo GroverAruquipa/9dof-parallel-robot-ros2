@@ -3,3 +3,5 @@ __pycache__/
 compare.png
 ninedof_cctomm_mujoco.xml
 results/isaac_*.npz
+results/frames/
+results/*.mp4
