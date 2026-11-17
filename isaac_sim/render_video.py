@@ -28,7 +28,9 @@ ap = argparse.ArgumentParser()
 cad = os.path.join(HERE, 'ninedof_cctomm.usdc')
 ap.add_argument('--usd', default=cad if os.path.exists(cad) else os.path.join(HERE, 'ninedof_cctomm_simple.usda'))
 ap.add_argument('--run', default=os.path.join(HERE, 'results', 'isaac_gravity.npz'))
-ap.add_argument('--subtitle', default='Isaac Sim 6.1, PhysX simulation with gravity, RTX render')
+ap.add_argument('--subtitle', help='caption under the title (default depends on --kinematic)')
+ap.add_argument('--kinematic', action='store_true',
+                help='play the paper inverse kinematics (reference_trajectory.npz) instead of a PhysX run')
 ap.add_argument('--frames', type=int, help='only N frames spread over the run (look check)')
 ap.add_argument('--sky', type=float, default=250.0, help='dome (ambient) intensity')
 ap.add_argument('--key', type=float, default=900.0, help='key light intensity')
@@ -94,7 +96,13 @@ for p in stage.Traverse():
 plats = {'plat1': Body('plat1'), 'plat2': Body('plat2')}
 
 ref = np.load(os.path.join(HERE, 'reference_trajectory.npz'))
-run = np.load(args.run)
+if args.kinematic:                                         # exact closed-loop poses, as in the MuJoCo videos
+    run = {'t': ref['t'], 'p1': ref['p'], 'R1': ref['Q1'], 'p2': ref['p'], 'R2': ref['Q2'], 'q': ref['q']}
+else:
+    run = np.load(args.run)
+if not args.subtitle:
+    args.subtitle = ('Isaac Sim 6.1 RTX render, paper inverse kinematics' if args.kinematic
+                     else 'Isaac Sim 6.1, PhysX simulation with gravity, RTX render')
 col = {str(k): i for i, k in enumerate(ref['legs'])}
 seg_names = [str(s) for s in ref['segment_names']]
 
