@@ -42,6 +42,7 @@ from isaacsim import SimulationApp                         # noqa: E402
 app = SimulationApp({'headless': True, 'width': W, 'height': H})
 
 import omni.replicator.core as rep                         # noqa: E402
+import omni.timeline                                       # noqa: E402
 import omni.usd                                            # noqa: E402
 from PIL import Image, ImageDraw, ImageFilter, ImageFont                # noqa: E402
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics  # noqa: E402
@@ -51,7 +52,6 @@ ctx.open_stage(os.path.abspath(args.usd))
 for _ in range(10):
     app.update()
 stage = ctx.get_stage()
-stage.GetPrimAtPath('/World/physicsScene').SetActive(False)          # kinematic playback of the PhysX run
 
 
 def rot_between(u, v):
@@ -94,6 +94,17 @@ for p in stage.Traverse():
                      'plat': plat, 'ab': np.array(j.GetLocalPos0Attr().Get(), float),
                      'ap': np.array(j.GetLocalPos1Attr().Get(), float)})
 plats = {'plat1': Body('plat1'), 'plat2': Body('plat2')}
+
+# no physics at all during the render: every body is placed from the data. With the rigid bodies left in the
+# stage, the Replicator steps advanced PhysX and the platforms spun freely on their ball joints (first videos).
+stage.GetPrimAtPath('/World/physicsScene').SetActive(False)
+robot = stage.GetPrimAtPath(ROBOT)
+robot.RemoveAPI(UsdPhysics.ArticulationRootAPI); robot.RemoveAppliedSchema('PhysxArticulationAPI')
+for prim in list(stage.Traverse()):
+    if prim.HasAPI(UsdPhysics.RigidBodyAPI):
+        prim.RemoveAPI(UsdPhysics.RigidBodyAPI); prim.RemoveAPI(UsdPhysics.MassAPI)
+stage.GetPrimAtPath(f'{ROBOT}/joints').SetActive(False)
+omni.timeline.get_timeline_interface().stop()
 
 ref = np.load(os.path.join(HERE, 'reference_trajectory.npz'))
 if args.kinematic:                                         # exact closed-loop poses, as in the MuJoCo videos
@@ -176,6 +187,12 @@ for i, f in enumerate(frames):
     j = min(int(round(f / FPS * 100)), n_run - 1)
     pose_at(j)
     rep.orchestrator.step(rt_subframes=4)
+    M = UsdGeom.Xformable(stage.GetPrimAtPath(f'{ROBOT}/plat1')).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+    drift = np.linalg.norm(np.array(M.ExtractTranslation()) - run['p1'][j]) * 1000
+    R_back = np.array(M.ExtractRotationMatrix()).T
+    turn = np.degrees(np.arccos(np.clip((np.trace(R_back.T @ run['R1'][j]) - 1) / 2, -1, 1)))
+    if drift > 0.01 or turn > 0.01:
+        print(f'DIAG frame {i}: platform 1 moved after placement by {drift:.3f} mm, {turn:.3f} deg', flush=True)
     img = on_white(np.asarray(rgb.get_data())[:, :, :3].astype(float), depth.get_data())
     dr = ImageDraw.Draw(img)
     dr.text((70, 58), TITLES.get(seg_names[ref['segment'][j]], ''), fill=(20, 20, 20), font=F[0])

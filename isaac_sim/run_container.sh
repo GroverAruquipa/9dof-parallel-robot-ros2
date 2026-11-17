@@ -25,11 +25,11 @@ if [ "$1" = "quick" ]; then              # diagnostic: 6 s of trajectory, no gra
 elif [ "$1" = "video-test" ]; then       # 4 still frames to check the look (results/frames/0000*.png)
   sudo rm -rf "$REPO/isaac_sim/results/frames"
   sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
-    cd /isaac-sim && ./python.sh /work/isaac_sim/render_video.py --frames 4 $EXTRA 2>&1 | grep -E 'frame|wrote|Error|error|Traceback' | grep -v -E 'OmniHub|hub-isaac' "
+    cd /isaac-sim && ./python.sh /work/isaac_sim/render_video.py --frames 4 $EXTRA 2>&1 | grep -E 'frame|wrote|DIAG|Error|error|Traceback' | grep -v -E 'OmniHub|hub-isaac' "
 elif [ "$1" = "video" ]; then            # full video: frames in the container, H.264 on the VM
   sudo rm -rf "$REPO/isaac_sim/results/frames"
   sudo docker run "${ARGS[@]}" --entrypoint bash "$IMAGE" -c "
-    cd /isaac-sim && ./python.sh /work/isaac_sim/render_video.py $EXTRA 2>&1 | grep -E 'frame|wrote|Error|error|Traceback' | grep -v -E 'OmniHub|hub-isaac' "
+    cd /isaac-sim && ./python.sh /work/isaac_sim/render_video.py $EXTRA 2>&1 | grep -E 'frame|wrote|DIAG|Error|error|Traceback' | grep -v -E 'OmniHub|hub-isaac' "
   sudo docker run --rm -v "$REPO/isaac_sim/results":/r jrottenberg/ffmpeg:4.4-ubuntu \
     -y -loglevel error -framerate 30 -i /r/frames/%05d.png \
     -c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p /r/ninedof_isaac_sim.mp4   # ffmpeg in Docker: apt mirror unreliable
