@@ -93,6 +93,38 @@ Rendering is a separate pass: the poses are computed first (inverse kinematics, 
 then every body is placed from them with all physics removed from the render stage (`grid_place.py`). Leaving the
 rigid bodies in the stage let the renderer advance PhysX and the platforms spun freely on their ball joints.
 
+## Servo stiffness sweep (16 robots in one PhysX scene)
+
+`run_container.sh grid`: 16 copies of the robot with gravity, servo stiffness log-spaced from 2·10⁴ to 2·10⁶ N/m,
+critical damping, first 20.5 s of the showcase (reference pose, translations, rigid rotation about x). Largest
+errors of each copy against the inverse kinematics:
+
+| Servo stiffness (N/m) | platform centre (mm) | Q1 (deg) | actuator tracking (mm) |
+|---|---|---|---|
+| 20 000 | 13.885 | 30.302 | 0.301 |
+| 27 187 | 11.304 | 24.371 | 0.219 |
+| 36 957 | 8.866 | 19.055 | 0.155 |
+| 50 238 | 6.980 | 15.000 | 0.115 |
+| 68 291 | 8.924 | 22.045 | 0.127 |
+| 92 832 | 7.444 | 18.375 | 0.102 |
+| 126 191 | 7.441 | 18.185 | 0.076 |
+| 171 539 | 5.643 | 13.854 | 0.057 |
+| 233 183 | 5.230 | 12.793 | 0.043 |
+| 316 979 | 5.203 | 12.679 | 0.033 |
+| 430 887 | 4.026 | 9.841 | 0.025 |
+| 585 729 | 15.649 | 40.881 | 0.020 |
+| 796 214 | 3.485 | 8.497 | 0.016 |
+| 1 082 339 | 2.972 | 7.266 | 0.012 |
+| 1 471 285 | 2.757 | 6.734 | 0.010 |
+| 2 000 000 | 2.886 | 7.027 | 0.008 |
+
+The actuators track within 0.3 mm even with the softest servo, while the platforms deviate up to 40 times more:
+the amplification set by the conditioning below. A stiffer servo reduces it at the reference pose (0.4 mm and
+0.9 deg for 2·10⁶ N/m over the first 3 s), but not in the rigid rotation about x, where the condition number
+reaches 3·10⁵ and even the stiffest copy deviates 2.9 mm and 7 deg with 0.008 mm of actuator error. The copy at
+5.9·10⁵ N/m leaves the trend (15.6 mm, 41 deg): near the singularity it moves to a different configuration.
+The remedy is the geometry, not the servo gain.
+
 ## Conditioning of the geometry
 
 Simulating the robot showed that the CAD geometry lies close to the coupled translational Type II singularity.
